@@ -34,8 +34,8 @@ class TreeViewController: UIViewController, UICollectionViewDelegate, UICollecti
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: treeViewCellIdentifier, for: indexPath) as! TreeCollectionViewCell
-        if let imageToDisplay = drawingList[indexPath.row].value(forKey: "image") {
-            cell.imageView.image = UIImage(data: imageToDisplay as! Data)
+        if let thumbnailData = drawingList[indexPath.row].value(forKey: "thumbnail") {
+            cell.imageView.image = UIImage(data: thumbnailData as! Data)
         }
         return cell
     }
@@ -47,6 +47,7 @@ class TreeViewController: UIViewController, UICollectionViewDelegate, UICollecti
         
         do {
             try fetchedResults = context.fetch(request) as? [NSManagedObject]
+            print("retrieved \(fetchedResults!.count) drawings")
         } catch {
             print("error occurred while retrieving data")
         }

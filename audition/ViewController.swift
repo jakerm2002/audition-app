@@ -7,13 +7,11 @@
 
 import UIKit
 import PencilKit
+import CoreData
+
+var count = 0
 
 class ViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver {
-    
-//    private let canvasView: PKCanvasView = {
-//        let canvas = PKCanvasView()
-//        return canvas
-//    }()
     
     let canvasView = PKCanvasView()
     
@@ -49,8 +47,44 @@ class ViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserv
         canvasView.frame = view.bounds
     }
     
-    @IBAction func commitButtonPressed(_ sender: Any) {
+    func storeDrawing() {
+        // store a drawing commit into core data
+        let name = "Drawing \(count)"
+        let currentDate = Date()
+        let currentDrawing = drawing.dataRepresentation()
+        let currentThumbnail = drawing.image(from: drawing.bounds, scale: 1.0).jpegData(compressionQuality: 0.1)
+        count += 1
         
+        let entry = NSEntityDescription.insertNewObject(
+            forEntityName: "Drawing",
+            into: context
+        )
+        
+        entry.setValue(name, forKey: "name")
+        entry.setValue(currentDate, forKey: "createdAt")
+        entry.setValue(currentDrawing, forKey: "drawing")
+        entry.setValue(currentThumbnail, forKey: "thumbnail")
+        
+        saveContext()
+        
+        print("drawing saved")
+    }
+    
+    func saveContext () {
+        if context.hasChanges {
+            do {
+                try context.save()
+            } catch {
+                let nserror = error as NSError
+                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+            }
+        }
+    }
+    
+    @IBAction func commitButtonPressed(_ sender: Any) {
+        print("commit button pressed")
+        
+        storeDrawing()
     }
     
 }
