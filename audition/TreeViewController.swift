@@ -67,6 +67,8 @@ class TreeViewController: UIViewController, UICollectionViewDelegate, UICollecti
             cell.imageView.image = UIImage(data: thumbnailData as! Data, scale: 4)
 //            cell.imageView.image = UIImage(systemName: "person.crop.circle.fill")
             print("test", thumbnailData)
+            cell.layer.borderColor = UIColor.black.cgColor
+            cell.layer.borderWidth = 1
         }
         return cell
     }
