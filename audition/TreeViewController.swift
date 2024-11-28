@@ -11,6 +11,13 @@ import CoreData
 let appDelegate = UIApplication.shared.delegate as! AppDelegate
 let context = appDelegate.persistentContainer.viewContext
 
+extension Data {
+    public var bytes: [UInt8]
+    {
+        return [UInt8](self)
+    }
+}
+
 class TreeViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource {
 
     @IBOutlet weak var collectionView: UICollectionView!
@@ -21,6 +28,9 @@ class TreeViewController: UIViewController, UICollectionViewDelegate, UICollecti
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        collectionView.delegate = self
+        collectionView.dataSource = self
 
         // Do any additional setup after loading the view.
         drawingList = retrieveDrawings()
@@ -29,13 +39,16 @@ class TreeViewController: UIViewController, UICollectionViewDelegate, UICollecti
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        print("collection view has \(drawingList.count) drawings")
         return drawingList.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: treeViewCellIdentifier, for: indexPath) as! TreeCollectionViewCell
         if let thumbnailData = drawingList[indexPath.row].value(forKey: "thumbnail") {
-            cell.imageView.image = UIImage(data: thumbnailData as! Data)
+            cell.imageView.image = UIImage(data: thumbnailData as! Data, scale: 4)
+//            cell.imageView.image = UIImage(systemName: "person.crop.circle.fill")
+            print("test", thumbnailData)
         }
         return cell
     }

@@ -18,15 +18,12 @@ class ViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserv
     let canvasWidth: CGFloat = 768
     let canvasOverscrollHeight: CGFloat = 500
     
-    var drawing = PKDrawing()
-    
     let toolPicker = PKToolPicker()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         canvasView.delegate = self
-        canvasView.drawing = drawing
         canvasView.drawingPolicy = .anyInput
         toolPicker.setVisible(true, forFirstResponder: canvasView)
         toolPicker.addObserver(canvasView)
@@ -51,8 +48,9 @@ class ViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserv
         // store a drawing commit into core data
         let name = "Drawing \(count)"
         let currentDate = Date()
-        let currentDrawing = drawing.dataRepresentation()
-        let currentThumbnail = drawing.image(from: drawing.bounds, scale: 1.0).jpegData(compressionQuality: 0.1)
+        let currentDrawing = canvasView.drawing.dataRepresentation()
+        let currentThumbnail = canvasView.drawing.image(from: canvasView.drawing.bounds, scale: 1.0).jpegData(compressionQuality: 1.0)
+        print(currentThumbnail! as Data)
         count += 1
         
         let entry = NSEntityDescription.insertNewObject(
@@ -84,8 +82,11 @@ class ViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserv
     @IBAction func commitButtonPressed(_ sender: Any) {
         print("commit button pressed")
         
-        storeDrawing()
+        if canvasView.drawing.bounds.isEmpty {
+            print("Drawing is empty, skipping commit.")
+        } else {
+            storeDrawing()
+        }
     }
     
 }
-
