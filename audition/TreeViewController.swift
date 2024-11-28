@@ -36,6 +36,24 @@ class TreeViewController: UIViewController, UICollectionViewDelegate, UICollecti
         drawingList = retrieveDrawings()
         collectionView.reloadData()
         
+        collectionView.alwaysBounceVertical = true
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // programatically make the cells square
+        // use 3 columns
+        let layout = UICollectionViewFlowLayout()
+        let containerWidth = collectionView.bounds.width
+        let numColumns = 3.0
+        let cellSize = (containerWidth) / numColumns
+        
+        layout.itemSize = CGSize(width: cellSize, height: cellSize)
+        layout.minimumLineSpacing = 0
+        layout.minimumInteritemSpacing = 0
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        
+        collectionView.collectionViewLayout = layout
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
