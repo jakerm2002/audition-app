@@ -75,6 +75,18 @@ class Commit: AuditionObject, CustomStringConvertible {
         super.init(type: AuditionObjectType.commit)
     }
     
+    static func == (lhs: Commit, rhs: Commit) -> Bool {
+        return lhs.type == rhs.type && lhs.tree == rhs.tree && lhs.parents == rhs.parents && lhs.message == rhs.message && lhs.timestamp == rhs.timestamp
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(type)
+        hasher.combine(tree)
+        hasher.combine(parents)
+        hasher.combine(message)
+        hasher.combine(timestamp)
+    }
+    
     public var description: String {
         let treeDescription: String = "tree \(tree)"
         
