@@ -58,14 +58,17 @@ class Tree: AuditionObject, CustomStringConvertible {
         super.init(type: AuditionObjectType.tree)
     }
     
+    var plist: [Any] {
+        var plist: [Any] = []
+        for item in entries {
+            plist.append([item.type.rawValue, item.hash, item.name])
+        }
+        return plist
+    }
+    
     // create a hash using all of the entries of a tree
     var sha256HashValue: SHA256Digest? {
         do {
-            var plist: [Any] = []
-            for item in entries {
-                plist.append([item.type.rawValue, item.hash, item.name])
-            }
-            print(plist)
             let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .binary, options: .zero)
             return SHA256.hash(data: data)
         } catch {
@@ -109,10 +112,12 @@ class Commit: AuditionObject, CustomStringConvertible, Hashable {
         hasher.combine(timestamp)
     }
     
+    var plist: [Any] {
+        return [type.rawValue, tree, parents, message, timestamp]
+    }
+    
     // create a hash using all of the contents of a commit: type, tree, parents, message, and timestamp
     var sha256HashValue: SHA256Digest? {
-        let plist: [Any] = [type.rawValue, tree, parents, message, timestamp]
-        
         do {
             let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .binary, options: .zero)
             return SHA256.hash(data: data)
