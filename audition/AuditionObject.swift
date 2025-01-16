@@ -141,3 +141,49 @@ class Commit: AuditionObject, CustomStringConvertible, Hashable {
         return "\(treeDescription)\n\(parentsDescription)\n\(timestamp)\n\n\(message)"
     }
 }
+
+extension Data{
+    public func sha256() -> String{
+        return hexStringFromData(input: self as NSData)
+    }
+
+    private func hexStringFromData(input: NSData) -> String {
+        var bytes = [UInt8](repeating: 0, count: input.length)
+        input.getBytes(&bytes, length: input.length)
+
+        var hexString = ""
+        for byte in bytes {
+            hexString += String(format:"%02x", UInt8(byte))
+        }
+        return hexString
+    }
+}
+
+extension SHA256Digest{
+    public func sha256() -> String{
+        return hexStringFromData(input: Data(self) as NSData)
+    }
+
+    private func hexStringFromData(input: NSData) -> String {
+        var bytes = [UInt8](repeating: 0, count: input.length)
+        input.getBytes(&bytes, length: input.length)
+
+        var hexString = ""
+        for byte in bytes {
+            hexString += String(format:"%02x", UInt8(byte))
+        }
+        return hexString
+    }
+    
+    public var hexString: String {
+        let input = Data(self) as NSData
+        var bytes = [UInt8](repeating: 0, count: input.length)
+        input.getBytes(&bytes, length: input.length)
+        
+        var hexString = ""
+        for byte in bytes {
+            hexString += String(format:"%02x", UInt8(byte))
+        }
+        return hexString
+    }
+}
