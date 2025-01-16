@@ -6,11 +6,12 @@
 //
 
 import Foundation
+import CryptoKit
 
-enum AuditionObjectType {
-    case blob
-    case tree
-    case commit
+enum AuditionObjectType: String {
+    case blob = "blob"
+    case tree = "tree"
+    case commit = "commit"
 }
 
 class AuditionObject {
@@ -27,6 +28,11 @@ class Blob: AuditionObject, CustomStringConvertible {
     init(contents: Data) {
         self.contents = contents
         super.init(type: AuditionObjectType.blob)
+    }
+    
+    // create a hash using the contents of a blob
+    var sha256HashValue: SHA256Digest? {
+        return SHA256.hash(data: contents)
     }
     
     public var description: String {
@@ -52,6 +58,17 @@ class Tree: AuditionObject, CustomStringConvertible {
         super.init(type: AuditionObjectType.tree)
     }
     
+    // create a hash using all of the entries of a tree
+    var sha256HashValue: SHA256Digest? {
+        do {
+            let data = try PropertyListSerialization.data(fromPropertyList: entries, format: .binary, options: .zero)
+            return SHA256.hash(data: data)
+        } catch {
+            print("Unable to serialize Tree to plist:\n\(self.description)")
+            return nil
+        }
+    }
+    
     public var description: String {
         var entriesStr: [String] = []
         for item in entries {
@@ -61,7 +78,7 @@ class Tree: AuditionObject, CustomStringConvertible {
     }
 }
 
-class Commit: AuditionObject, CustomStringConvertible {
+class Commit: AuditionObject, CustomStringConvertible, Hashable {
     let tree: String
     let parents: [String]
     let message: String
@@ -85,6 +102,19 @@ class Commit: AuditionObject, CustomStringConvertible {
         hasher.combine(parents)
         hasher.combine(message)
         hasher.combine(timestamp)
+    }
+    
+    // create a hash using all of the contents of a commit: type, tree, parents, message, and timestamp
+    var sha256HashValue: SHA256Digest? {
+        let plist: [Any] = [type.rawValue, tree, parents, message, timestamp]
+        
+        do {
+            let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .binary, options: .zero)
+            return SHA256.hash(data: data)
+        } catch {
+            print("Unable to serialize Commit to plist:\n\(self.description)")
+            return nil
+        }
     }
     
     public var description: String {
