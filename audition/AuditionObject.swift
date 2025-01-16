@@ -21,27 +21,43 @@ class AuditionObject {
     }
 }
 
-class Blob: AuditionObject {
+class Blob: AuditionObject, CustomStringConvertible {
     let contents: Data
     
     init(contents: Data) {
         self.contents = contents
         super.init(type: AuditionObjectType.blob)
     }
+    
+    public var description: String {
+        return contents.description
+    }
 }
 
-struct TreeEntry {
+struct TreeEntry: CustomStringConvertible {
     let type: AuditionObjectType
     let hash: String
     let name: String
+    
+    public var description: String {
+        return "\(type) \(hash)      \(name)"
+    }
 }
 
-class Tree: AuditionObject {
+class Tree: AuditionObject, CustomStringConvertible {
     let entries: [TreeEntry]
     
     init(entries: [TreeEntry]) {
         self.entries = entries
         super.init(type: AuditionObjectType.tree)
+    }
+    
+    public var description: String {
+        var entriesStr: [String] = []
+        for item in entries {
+            entriesStr.append(item.description)
+        }
+        return entriesStr.joined(separator: "\n")
     }
 }
 
@@ -60,9 +76,9 @@ class Commit: AuditionObject, CustomStringConvertible {
     }
     
     public var description: String {
-        var treeDescription: String = "tree \(tree)"
+        let treeDescription: String = "tree \(tree)"
         
-        var parentsDescription: String = {
+        let parentsDescription: String = {
             var parentsAppend = parents
             for (idx, item) in parentsAppend.enumerated() {
                 parentsAppend[idx] = "parent \(item)"

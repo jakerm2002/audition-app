@@ -24,6 +24,7 @@
 /* Begin PBXFileReference section */
 		665353682D377A6C0038930B /* TreeNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeNode.swift; sourceTree = "<group>"; };
 		6653536A2D38A26B0038930B /* AuditionObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuditionObject.swift; sourceTree = "<group>"; };
+		6653536C2D38AAF40038930B /* AuditionObject.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = AuditionObject.playground; path = /Users/jakemedina/Developer/AuditionObject.playground; sourceTree = "<absolute>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		6669FDF42B094AAF00D8D17C /* TreeCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeCollectionViewCell.swift; sourceTree = "<group>"; };
 		668F96922A06302300E6B96F /* audition.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = audition.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		668F96952A06302300E6B96F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -68,6 +69,7 @@
 		668F96942A06302300E6B96F /* audition */ = {
 			isa = PBXGroup;
 			children = (
+				6653536C2D38AAF40038930B /* AuditionObject.playground */,
 				6653536A2D38A26B0038930B /* AuditionObject.swift */,
 				665353682D377A6C0038930B /* TreeNode.swift */,
 				669872832B0943EE008A431A /* TreeViewController.swift */,
