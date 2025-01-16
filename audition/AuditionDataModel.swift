@@ -1,0 +1,45 @@
+//
+//  AuditionDataModel.swift
+//  audition
+//
+//  Created by Jake Medina on 1/15/25.
+//
+
+import Foundation
+
+class AuditionDataModel {
+    private var objects: [String : AuditionObject]
+    
+    init() {
+        self.objects = [:]
+    }
+    
+    init(objects: [String : AuditionObject]) {
+        self.objects = objects
+    }
+    
+    // write (bool): if true, takes the data and writes it to a blob
+    // returns: the SHA-1 hash of the data
+    // should mimic `git hash-object [file]`
+    func hash(data: Data, write: Bool) -> String {
+        return ""
+    }
+    
+    // add a new file to the staging area (aka the 'index')
+    // should mimic `git update-index --add --cacheinfo [hash] [filename]`
+    func add() {
+        
+    }
+    
+    // creates a tree object from the state of the index
+    // should mimic git write-tree
+    func writeTree() {
+        // add the tree object to the `objects` array
+    }
+    
+    // takes the SHA-1 hash of a tree
+    func commitTree(tree: String, parents: [String], message: String) {
+        // generate the SHA-1 hash of a commit
+        // add the commit object to the `objects` array
+    }
+}
