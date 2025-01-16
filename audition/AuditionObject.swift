@@ -61,7 +61,12 @@ class Tree: AuditionObject, CustomStringConvertible {
     // create a hash using all of the entries of a tree
     var sha256HashValue: SHA256Digest? {
         do {
-            let data = try PropertyListSerialization.data(fromPropertyList: entries, format: .binary, options: .zero)
+            var plist: [Any] = []
+            for item in entries {
+                plist.append([item.type.rawValue, item.hash, item.name])
+            }
+            print(plist)
+            let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .binary, options: .zero)
             return SHA256.hash(data: data)
         } catch {
             print("Unable to serialize Tree to plist:\n\(self.description)")
