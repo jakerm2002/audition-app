@@ -8,21 +8,26 @@
 import Foundation
 
 class AuditionDataModel {
-    private var objects: [String : AuditionObject]
+    private var objects: [String : AuditionObjectProtocol]
     
     init() {
         self.objects = [:]
     }
     
-    init(objects: [String : AuditionObject]) {
+    init(objects: [String : AuditionObjectProtocol]) {
         self.objects = objects
     }
     
-    // write (bool): if true, takes the data and writes it to a blob
+    // params:
+    //      write (bool): if true, takes the data and writes it to a blob
     // returns: the SHA-1 hash of the data
     // should mimic `git hash-object [file]`
-    func hash(data: Data, write: Bool) -> String {
-        return ""
+    func hash(obj: AuditionObjectProtocol, type: AuditionObjectType, write: Bool) -> String {
+        if write {
+            objects[obj.sha256DigestValue!] = obj
+        }
+        
+        return obj.sha256DigestValue!
     }
     
     // add a new file to the staging area (aka the 'index')

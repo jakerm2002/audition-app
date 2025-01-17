@@ -8,31 +8,38 @@
 import Foundation
 import CryptoKit
 
+protocol SHA256Hashable {
+    var sha256DigestObject: SHA256Digest? { get }
+    var sha256DigestValue: String? { get }
+}
+
+protocol AuditionObjectProtocol: SHA256Hashable {
+    var type: AuditionObjectType { get }
+}
+
 enum AuditionObjectType: String {
     case blob = "blob"
     case tree = "tree"
     case commit = "commit"
 }
 
-class AuditionObject {
+class Blob: AuditionObjectProtocol, CustomStringConvertible {
     let type: AuditionObjectType
-    
-    init(type: AuditionObjectType) {
-        self.type = type
-    }
-}
-
-class Blob: AuditionObject, CustomStringConvertible {
     let contents: Data
     
     init(contents: Data) {
+        type = AuditionObjectType.blob
         self.contents = contents
-        super.init(type: AuditionObjectType.blob)
     }
     
     // create a hash using the contents of a blob
-    var sha256HashValue: SHA256Digest? {
+    var sha256DigestObject: SHA256Digest? {
         return SHA256.hash(data: contents)
+    }
+    
+    // create a hash using the contents of a blob
+    var sha256DigestValue: String? {
+        return sha256DigestObject?.hexString
     }
     
     public var description: String {
@@ -50,12 +57,13 @@ struct TreeEntry: CustomStringConvertible {
     }
 }
 
-class Tree: AuditionObject, CustomStringConvertible {
+class Tree: AuditionObjectProtocol, CustomStringConvertible {
+    let type: AuditionObjectType
     let entries: [TreeEntry]
     
     init(entries: [TreeEntry]) {
+        type = AuditionObjectType.tree
         self.entries = entries
-        super.init(type: AuditionObjectType.tree)
     }
     
     var plist: [Any] {
@@ -67,7 +75,7 @@ class Tree: AuditionObject, CustomStringConvertible {
     }
     
     // create a hash using all of the entries of a tree
-    var sha256HashValue: SHA256Digest? {
+    var sha256DigestObject: SHA256Digest? {
         do {
             let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .binary, options: .zero)
             return SHA256.hash(data: data)
@@ -75,6 +83,10 @@ class Tree: AuditionObject, CustomStringConvertible {
             print("Unable to serialize Tree to plist:\n\(self.description)")
             return nil
         }
+    }
+    
+    var sha256DigestValue: String? {
+        sha256DigestObject?.hexString
     }
     
     public var description: String {
@@ -86,18 +98,19 @@ class Tree: AuditionObject, CustomStringConvertible {
     }
 }
 
-class Commit: AuditionObject, CustomStringConvertible, Hashable {
+class Commit: AuditionObjectProtocol, CustomStringConvertible, Hashable {
+    let type: AuditionObjectType
     let tree: String
     let parents: [String]
     let message: String
     let timestamp: Date
     
     init(tree: String, parents: [String], message: String, timestamp: Date) {
+        self.type = AuditionObjectType.commit
         self.tree = tree
         self.parents = parents
         self.message = message
         self.timestamp = timestamp
-        super.init(type: AuditionObjectType.commit)
     }
     
     static func == (lhs: Commit, rhs: Commit) -> Bool {
@@ -117,7 +130,7 @@ class Commit: AuditionObject, CustomStringConvertible, Hashable {
     }
     
     // create a hash using all of the contents of a commit: type, tree, parents, message, and timestamp
-    var sha256HashValue: SHA256Digest? {
+    var sha256DigestObject: SHA256Digest? {
         do {
             let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .binary, options: .zero)
             return SHA256.hash(data: data)
@@ -125,6 +138,10 @@ class Commit: AuditionObject, CustomStringConvertible, Hashable {
             print("Unable to serialize Commit to plist:\n\(self.description)")
             return nil
         }
+    }
+    
+    var sha256DigestValue: String? {
+        return sha256DigestObject?.hexString
     }
     
     public var description: String {
