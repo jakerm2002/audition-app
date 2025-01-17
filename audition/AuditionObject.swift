@@ -47,6 +47,7 @@ class Blob: AuditionObjectProtocol {
     }
 }
 
+// TODO: implement Comparable
 struct TreeEntry: CustomStringConvertible {
     let type: AuditionObjectType
     let hash: String
@@ -59,6 +60,8 @@ struct TreeEntry: CustomStringConvertible {
 
 class Tree: AuditionObjectProtocol {
     let type: AuditionObjectType
+    
+    // Tree entries MUST be sorted alphabetically by their name
     let entries: [TreeEntry]
     
     init(entries: [TreeEntry]) {
