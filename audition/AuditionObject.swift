@@ -13,7 +13,7 @@ protocol SHA256Hashable {
     var sha256DigestValue: String? { get }
 }
 
-protocol AuditionObjectProtocol: SHA256Hashable {
+protocol AuditionObjectProtocol: SHA256Hashable, CustomStringConvertible {
     var type: AuditionObjectType { get }
 }
 
@@ -23,7 +23,7 @@ enum AuditionObjectType: String {
     case commit = "commit"
 }
 
-class Blob: AuditionObjectProtocol, CustomStringConvertible {
+class Blob: AuditionObjectProtocol {
     let type: AuditionObjectType
     let contents: Data
     
@@ -57,7 +57,7 @@ struct TreeEntry: CustomStringConvertible {
     }
 }
 
-class Tree: AuditionObjectProtocol, CustomStringConvertible {
+class Tree: AuditionObjectProtocol {
     let type: AuditionObjectType
     let entries: [TreeEntry]
     
@@ -98,7 +98,7 @@ class Tree: AuditionObjectProtocol, CustomStringConvertible {
     }
 }
 
-class Commit: AuditionObjectProtocol, CustomStringConvertible, Hashable {
+class Commit: AuditionObjectProtocol, Hashable {
     let type: AuditionObjectType
     let tree: String
     let parents: [String]

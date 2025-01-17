@@ -7,7 +7,7 @@
 
 import Foundation
 
-class AuditionDataModel {
+class AuditionDataModel: CustomStringConvertible {
     private var objects: [String : AuditionObjectProtocol]
     
     init() {
@@ -22,7 +22,7 @@ class AuditionDataModel {
     //      write (bool): if true, takes the data and writes it to a blob
     // returns: the SHA-1 hash of the data
     // should mimic `git hash-object [file]`
-    func hash(obj: AuditionObjectProtocol, type: AuditionObjectType, write: Bool) -> String {
+    func hash(obj: AuditionObjectProtocol, write: Bool) -> String {
         if write {
             objects[obj.sha256DigestValue!] = obj
         }
@@ -46,5 +46,9 @@ class AuditionDataModel {
     func commitTree(tree: String, parents: [String], message: String) {
         // generate the SHA-1 hash of a commit
         // add the commit object to the `objects` array
+    }
+    
+    public var description: String {
+        return "\(objects as AnyObject)"
     }
 }
