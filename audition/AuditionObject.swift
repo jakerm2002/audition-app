@@ -13,6 +13,10 @@ protocol SHA256Hashable {
     var sha256DigestValue: String? { get }
 }
 
+protocol Plistable {
+    var plist: [Any] { get }
+}
+
 protocol AuditionObjectProtocol: SHA256Hashable, CustomStringConvertible {
     var type: AuditionObjectType { get }
 }
@@ -48,10 +52,15 @@ class Blob: AuditionObjectProtocol {
 }
 
 // TODO: implement Comparable
-struct TreeEntry: CustomStringConvertible {
+// stores information about either trees or blobs
+struct TreeEntry: CustomStringConvertible, Plistable {
     let type: AuditionObjectType
     let hash: String
     let name: String
+    
+    var plist: [Any] {
+        return [type.rawValue, hash, name]
+    }
     
     public var description: String {
         return "\(type) \(hash)      \(name)"
@@ -72,7 +81,7 @@ class Tree: AuditionObjectProtocol {
     var plist: [Any] {
         var plist: [Any] = []
         for item in entries {
-            plist.append([item.type.rawValue, item.hash, item.name])
+            plist.append(item.plist)
         }
         return plist
     }
