@@ -7,15 +7,22 @@
 
 import Foundation
 
+enum AuditionError: Error {
+    case runtimeError(String)
+}
+
 class AuditionDataModel: CustomStringConvertible {
     private var objects: [String : AuditionObjectProtocol]
+    private var index: [TreeEntry]
     
     init() {
         self.objects = [:]
+        self.index = []
     }
     
-    init(objects: [String : AuditionObjectProtocol]) {
+    init(objects: [String : AuditionObjectProtocol], index: [TreeEntry]) {
         self.objects = objects
+        self.index = index
     }
     
     // params:
@@ -32,20 +39,35 @@ class AuditionDataModel: CustomStringConvertible {
     
     // add a new file to the staging area (aka the 'index')
     // should mimic `git update-index --add --cacheinfo [hash] [filename]`
-    func add() {
+    // the hash of the file should already exist in `objects`
+    func add(sha256DigestValue: String, name: String) throws {
+        guard objects[sha256DigestValue] != nil else {
+            throw AuditionError.runtimeError("Hash \(sha256DigestValue) does not exist in AuditionDataModel.objects")
+        }
         
+        let obj: AuditionObjectProtocol = objects[sha256DigestValue]!
+        index.append(TreeEntry(type: obj.type, hash: obj.sha256DigestValue!, name: name))
     }
     
     // creates a tree object from the state of the index
     // should mimic git write-tree
     func writeTree() {
-        // add the tree object to the `objects` array
+        let tree = Tree(entries: index)
+        objects[tree.sha256DigestValue!] = tree
     }
     
     // takes the SHA-1 hash of a tree
-    func commitTree(tree: String, parents: [String], message: String) {
-        // generate the SHA-1 hash of a commit
-        // add the commit object to the `objects` array
+    func commitTree(tree: String, parents: [String] = [], message: String) throws {
+        guard objects[tree] != nil else {
+            throw AuditionError.runtimeError("Tree cannot be committed because the hash \(tree) does not exist in AuditionDataModel.objects")
+        }
+        
+        guard objects[tree]?.type == .tree else {
+            throw AuditionError.runtimeError("Tree cannot be committed because the hash \(tree) does not refer to a tree")
+        }
+        
+        let commit = Commit(tree: tree, parents: parents, message: message, timestamp: .now)
+        objects[commit.sha256DigestValue!] = commit
     }
     
     public var description: String {
