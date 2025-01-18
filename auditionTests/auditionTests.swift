@@ -46,19 +46,19 @@ struct auditionTests {
         
         let a1 = AuditionDataModel()
         _ = a1.hash(obj: b1, write: true)
-        try a1.add(sha256DigestValue: b1.sha256DigestValue!, name: "test.txt")
+        try a1.updateIndex(sha256DigestValue: b1.sha256DigestValue!, name: "test.txt")
         
         #expect(a1.index == [TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: "test.txt")])
         
         let b2 = Blob(contents: Data(String(stringLiteral: "version 2").utf8))
         _ = a1.hash(obj: b2, write: true)
-        try a1.add(sha256DigestValue: b2.sha256DigestValue!, name: "test.txt")
+        try a1.updateIndex(sha256DigestValue: b2.sha256DigestValue!, name: "test.txt")
         
         #expect(a1.index == [TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: "test.txt")])
         
         let b3 = Blob(contents: Data(String(stringLiteral: "new file").utf8))
         _ = a1.hash(obj: b3, write: true)
-        try a1.add(sha256DigestValue: b3.sha256DigestValue!, name: "new.txt")
+        try a1.updateIndex(sha256DigestValue: b3.sha256DigestValue!, name: "new.txt")
         
         #expect(a1.index == [TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: "test.txt"), TreeEntry(type: .blob, hash: b3.sha256DigestValue!, name: "new.txt")])
     }
@@ -67,13 +67,13 @@ struct auditionTests {
         let b1 = Blob(contents: Data(String(stringLiteral: "version 1").utf8))
         let a1 = AuditionDataModel()
         _ = a1.hash(obj: b1, write: true)
-        try a1.add(sha256DigestValue: b1.sha256DigestValue!, name: "test.txt")
+        try a1.updateIndex(sha256DigestValue: b1.sha256DigestValue!, name: "test.txt")
         let b2 = Blob(contents: Data(String(stringLiteral: "version 2").utf8))
         _ = a1.hash(obj: b2, write: true)
-        try a1.add(sha256DigestValue: b2.sha256DigestValue!, name: "test.txt")
+        try a1.updateIndex(sha256DigestValue: b2.sha256DigestValue!, name: "test.txt")
         let b3 = Blob(contents: Data(String(stringLiteral: "new file").utf8))
         _ = a1.hash(obj: b3, write: true)
-        try a1.add(sha256DigestValue: b3.sha256DigestValue!, name: "new.txt")
+        try a1.updateIndex(sha256DigestValue: b3.sha256DigestValue!, name: "new.txt")
         
         let t1Hash = a1.writeTree()
         let t1 = a1.objects[t1Hash] as! Tree
@@ -86,13 +86,13 @@ struct auditionTests {
         let b1 = Blob(contents: Data(String(stringLiteral: "version 1").utf8))
         let a1 = AuditionDataModel()
         _ = a1.hash(obj: b1, write: true)
-        try a1.add(sha256DigestValue: b1.sha256DigestValue!, name: "test.txt")
+        try a1.updateIndex(sha256DigestValue: b1.sha256DigestValue!, name: "test.txt")
         let b2 = Blob(contents: Data(String(stringLiteral: "version 2").utf8))
         _ = a1.hash(obj: b2, write: true)
-        try a1.add(sha256DigestValue: b2.sha256DigestValue!, name: "test.txt")
+        try a1.updateIndex(sha256DigestValue: b2.sha256DigestValue!, name: "test.txt")
         let b3 = Blob(contents: Data(String(stringLiteral: "new file").utf8))
         _ = a1.hash(obj: b3, write: true)
-        try a1.add(sha256DigestValue: b3.sha256DigestValue!, name: "new.txt")
+        try a1.updateIndex(sha256DigestValue: b3.sha256DigestValue!, name: "new.txt")
         
         let t1Hash = a1.writeTree()
         let t1 = a1.objects[t1Hash] as! Tree
@@ -106,13 +106,13 @@ struct auditionTests {
         let b1 = Blob(contents: Data(String(stringLiteral: "version 1").utf8))
         let a1 = AuditionDataModel()
         _ = a1.hash(obj: b1, write: true)
-        try a1.add(sha256DigestValue: b1.sha256DigestValue!, name: "test.txt")
+        try a1.updateIndex(sha256DigestValue: b1.sha256DigestValue!, name: "test.txt")
         let b2 = Blob(contents: Data(String(stringLiteral: "version 2").utf8))
         _ = a1.hash(obj: b2, write: true)
-        try a1.add(sha256DigestValue: b2.sha256DigestValue!, name: "test.txt")
+        try a1.updateIndex(sha256DigestValue: b2.sha256DigestValue!, name: "test.txt")
         let b3 = Blob(contents: Data(String(stringLiteral: "new file").utf8))
         _ = a1.hash(obj: b3, write: true)
-        try a1.add(sha256DigestValue: b3.sha256DigestValue!, name: "new.txt")
+        try a1.updateIndex(sha256DigestValue: b3.sha256DigestValue!, name: "new.txt")
         
         let t1Hash = a1.writeTree()
 
@@ -126,4 +126,13 @@ struct auditionTests {
         #expect(c1.message == "commit number one")
         #expect(c1.timestamp.distance(to: currentTime) < TimeInterval(1))
     }
+    
+    @Test func plistOfTree() async throws {
+        
+    }
+    
+    @Test func plistOfCommit() async throws {
+        
+    }
+    
 }

@@ -40,7 +40,7 @@ class AuditionDataModel: CustomStringConvertible {
     // add a new file to the staging area (aka the 'index')
     // should mimic `git update-index --add --cacheinfo [hash] [filename]`
     // the hash of the file should already exist in `objects`
-    func add(sha256DigestValue: String, name: String) throws {
+    func updateIndex(sha256DigestValue: String, name: String) throws {
         guard objects[sha256DigestValue] != nil else {
             throw AuditionError.runtimeError("Hash \(sha256DigestValue) does not exist in AuditionDataModel.objects")
         }
@@ -66,7 +66,10 @@ class AuditionDataModel: CustomStringConvertible {
         return tree.sha256DigestValue!
     }
     
-    // takes the SHA-256 hash of a tree
+    // params:
+    //      tree: the SHA-256 hash of a tree
+    //      parents: the SHA-256 hashes of any parent commits
+    //      message: the commit message
     func commitTree(tree: String, parents: [String] = [], message: String) throws -> String {
         guard objects[tree] != nil else {
             throw AuditionError.runtimeError("Tree cannot be committed because the hash \(tree) does not exist in AuditionDataModel.objects")
