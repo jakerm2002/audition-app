@@ -72,9 +72,20 @@
                                     </connections>
                                 </button>
                             </barButtonItem>
+                            <barButtonItem style="plain" id="5OU-mx-qti">
+                                <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="efi-HK-k90">
+                                    <rect key="frame" x="273" y="7.5" width="182" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <state key="normal" title="Button"/>
+                                    <buttonConfiguration key="configuration" style="plain" title="See Log"/>
+                                    <connections>
+                                        <segue destination="bSB-26-alT" kind="show" id="BHd-dY-Xxe"/>
+                                    </connections>
+                                </button>
+                            </barButtonItem>
                             <barButtonItem style="plain" id="CCJ-d4-VQ2">
                                 <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="jSf-Ht-dqJ">
-                                    <rect key="frame" x="273" y="7.5" width="182" height="35"/>
+                                    <rect key="frame" x="83" y="7.5" width="182" height="35"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <state key="normal" title="Button"/>
                                     <buttonConfiguration key="configuration" style="plain" title="See Tree"/>
@@ -150,6 +161,56 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="f26-Ex-hQ9" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2172.439024390244" y="82.881355932203391"/>
+        </scene>
+        <!--Log View Controller-->
+        <scene sceneID="w9k-ZN-hKy">
+            <objects>
+                <viewController id="bSB-26-alT" customClass="LogViewController" customModule="audition" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="rPy-Xz-kcw">
+                        <rect key="frame" x="0.0" y="0.0" width="820" height="1180"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="nKl-qO-V9M">
+                                <rect key="frame" x="0.0" y="74" width="820" height="1086"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <prototypes>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="LogViewCellIdentifier" textLabel="gvL-ew-0II" style="IBUITableViewCellStyleDefault" id="f5v-Hy-54i">
+                                        <rect key="frame" x="0.0" y="50" width="820" height="43.5"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="f5v-Hy-54i" id="ghx-Sq-Sby">
+                                            <rect key="frame" x="0.0" y="0.0" width="820" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="gvL-ew-0II">
+                                                    <rect key="frame" x="16" y="0.0" width="788" height="43.5"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="0.0"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </prototypes>
+                            </tableView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="OEy-5n-YDD"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="nKl-qO-V9M" firstAttribute="leading" secondItem="OEy-5n-YDD" secondAttribute="leading" id="Dtg-Cw-cpB"/>
+                            <constraint firstItem="nKl-qO-V9M" firstAttribute="top" secondItem="OEy-5n-YDD" secondAttribute="top" id="LqF-bY-bY3"/>
+                            <constraint firstItem="nKl-qO-V9M" firstAttribute="trailing" secondItem="OEy-5n-YDD" secondAttribute="trailing" id="fEc-w5-hU5"/>
+                            <constraint firstItem="nKl-qO-V9M" firstAttribute="bottom" secondItem="OEy-5n-YDD" secondAttribute="bottom" id="qhF-dl-Jp2"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="kC8-qG-3dv"/>
+                    <connections>
+                        <outlet property="tableView" destination="nKl-qO-V9M" id="qSp-Cg-u4C"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="PmT-CW-Yhe" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2171.7073170731705" y="780.50847457627128"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="heT-Qd-g9x">
