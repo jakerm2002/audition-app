@@ -101,4 +101,29 @@ struct auditionTests {
             TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: "test.txt")
         ])
     }
+    
+    @Test func commitTree() async throws {
+        let b1 = Blob(contents: Data(String(stringLiteral: "version 1").utf8))
+        let a1 = AuditionDataModel()
+        _ = a1.hash(obj: b1, write: true)
+        try a1.add(sha256DigestValue: b1.sha256DigestValue!, name: "test.txt")
+        let b2 = Blob(contents: Data(String(stringLiteral: "version 2").utf8))
+        _ = a1.hash(obj: b2, write: true)
+        try a1.add(sha256DigestValue: b2.sha256DigestValue!, name: "test.txt")
+        let b3 = Blob(contents: Data(String(stringLiteral: "new file").utf8))
+        _ = a1.hash(obj: b3, write: true)
+        try a1.add(sha256DigestValue: b3.sha256DigestValue!, name: "new.txt")
+        
+        let t1Hash = a1.writeTree()
+
+        let c1Hash = try a1.commitTree(tree: t1Hash, message: "commit number one")
+        let currentTime: Date = .now
+        let c1 = a1.objects[c1Hash] as! Commit
+        
+        #expect(c1.type == .commit)
+        #expect(c1.tree == t1Hash)
+        #expect(c1.parents == [])
+        #expect(c1.message == "commit number one")
+        #expect(c1.timestamp.distance(to: currentTime) < TimeInterval(1))
+    }
 }

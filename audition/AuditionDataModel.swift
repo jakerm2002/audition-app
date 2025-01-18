@@ -67,7 +67,7 @@ class AuditionDataModel: CustomStringConvertible {
     }
     
     // takes the SHA-256 hash of a tree
-    func commitTree(tree: String, parents: [String] = [], message: String) throws {
+    func commitTree(tree: String, parents: [String] = [], message: String) throws -> String {
         guard objects[tree] != nil else {
             throw AuditionError.runtimeError("Tree cannot be committed because the hash \(tree) does not exist in AuditionDataModel.objects")
         }
@@ -78,6 +78,8 @@ class AuditionDataModel: CustomStringConvertible {
         
         let commit = Commit(tree: tree, parents: parents, message: message, timestamp: .now)
         objects[commit.sha256DigestValue!] = commit
+        
+        return commit.sha256DigestValue!
     }
     
     public var description: String {
