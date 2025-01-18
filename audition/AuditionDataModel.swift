@@ -12,8 +12,8 @@ enum AuditionError: Error {
 }
 
 class AuditionDataModel: CustomStringConvertible {
-    private var objects: [String : AuditionObjectProtocol]
-    private var index: [TreeEntry]
+    private(set) var objects: [String : AuditionObjectProtocol]
+    private(set) var index: [TreeEntry]
     
     init() {
         self.objects = [:]

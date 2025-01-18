@@ -21,7 +21,7 @@ protocol AuditionObjectProtocol: SHA256Hashable, CustomStringConvertible {
     var type: AuditionObjectType { get }
 }
 
-enum AuditionObjectType: String {
+enum AuditionObjectType: String, Equatable {
     case blob = "blob"
     case tree = "tree"
     case commit = "commit"
@@ -53,7 +53,7 @@ class Blob: AuditionObjectProtocol {
 
 // TODO: implement Comparable
 // stores information about either trees or blobs
-struct TreeEntry: CustomStringConvertible, Plistable {
+struct TreeEntry: CustomStringConvertible, Plistable, Equatable {
     let type: AuditionObjectType
     let hash: String
     let name: String
