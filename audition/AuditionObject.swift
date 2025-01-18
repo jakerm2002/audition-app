@@ -55,7 +55,7 @@ class Blob: AuditionObjectProtocol {
 // stores information about either trees or blobs
 struct TreeEntry: CustomStringConvertible, Plistable, Equatable {
     let type: AuditionObjectType
-    let hash: String
+    var hash: String
     let name: String
     
     var plist: [Any] {

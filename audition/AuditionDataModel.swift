@@ -44,8 +44,16 @@ class AuditionDataModel: CustomStringConvertible {
         guard objects[sha256DigestValue] != nil else {
             throw AuditionError.runtimeError("Hash \(sha256DigestValue) does not exist in AuditionDataModel.objects")
         }
-        
         let obj: AuditionObjectProtocol = objects[sha256DigestValue]!
+        
+        // check if the index already contains an entry for this filename
+        for (idx, item) in index.enumerated() {
+            if item.name == name {
+                index[idx].hash = obj.sha256DigestValue!
+                return
+            }
+        }
+        
         index.append(TreeEntry(type: obj.type, hash: obj.sha256DigestValue!, name: name))
     }
     
