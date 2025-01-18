@@ -62,4 +62,43 @@ struct auditionTests {
         
         #expect(a1.index == [TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: "test.txt"), TreeEntry(type: .blob, hash: b3.sha256DigestValue!, name: "new.txt")])
     }
+    
+    @Test func writeTree() async throws {
+        let b1 = Blob(contents: Data(String(stringLiteral: "version 1").utf8))
+        let a1 = AuditionDataModel()
+        _ = a1.hash(obj: b1, write: true)
+        try a1.add(sha256DigestValue: b1.sha256DigestValue!, name: "test.txt")
+        let b2 = Blob(contents: Data(String(stringLiteral: "version 2").utf8))
+        _ = a1.hash(obj: b2, write: true)
+        try a1.add(sha256DigestValue: b2.sha256DigestValue!, name: "test.txt")
+        let b3 = Blob(contents: Data(String(stringLiteral: "new file").utf8))
+        _ = a1.hash(obj: b3, write: true)
+        try a1.add(sha256DigestValue: b3.sha256DigestValue!, name: "new.txt")
+        
+        let t1Hash = a1.writeTree()
+        let t1 = a1.objects[t1Hash] as! Tree
+        
+        #expect(t1.entries.contains(TreeEntry(type: .blob, hash: b3.sha256DigestValue!, name: "new.txt")))
+        #expect(t1.entries.contains(TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: "test.txt")))
+    }
+    
+    @Test func treeSortedAlphabetically() async throws {
+        let b1 = Blob(contents: Data(String(stringLiteral: "version 1").utf8))
+        let a1 = AuditionDataModel()
+        _ = a1.hash(obj: b1, write: true)
+        try a1.add(sha256DigestValue: b1.sha256DigestValue!, name: "test.txt")
+        let b2 = Blob(contents: Data(String(stringLiteral: "version 2").utf8))
+        _ = a1.hash(obj: b2, write: true)
+        try a1.add(sha256DigestValue: b2.sha256DigestValue!, name: "test.txt")
+        let b3 = Blob(contents: Data(String(stringLiteral: "new file").utf8))
+        _ = a1.hash(obj: b3, write: true)
+        try a1.add(sha256DigestValue: b3.sha256DigestValue!, name: "new.txt")
+        
+        let t1Hash = a1.writeTree()
+        let t1 = a1.objects[t1Hash] as! Tree
+        #expect(t1.entries == [
+            TreeEntry(type: .blob, hash: b3.sha256DigestValue!, name: "new.txt"),
+            TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: "test.txt")
+        ])
+    }
 }

@@ -59,12 +59,14 @@ class AuditionDataModel: CustomStringConvertible {
     
     // creates a tree object from the state of the index
     // should mimic git write-tree
-    func writeTree() {
+    // returns: the SHA-256 hash of the tree
+    func writeTree() -> String {
         let tree = Tree(entries: index)
         objects[tree.sha256DigestValue!] = tree
+        return tree.sha256DigestValue!
     }
     
-    // takes the SHA-1 hash of a tree
+    // takes the SHA-256 hash of a tree
     func commitTree(tree: String, parents: [String] = [], message: String) throws {
         guard objects[tree] != nil else {
             throw AuditionError.runtimeError("Tree cannot be committed because the hash \(tree) does not exist in AuditionDataModel.objects")

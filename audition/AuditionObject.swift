@@ -53,13 +53,17 @@ class Blob: AuditionObjectProtocol {
 
 // TODO: implement Comparable
 // stores information about either trees or blobs
-struct TreeEntry: CustomStringConvertible, Plistable, Equatable {
+struct TreeEntry: CustomStringConvertible, Plistable, Equatable, Comparable {
     let type: AuditionObjectType
     var hash: String
     let name: String
     
     var plist: [Any] {
         return [type.rawValue, hash, name]
+    }
+    
+    static func < (lhs: TreeEntry, rhs: TreeEntry) -> Bool {
+        return lhs.name.compare(rhs.name, options: .caseInsensitive) == .orderedAscending
     }
     
     public var description: String {
@@ -75,7 +79,7 @@ class Tree: AuditionObjectProtocol {
     
     init(entries: [TreeEntry]) {
         type = AuditionObjectType.tree
-        self.entries = entries
+        self.entries = entries.sorted()
     }
     
     var plist: [Any] {
