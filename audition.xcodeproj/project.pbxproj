@@ -30,13 +30,6 @@
 			remoteGlobalIDString = 668F96912A06302300E6B96F;
 			remoteInfo = audition;
 		};
-		6695FD9E2D3B3754008F1D67 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 668F968A2A06302300E6B96F /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 668F96912A06302300E6B96F;
-			remoteInfo = audition;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -55,7 +48,6 @@
 		668F96A42A06302400E6B96F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		668F96A62A06302400E6B96F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6695FD8D2D3B3509008F1D67 /* auditionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = auditionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		6695FD9A2D3B3754008F1D67 /* auditionTesting.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = auditionTesting.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		669872832B0943EE008A431A /* TreeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeViewController.swift; sourceTree = "<group>"; };
 		66B9E4D92B05D6B1005440C3 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -79,13 +71,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6695FD972D3B3754008F1D67 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -103,7 +88,6 @@
 			children = (
 				668F96922A06302300E6B96F /* audition.app */,
 				6695FD8D2D3B3509008F1D67 /* auditionTests.xctest */,
-				6695FD9A2D3B3754008F1D67 /* auditionTesting.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -173,26 +157,6 @@
 			productReference = 6695FD8D2D3B3509008F1D67 /* auditionTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		6695FD992D3B3754008F1D67 /* auditionTesting */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 6695FDA02D3B3754008F1D67 /* Build configuration list for PBXNativeTarget "auditionTesting" */;
-			buildPhases = (
-				6695FD962D3B3754008F1D67 /* Sources */,
-				6695FD972D3B3754008F1D67 /* Frameworks */,
-				6695FD982D3B3754008F1D67 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				6695FD9F2D3B3754008F1D67 /* PBXTargetDependency */,
-			);
-			name = auditionTesting;
-			packageProductDependencies = (
-			);
-			productName = auditionTesting;
-			productReference = 6695FD9A2D3B3754008F1D67 /* auditionTesting.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -207,10 +171,6 @@
 						CreatedOnToolsVersion = 13.4.1;
 					};
 					6695FD8C2D3B3509008F1D67 = {
-						CreatedOnToolsVersion = 16.1;
-						TestTargetID = 668F96912A06302300E6B96F;
-					};
-					6695FD992D3B3754008F1D67 = {
 						CreatedOnToolsVersion = 16.1;
 						TestTargetID = 668F96912A06302300E6B96F;
 					};
@@ -231,7 +191,6 @@
 			targets = (
 				668F96912A06302300E6B96F /* audition */,
 				6695FD8C2D3B3509008F1D67 /* auditionTests */,
-				6695FD992D3B3754008F1D67 /* auditionTesting */,
 			);
 		};
 /* End PBXProject section */
@@ -248,13 +207,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6695FD8B2D3B3509008F1D67 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6695FD982D3B3754008F1D67 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -288,13 +240,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6695FD962D3B3754008F1D67 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -302,11 +247,6 @@
 			isa = PBXTargetDependency;
 			target = 668F96912A06302300E6B96F /* audition */;
 			targetProxy = 6695FD912D3B3509008F1D67 /* PBXContainerItemProxy */;
-		};
-		6695FD9F2D3B3754008F1D67 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 668F96912A06302300E6B96F /* audition */;
-			targetProxy = 6695FD9E2D3B3754008F1D67 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -549,53 +489,6 @@
 			};
 			name = Release;
 		};
-		6695FDA12D3B3754008F1D67 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = JM.auditionTesting;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/audition.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/audition";
-			};
-			name = Debug;
-		};
-		6695FDA22D3B3754008F1D67 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = JM.auditionTesting;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/audition.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/audition";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -622,15 +515,6 @@
 			buildConfigurations = (
 				6695FD942D3B3509008F1D67 /* Debug */,
 				6695FD952D3B3509008F1D67 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		6695FDA02D3B3754008F1D67 /* Build configuration list for PBXNativeTarget "auditionTesting" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				6695FDA12D3B3754008F1D67 /* Debug */,
-				6695FDA22D3B3754008F1D67 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
