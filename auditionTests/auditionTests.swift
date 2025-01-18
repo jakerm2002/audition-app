@@ -235,8 +235,6 @@ struct auditionTests {
         let commit: String = try a1.commit(message: commitMessage)
         
         let b1 = Blob(contents: content1)
-        let t1 = Tree(entries: [TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
-        let commitObj = a1.objects[commit] as! Commit
         
         let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
         let filename2 = "hello.txt"
@@ -280,8 +278,6 @@ struct auditionTests {
         let commit1: String = try a1.commit(message: commitMessage1)
         
         let b1 = Blob(contents: content1)
-        let t1 = Tree(entries: [TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
-        let commitObj1 = a1.objects[commit1] as! Commit
         
         let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
         let filename2 = "hello.txt"
@@ -330,6 +326,5 @@ struct auditionTests {
         
         // check main branch points to correct commit
         #expect(a1.branches["main"] == commit2)
-        
     }
 }
