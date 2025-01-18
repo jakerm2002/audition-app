@@ -13,7 +13,6 @@ import Foundation
 struct auditionTests {
 
     @Test func newCommit() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
         let c2 = Commit(tree: "0155eb4229851634a0f03eb265b69f5a2d56f341", parents: ["fdf4fc3344e67ab068f836878b6c4951e3b15f3d"], message: "Second commit", timestamp: Date(timeIntervalSince1970: 1243041269))
         
         #expect(c2.description == "tree 0155eb4229851634a0f03eb265b69f5a2d56f341\nparent fdf4fc3344e67ab068f836878b6c4951e3b15f3d\n2009-05-23 01:14:29 +0000\n\nSecond commit")
@@ -117,14 +116,13 @@ struct auditionTests {
         let t1Hash = a1.writeTree()
 
         let c1Hash = try a1.commitTree(tree: t1Hash, message: "commit number one")
-        let currentTime: Date = .now
         let c1 = a1.objects[c1Hash] as! Commit
         
         #expect(c1.type == .commit)
         #expect(c1.tree == t1Hash)
         #expect(c1.parents == [])
         #expect(c1.message == "commit number one")
-        #expect(c1.timestamp.distance(to: currentTime) < TimeInterval(1))
+        #expect(c1.timestamp.distance(to: .now) < TimeInterval(1))
     }
     
     @Test func plistOfTree() async throws {
@@ -135,4 +133,203 @@ struct auditionTests {
         
     }
     
+    @Test func headExistsAndPointsToMainBranch() async throws {
+        let a1 = AuditionDataModel()
+        #expect(a1.HEAD != nil)
+        #expect(a1.HEAD == "main")
+    }
+    
+    @Test func mainBranchNonexistentBeforeCommit() async throws {
+        let a1 = AuditionDataModel()
+        #expect(a1.branches == [:])
+    }
+    
+    @Test func addOneFile() async throws {
+        let content = Data(String(stringLiteral: "you're reading me!").utf8)
+        
+        let f1 = AuditionFile(
+            content: content,
+            name: "README.md"
+        )
+        
+        let a1 = AuditionDataModel()
+        // confirm objects empty
+        #expect(a1.objects.count == 0)
+        // confirm index empty
+        #expect(a1.index.count == 0)
+        
+        try a1.add(f1)
+        
+        // check blob exists
+        #expect(a1.objects.count == 1)
+        
+        // check index points to blob only
+        #expect(a1.index.count == 1)
+        
+        // check blob has correct hash+contents
+        let b1 = Blob(contents: content)
+        #expect(a1.objects[b1.sha256DigestValue!] != nil)
+    }
+    
+    @Test func commitOneFile() async throws {
+        let content = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content,
+            name: filename
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage = "initial commit"
+        let commit: String = try a1.commit(message: commitMessage)
+        
+        // check objects has correct count
+        #expect(a1.objects.count == 3)
+        
+        // check objects has blob
+        let b1 = Blob(contents: content)
+        #expect(a1.objects[b1.sha256DigestValue!] != nil)
+        
+        // check objects has tree
+        let t1 = Tree(entries: [TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename)])
+        #expect(a1.objects[t1.sha256DigestValue!] != nil)
+        
+        // check objects has commit
+        #expect(a1.objects[commit] != nil)
+        
+        let commitObj = a1.objects[commit] as! Commit
+        // check correct commit data
+        #expect(commitObj.type == .commit)
+        #expect(commitObj.tree == t1.sha256DigestValue!)
+        #expect(commitObj.parents == [])
+        #expect(commitObj.message == commitMessage)
+        #expect(commitObj.timestamp.distance(to: .now) < TimeInterval(1))
+        
+        // check index points to blob only
+        #expect(a1.index.count == 1)
+        #expect(a1.index[0] == TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename))
+        
+        // check main branch exists
+        #expect(a1.branches["main"] != nil)
+        
+        // check main branch points to correct commit
+        #expect(a1.branches["main"] == commit)
+    }
+    
+    @Test func addOneMoreFile() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage = "initial commit"
+        let commit: String = try a1.commit(message: commitMessage)
+        
+        let b1 = Blob(contents: content1)
+        let t1 = Tree(entries: [TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        let commitObj = a1.objects[commit] as! Commit
+        
+        let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
+        let filename2 = "hello.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        // confirm state before add
+        #expect(a1.objects.count == 3)
+        #expect(a1.index.count == 1)
+        #expect(a1.objects[b1.sha256DigestValue!] != nil)
+        
+        try a1.add(f2)
+        
+        // check blob exists
+        #expect(a1.objects.count == 4)
+        
+        // check index points to two blobs
+        #expect(a1.index.count == 2)
+        
+        // check blob has correct hash+contents
+        let b2 = Blob(contents: content2)
+        #expect(a1.objects[b2.sha256DigestValue!] != nil)
+    }
+    
+    @Test func commitOneMoreFile() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage1 = "initial commit"
+        let commit1: String = try a1.commit(message: commitMessage1)
+        
+        let b1 = Blob(contents: content1)
+        let t1 = Tree(entries: [TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        let commitObj1 = a1.objects[commit1] as! Commit
+        
+        let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
+        let filename2 = "hello.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        try a1.add(f2)
+        
+        let commitMessage2 = "second commit"
+        let commit2: String = try a1.commit(message: commitMessage2)
+        
+        // check objects has correct count
+        #expect(a1.objects.count == 6)
+        
+        // check objects has blob
+        let b2 = Blob(contents: content2)
+        #expect(a1.objects[b2.sha256DigestValue!] != nil)
+        
+        // check objects has tree
+        let t2 = Tree(entries: [TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2), TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        #expect(a1.objects[t2.sha256DigestValue!] != nil)
+        
+        // check objects has commit
+        #expect(a1.objects[commit2] != nil)
+        
+        let commitObj2 = a1.objects[commit2] as! Commit
+        // check correct commit data
+        #expect(commitObj2.type == .commit)
+        #expect(commitObj2.tree == t2.sha256DigestValue!)
+        #expect(commitObj2.parents == [commit1])
+        #expect(commitObj2.message == commitMessage2)
+        #expect(commitObj2.timestamp.distance(to: .now) < TimeInterval(1))
+        
+        // check index points to two blobs
+        #expect(a1.index.count == 2)
+        
+        // index (at the moment) is not sorted by filename
+        #expect(a1.index.contains(TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2)))
+        #expect(a1.index.contains(TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)))
+        
+        // check main branch exists
+        #expect(a1.branches["main"] != nil)
+        
+        // check main branch points to correct commit
+        #expect(a1.branches["main"] == commit2)
+        
+    }
 }

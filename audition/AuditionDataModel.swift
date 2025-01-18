@@ -11,18 +11,30 @@ enum AuditionError: Error {
     case runtimeError(String)
 }
 
+struct AuditionFile {
+    let content: Data
+    let name: String
+}
+
 class AuditionDataModel: CustomStringConvertible {
     private(set) var objects: [String : AuditionObjectProtocol]
     private(set) var index: [TreeEntry]
     
+    private(set) var HEAD: String
+    private(set) var branches: [String : String]
+    
     init() {
         self.objects = [:]
         self.index = []
+        self.HEAD = "main"
+        self.branches = [:]
     }
     
     init(objects: [String : AuditionObjectProtocol], index: [TreeEntry]) {
         self.objects = objects
         self.index = index
+        self.HEAD = "main"
+        self.branches = [:]
     }
     
     // params:
@@ -83,6 +95,44 @@ class AuditionDataModel: CustomStringConvertible {
         objects[commit.sha256DigestValue!] = commit
         
         return commit.sha256DigestValue!
+    }
+    
+    // params:
+    //      file: file to add content from
+    func add(_ file: AuditionFile) throws {
+        try add(files: [file])
+    }
+    
+    // params:
+    //      files: files to add content from
+    func add(files: [AuditionFile]) throws {
+        for file in files {
+            // create blob
+            let b = Blob(contents: file.content)
+            
+            // update index
+            let h = hash(obj: b, write: true)
+            try updateIndex(sha256DigestValue: h, name: file.name)
+        }
+    }
+    
+    // returns: the hash of the created commit
+    func commit(message: String) throws -> String {
+        // write the tree from the index
+        let h = writeTree()
+        
+        let commit: String
+        // write the commit from the tree
+        if let parent = branches[HEAD] {
+            commit = try commitTree(tree: h, parents: [parent], message: message)
+        } else {
+            commit = try commitTree(tree: h, message: message)
+        }
+        
+        // move the branch ref to point to the new commit
+        // if head points to non-existent branch, this will 'create' a branch pointing to the commit
+        branches[HEAD] = commit
+        return commit
     }
     
     public var description: String {
