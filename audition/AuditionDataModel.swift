@@ -135,6 +135,44 @@ class AuditionDataModel: CustomStringConvertible {
         return commit
     }
     
+    enum CodingKeys: String, CodingKey {
+        case objects
+        case index
+        case HEAD
+        case branches
+    }
+    
+    enum ObjectKeys: String, CodingKey {
+        case object
+    }
+    
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        var objectsContainer = container.nestedContainer(keyedBy: ObjectKeys.self, forKey: .objects)
+        
+        try container.encode(index, forKey: .index)
+        try container.encode(HEAD, forKey: .HEAD)
+        try container.encode(branches, forKey: .branches)
+    }
+    
+    required init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // decode ObjectKeys
+        let objectsContainer = try values.nestedContainer(keyedBy: ObjectKeys.self, forKey: .objects)
+        var objects = [String : AuditionObjectProtocol]()
+        for key in objectsContainer.allKeys {
+            let wrapper = try objectsContainer.decode(AuditionObjectWrapper.self, forKey: .object)
+            objects[key.rawValue] = wrapper.object
+        }
+        
+        self.objects = objects
+        self.index = try values.decode([TreeEntry].self, forKey: .index)
+        self.HEAD = try values.decode(String.self, forKey: .HEAD)
+        self.branches = try values.decode([String : String].self, forKey: .branches)
+    }
+    
     public var description: String {
         return "\(objects as AnyObject)"
     }
