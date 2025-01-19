@@ -17,11 +17,11 @@ protocol Plistable {
     var plist: [Any] { get }
 }
 
-protocol AuditionObjectProtocol: SHA256Hashable, CustomStringConvertible {
+protocol AuditionObjectProtocol: SHA256Hashable, CustomStringConvertible, Codable {
     var type: AuditionObjectType { get }
 }
 
-enum AuditionObjectType: String, Equatable {
+enum AuditionObjectType: String, Equatable, Codable {
     case blob = "blob"
     case tree = "tree"
     case commit = "commit"
@@ -53,7 +53,7 @@ class Blob: AuditionObjectProtocol {
 
 // TODO: implement Comparable
 // stores information about either trees or blobs
-struct TreeEntry: CustomStringConvertible, Plistable, Equatable, Comparable {
+struct TreeEntry: CustomStringConvertible, Plistable, Equatable, Comparable, Codable {
     let type: AuditionObjectType
     var hash: String
     let name: String

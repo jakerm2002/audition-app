@@ -139,3 +139,60 @@ class AuditionDataModel: CustomStringConvertible {
         return "\(objects as AnyObject)"
     }
 }
+
+struct AuditionObjectWrapper: Codable {
+    let object: AuditionObjectProtocol
+    
+    enum CodingKeys: String, CodingKey {
+        case type
+        case data
+    }
+    
+    init(object: AuditionObjectProtocol) {
+        self.object = object
+    }
+    
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+//        potentially more efficient to check the AuditionObjectType
+//        instead of trying to do let obj as Blob/Tree/Commit?
+        
+//        example:
+//        switch object.type {
+//        case .blob:
+//            let blob = object as! Blob
+//            try container.encode(AuditionObjectType.blob, forKey: .type)
+//            try container.encode(object as! Blob, forKey: .data)
+//        }
+        
+        switch object {
+        case let blob as Blob:
+            try container.encode(AuditionObjectType.blob, forKey: .type)
+            try container.encode(blob, forKey: .data)
+        case let tree as Tree:
+            try container.encode(AuditionObjectType.tree, forKey: .type)
+            try container.encode(tree, forKey: .data)
+        case let commit as Commit:
+            try container.encode(AuditionObjectType.commit, forKey: .type)
+            try container.encode(commit, forKey: .data)
+        default:
+            throw EncodingError.invalidValue(object, EncodingError.Context(codingPath: encoder.codingPath, debugDescription: "Cannot encode AuditionObject of unknown type"))
+        }
+    }
+    
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        
+        let type = try values.decode(AuditionObjectType.self, forKey: .type)
+        
+        switch type {
+        case .blob:
+            self.object = try values.decode(Blob.self, forKey: .data)
+        case .tree:
+            self.object = try values.decode(Tree.self, forKey: .data)
+        case .commit:
+            self.object = try values.decode(Commit.self, forKey: .data)
+        }
+    }
+}
