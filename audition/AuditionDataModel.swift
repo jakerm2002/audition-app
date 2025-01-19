@@ -16,7 +16,7 @@ struct AuditionFile {
     let name: String
 }
 
-class AuditionDataModel: CustomStringConvertible {
+class AuditionDataModel: CustomStringConvertible, Codable {
     private(set) var objects: [String : AuditionObjectProtocol]
     private(set) var index: [TreeEntry]
     
