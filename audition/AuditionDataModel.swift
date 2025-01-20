@@ -149,34 +149,13 @@ class AuditionDataModel: CustomStringConvertible, Codable {
     
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-//        var objectsContainer = container.nestedContainer(keyedBy: ObjectKeys.self, forKey: .objects)
-        
-        
-          // only encodes one object, keeps replacing the key with a new value
-//        for object in objects {
-//            try objectsContainer.encode(object.key, forKey: .hash)
-//            try objectsContainer.encode(AuditionObjectWrapper(object: object.value), forKey: .object)
-//        }
-        
-          // encodes ONLY the values of `objects` inside of objects[object]
-//        for (key, value) in objects {
-//            let wrapper = AuditionObjectWrapper(object: value)
-//            try objectsContainer.encode(wrapper, forKey: .object)
-//        }
-        
-          // encodes ONLY the values of `objects` inside of objects
-//        var objectsWithWrappers = [AuditionObjectWrapper]()
-//        for (key, value) in objects {
-//            objectsWithWrappers.append(AuditionObjectWrapper(object: value))
-//        }
-//        try container.encode(objectsWithWrappers, forKey: .objects)
         
         var objectsContainer = container.nestedUnkeyedContainer(forKey: .objects)
         for (key, value) in objects {
-            let wrapper = AuditionObjectWrapper(object: value).object
+            let wrapper = AuditionObjectWrapper(object: value)
             var objectContainer = objectsContainer.nestedContainer(keyedBy: ObjectKeys.self)
             try objectContainer.encode(key, forKey: .hash)
-            try objectContainer.encode(value, forKey: .object)
+            try objectContainer.encode(wrapper, forKey: .object)
         }
         
         try container.encode(index, forKey: .index)
