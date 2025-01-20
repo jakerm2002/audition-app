@@ -449,15 +449,9 @@ struct auditionTests {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
         
-        print("a1.objects.count", a1.objects.count)
-        
         let a1encoded = try encoder.encode(a1)
         
-        print("encoded a1", try PropertyListSerialization.propertyList(from: a1encoded, format: nil))
-        
         a1 = try PropertyListDecoder().decode(AuditionDataModel.self, from: a1encoded)
-        
-        print("decoded a1", a1)
         
         // check objects has correct count
         #expect(a1.objects.count == 6)
@@ -471,7 +465,7 @@ struct auditionTests {
         // check objects has commit
         #expect(a1.objects[commit2] != nil)
         
-//        commitObj2 = a1.objects[commit2] as! Commit
+        commitObj2 = a1.objects[commit2] as! Commit
         // check correct commit data
         #expect(commitObj2.type == .commit)
         #expect(commitObj2.tree == t2.sha256DigestValue!)
