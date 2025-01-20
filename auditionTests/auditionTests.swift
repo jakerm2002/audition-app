@@ -355,4 +355,141 @@ struct auditionTests {
         // check main branch points to correct commit
         #expect(a1.branches["main"] == commit2)
     }
+    
+    @Test func testEncodeAndDecodeAuditionObjectWrapper() async throws {
+        let c1tree = "0155eb4229851634a0f03eb265b69f5a2d56f341"
+        let c1parents = ["fdf4fc3344e67ab068f836878b6c4951e3b15f3d"]
+        let c1message = "Second commit"
+        let c1timestamp = Date(timeIntervalSince1970: 1243041269)
+        
+        let c1expectedSHA = "82a75ed7dd3992f8bb683caeaa4b7e20f681be317544d0bb76ef405ca2d133d7"
+        
+        let c1 = Commit(tree: c1tree, parents: c1parents, message: c1message, timestamp: c1timestamp)
+        #expect(c1.sha256DigestValue == c1expectedSHA)
+        
+        let w1 = AuditionObjectWrapper(object: c1)
+        
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        
+        let w1encoded = try encoder.encode(w1)
+        
+        let w1decoded = try PropertyListDecoder().decode(AuditionObjectWrapper.self, from: w1encoded)
+        
+        let c1decoded = w1decoded.object as! Commit
+        
+        #expect(c1decoded.sha256DigestValue == c1expectedSHA)
+    }
+    
+    @Test func testEncodeAndDecodeAuditionDataModel() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        var a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage1 = "initial commit"
+        let commit1: String = try a1.commit(message: commitMessage1)
+        
+        let b1 = Blob(contents: content1)
+        
+        let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
+        let filename2 = "hello.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        try a1.add(f2)
+        
+        let commitMessage2 = "second commit"
+        let commit2: String = try a1.commit(message: commitMessage2)
+        
+        // check objects has correct count
+        #expect(a1.objects.count == 6)
+        
+        // check objects has blob
+        let b2 = Blob(contents: content2)
+        #expect(a1.objects[b2.sha256DigestValue!] != nil)
+        
+        // check objects has tree
+        let t2 = Tree(entries: [TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2), TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        #expect(a1.objects[t2.sha256DigestValue!] != nil)
+        
+        // check objects has commit
+        #expect(a1.objects[commit2] != nil)
+        
+        var commitObj2 = a1.objects[commit2] as! Commit
+        // check correct commit data
+        #expect(commitObj2.type == .commit)
+        #expect(commitObj2.tree == t2.sha256DigestValue!)
+        #expect(commitObj2.parents == [commit1])
+        #expect(commitObj2.message == commitMessage2)
+        #expect(commitObj2.timestamp.distance(to: .now) < TimeInterval(1))
+        
+        // check index points to two blobs
+        #expect(a1.index.count == 2)
+        
+        // index (at the moment) is not sorted by filename
+        #expect(a1.index.contains(TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2)))
+        #expect(a1.index.contains(TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)))
+        
+        // check main branch exists
+        #expect(a1.branches["main"] != nil)
+        
+        // check main branch points to correct commit
+        #expect(a1.branches["main"] == commit2)
+        
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        
+        print("a1.objects.count", a1.objects.count)
+        
+        let a1encoded = try encoder.encode(a1)
+        
+        print("encoded a1", try PropertyListSerialization.propertyList(from: a1encoded, format: nil))
+        
+        a1 = try PropertyListDecoder().decode(AuditionDataModel.self, from: a1encoded)
+        
+        print("decoded a1", a1)
+        
+        // check objects has correct count
+        #expect(a1.objects.count == 6)
+        
+        // check objects has blob
+        #expect(a1.objects[b2.sha256DigestValue!] != nil)
+        
+        // check objects has tree
+        #expect(a1.objects[t2.sha256DigestValue!] != nil)
+        
+        // check objects has commit
+        #expect(a1.objects[commit2] != nil)
+        
+//        commitObj2 = a1.objects[commit2] as! Commit
+        // check correct commit data
+        #expect(commitObj2.type == .commit)
+        #expect(commitObj2.tree == t2.sha256DigestValue!)
+        #expect(commitObj2.parents == [commit1])
+        #expect(commitObj2.message == commitMessage2)
+        #expect(commitObj2.timestamp.distance(to: .now) < TimeInterval(1))
+        
+        // check index points to two blobs
+        #expect(a1.index.count == 2)
+        
+        // index (at the moment) is not sorted by filename
+        #expect(a1.index.contains(TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2)))
+        #expect(a1.index.contains(TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)))
+        
+        // check main branch exists
+        #expect(a1.branches["main"] != nil)
+        
+        // check main branch points to correct commit
+        #expect(a1.branches["main"] == commit2)
+    }
 }

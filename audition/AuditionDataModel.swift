@@ -142,20 +142,13 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         case branches
     }
     
-    enum ObjectKeys: String, CodingKey {
-        case hash
-        case object
-    }
-    
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
         var objectsContainer = container.nestedUnkeyedContainer(forKey: .objects)
         for (key, value) in objects {
-            let wrapper = AuditionObjectWrapper(object: value)
-            var objectContainer = objectsContainer.nestedContainer(keyedBy: ObjectKeys.self)
-            try objectContainer.encode(key, forKey: .hash)
-            try objectContainer.encode(wrapper, forKey: .object)
+            let wrapper = AuditionObjectWrapper(hash: key, object: value)
+            try objectsContainer.encode(wrapper)
         }
         
         try container.encode(index, forKey: .index)
@@ -166,12 +159,11 @@ class AuditionDataModel: CustomStringConvertible, Codable {
     required init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         
-        // decode ObjectKeys
-        let objectsContainer = try values.nestedContainer(keyedBy: ObjectKeys.self, forKey: .objects)
+        var objectsContainer = try values.nestedUnkeyedContainer(forKey: .objects)
         var objects = [String : AuditionObjectProtocol]()
-        for key in objectsContainer.allKeys {
-            let wrapper = try objectsContainer.decode(AuditionObjectWrapper.self, forKey: .object)
-            objects[key.rawValue] = wrapper.object
+        while !objectsContainer.isAtEnd {
+            let wrapper = try objectsContainer.decode(AuditionObjectWrapper.self)
+            objects[wrapper.hash] = wrapper.object
         }
         
         self.objects = objects
@@ -186,14 +178,22 @@ class AuditionDataModel: CustomStringConvertible, Codable {
 }
 
 struct AuditionObjectWrapper: Codable {
+    let hash: String
     let object: AuditionObjectProtocol
     
     enum CodingKeys: String, CodingKey {
         case type
         case data
+        case hash
+    }
+    
+    init(hash: String, object: AuditionObjectProtocol) {
+        self.hash = hash
+        self.object = object
     }
     
     init(object: AuditionObjectProtocol) {
+        self.hash = object.sha256DigestValue!
         self.object = object
     }
     
@@ -224,6 +224,8 @@ struct AuditionObjectWrapper: Codable {
         default:
             throw EncodingError.invalidValue(object, EncodingError.Context(codingPath: encoder.codingPath, debugDescription: "Cannot encode AuditionObject of unknown type"))
         }
+        
+        try container.encode(hash, forKey: .hash)
     }
     
     init(from decoder: any Decoder) throws {
@@ -239,5 +241,7 @@ struct AuditionObjectWrapper: Codable {
         case .commit:
             self.object = try values.decode(Commit.self, forKey: .data)
         }
+        
+        self.hash = try values.decode(String.self, forKey: .hash)
     }
 }
