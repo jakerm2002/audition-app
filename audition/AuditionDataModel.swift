@@ -135,6 +135,35 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         return commit
     }
     
+    // returns: the current log of past commits, starting at HEAD
+    func log() throws -> [Commit] {
+        do {
+            return try log(branch: HEAD)
+        } catch {
+            throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD")
+        }
+    }
+    
+    // returns: the current log of past commits, starting at the most recent commit in `branch`
+    func log(branch: String) throws -> [Commit] {
+        guard let commit = branches[branch] else {
+            throw AuditionError.runtimeError("Unable to read branch \(branch)")
+        }
+        return try log(commit: commit)
+    }
+    
+    // returns: the current log of past commits, starting at commit `commit`
+    func log(commit: String) throws -> [Commit] {
+        guard let c = objects[commit] as? Commit else {
+            throw AuditionError.runtimeError("Unable to read commit \(commit)")
+        }
+        // assemble commit history
+        
+        // return Commit
+        return [Commit(tree: "test", parents: ["test"], message: "test", timestamp: .now)]
+    }
+    
+    
     enum CodingKeys: String, CodingKey {
         case objects
         case index

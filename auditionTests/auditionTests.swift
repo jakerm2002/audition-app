@@ -486,4 +486,92 @@ struct auditionTests {
         // check main branch points to correct commit
         #expect(a1.branches["main"] == commit2)
     }
+    
+    @Test func testLog() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage1 = "initial commit"
+        let commit1: String = try a1.commit(message: commitMessage1)
+        
+        let b1 = Blob(contents: content1)
+        let t1 = Tree(entries: [TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        
+        let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
+        let filename2 = "hello.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        try a1.add(f2)
+        
+        let commitMessage2 = "second commit"
+        let commit2: String = try a1.commit(message: commitMessage2)
+        
+        let b2 = Blob(contents: content2)
+        let t2 = Tree(entries: [TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2), TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        
+        let commitObj1 = a1.objects[commit1] as! Commit
+        let commitObj2 = a1.objects[commit2] as! Commit
+        
+        let logFromHEAD: [Commit] = try a1.log()
+        let logFromBranch: [Commit] = try a1.log(branch: "main")
+        let logFromCommit: [Commit] = try a1.log(commit: commitObj2.sha256DigestValue!)
+        
+        // test log()
+        try #require(logFromHEAD.count == 2)
+        
+        #expect(logFromHEAD[0].type == .commit)
+        #expect(logFromHEAD[0].tree == t2.sha256DigestValue!)
+        #expect(logFromHEAD[0].parents == [commit1])
+        #expect(logFromHEAD[0].message == commitMessage2)
+        #expect(logFromHEAD[0].timestamp.distance(to: .now) < TimeInterval(1))
+        
+        #expect(logFromHEAD[1].type == .commit)
+        #expect(logFromHEAD[1].tree == t1.sha256DigestValue!)
+        #expect(logFromHEAD[1].parents == [])
+        #expect(logFromHEAD[1].message == commitMessage1)
+        #expect(logFromHEAD[1].timestamp.distance(to: .now) < TimeInterval(1))
+        
+        
+        // test log(branch:)
+        try #require(logFromBranch.count == 2)
+        
+        #expect(logFromBranch[0].type == .commit)
+        #expect(logFromBranch[0].tree == t2.sha256DigestValue!)
+        #expect(logFromBranch[0].parents == [commit1])
+        #expect(logFromBranch[0].message == commitMessage2)
+        #expect(logFromBranch[0].timestamp.distance(to: .now) < TimeInterval(1))
+        
+        #expect(logFromBranch[1].type == .commit)
+        #expect(logFromBranch[1].tree == t1.sha256DigestValue!)
+        #expect(logFromBranch[1].parents == [])
+        #expect(logFromBranch[1].message == commitMessage1)
+        #expect(logFromBranch[1].timestamp.distance(to: .now) < TimeInterval(1))
+        
+        // test log(commit:)
+        try #require(logFromCommit.count == 2)
+        
+        #expect(logFromCommit[0].type == .commit)
+        #expect(logFromCommit[0].tree == t2.sha256DigestValue!)
+        #expect(logFromCommit[0].parents == [commit1])
+        #expect(logFromCommit[0].message == commitMessage2)
+        #expect(logFromCommit[0].timestamp.distance(to: .now) < TimeInterval(1))
+        
+        #expect(logFromCommit[1].type == .commit)
+        #expect(logFromCommit[1].tree == t1.sha256DigestValue!)
+        #expect(logFromCommit[1].parents == [])
+        #expect(logFromCommit[1].message == commitMessage1)
+        #expect(logFromCommit[1].timestamp.distance(to: .now) < TimeInterval(1))
+    }
 }
