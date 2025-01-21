@@ -135,6 +135,40 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         return commit
     }
     
+    // check out the HEAD
+    func checkout() throws -> Tree {
+        do {
+            return try checkout(commit: branches[HEAD]!)
+        } catch {
+            throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD")
+        }
+    }
+    
+    func checkout(commit: String) throws -> Tree {
+        guard let commit = objects[commit] as? Commit else {
+            throw AuditionError.runtimeError("Unable to read commit \(commit)")
+        }
+        
+        guard let tree = objects[commit.tree] as? Tree else {
+            throw AuditionError.runtimeError("Unable to read tree \(commit.tree) from commit \(commit)")
+        }
+        
+        return tree
+    }
+    
+    func checkoutBlobs() throws -> [Blob] {
+        let t = try checkout()
+        
+        var blobs = [Blob]()
+        for entry in t.entries {
+            if entry.type == .blob, let blob = objects[entry.hash] as? Blob {
+                blobs.append(blob)
+            }
+        }
+        
+        return blobs
+    }
+    
     // returns: the current log of past commits, starting at HEAD
     func log() throws -> [Commit] {
         do {
