@@ -247,6 +247,52 @@ struct auditionTests {
         #expect(a1.branches["main"] == commit)
     }
     
+    @Test func addAndReplaceFile() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage = "initial commit"
+        let commit: String = try a1.commit(message: commitMessage)
+        
+        let b1 = Blob(contents: content1)
+        
+        let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
+        let filename2 = "README.md"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        // confirm state before add
+        #expect(a1.objects.count == 3)
+        #expect(a1.index.count == 1)
+        #expect(a1.objects[b1.sha256DigestValue!] != nil)
+        
+        try a1.add(f2)
+        
+        // check blob exists
+        #expect(a1.objects.count == 4)
+        
+        // check blob has correct hash+contents
+        let b2 = Blob(contents: content2)
+        #expect(a1.objects[b2.sha256DigestValue!] != nil)
+        
+        // check index points to one blob (the previous blob should be replaced due to the new content having the same filename when added)
+        try #require(a1.index.count == 1)
+        #expect(a1.index[0].name == filename2)
+        #expect(a1.index[0].hash == b2.sha256DigestValue!)
+        #expect(a1.index[0].type == .blob)
+    }
+    
     @Test func addOneMoreFile() async throws {
         let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
         let filename1 = "README.md"
