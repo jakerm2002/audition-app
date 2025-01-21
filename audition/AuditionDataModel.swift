@@ -157,10 +157,21 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         guard let c = objects[commit] as? Commit else {
             throw AuditionError.runtimeError("Unable to read commit \(commit)")
         }
-        // assemble commit history
         
-        // return Commit
-        return [Commit(tree: "test", parents: ["test"], message: "test", timestamp: .now)]
+        // assemble commit history
+        var commits = [Commit]()
+        
+        var current: Commit? = c
+        while let commit = current {
+            // TODO: handle case where commit has multiple parents (in the case of a merge)
+            commits.append(commit)
+            if let newCurrentHash = commit.parents.first {
+                current = objects[newCurrentHash] as? Commit
+            } else {
+                current = nil
+            }
+        }
+        return commits
     }
     
     
