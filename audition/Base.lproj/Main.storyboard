@@ -79,7 +79,7 @@
                                     <state key="normal" title="Button"/>
                                     <buttonConfiguration key="configuration" style="plain" title="See Log"/>
                                     <connections>
-                                        <segue destination="bSB-26-alT" kind="show" id="BHd-dY-Xxe"/>
+                                        <segue destination="bSB-26-alT" kind="show" identifier="DrawingToLogSegueIdentifier" id="BHd-dY-Xxe"/>
                                     </connections>
                                 </button>
                             </barButtonItem>

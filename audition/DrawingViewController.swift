@@ -21,6 +21,8 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     let toolPicker = PKToolPicker()
     
     var dataModelFromHomeVC: AuditionDataModel?
+    
+    let drawingToLogSegueIdentifier = "DrawingToLogSegueIdentifier"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -105,6 +107,21 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
                 try storeDataModel()
             } catch {
                 print("Storing data model failed")
+            }
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == drawingToLogSegueIdentifier, let destination = segue.destination as? LogViewController {
+            // compile the commits, then send them over
+            do {
+                let commits: [Commit] = try dataModelFromHomeVC!.log()
+                destination.commits = commits
+            } catch let error {
+                let msg = "error: Failed to compile commits and send to LogViewController: \(error)"
+                let alert = UIAlertController(title: "Error", message: msg, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .default, handler: { _ in NSLog(msg)}))
+                self.present(alert, animated: true, completion: nil)
             }
         }
     }

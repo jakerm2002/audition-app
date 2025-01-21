@@ -179,7 +179,7 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         do {
             return try log(branch: HEAD)
         } catch {
-            throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD")
+            throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD. Perhaps there is nothing committed yet?")
         }
     }
     
