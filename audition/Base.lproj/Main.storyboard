@@ -24,7 +24,7 @@
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Button"/>
                                 <connections>
-                                    <segue destination="Dki-bu-HI5" kind="show" id="hxb-xa-8xC"/>
+                                    <segue destination="Dki-bu-HI5" kind="show" identifier="HomeToMainSegueIdentifier" id="hxb-xa-8xC"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -37,10 +37,10 @@
             </objects>
             <point key="canvasLocation" x="732" y="83"/>
         </scene>
-        <!--View Controller-->
+        <!--Drawing View Controller-->
         <scene sceneID="ZYq-1z-jMo">
             <objects>
-                <viewController id="Dki-bu-HI5" customClass="ViewController" customModule="audition" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="Dki-bu-HI5" customClass="DrawingViewController" customModule="audition" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="xXP-Ga-BQ4">
                         <rect key="frame" x="0.0" y="0.0" width="820" height="1180"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

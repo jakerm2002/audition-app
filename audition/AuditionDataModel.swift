@@ -30,11 +30,11 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         self.branches = [:]
     }
     
-    init(objects: [String : AuditionObjectProtocol], index: [TreeEntry]) {
+    init(objects: [String : AuditionObjectProtocol], index: [TreeEntry], HEAD: String, branches: [String : String]) {
         self.objects = objects
         self.index = index
-        self.HEAD = "main"
-        self.branches = [:]
+        self.HEAD = HEAD
+        self.branches = branches
     }
     
     // params:

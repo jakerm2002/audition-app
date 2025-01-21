@@ -8,6 +8,10 @@
 import UIKit
 
 class HomeViewController: UIViewController {
+    
+    let homeToMainSegueIdentifier = "HomeToMainSegueIdentifier"
+    
+    let dataModels = [AuditionDataModel()]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,7 +31,9 @@ class HomeViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
          // Get the new view controller using segue.destination.
          // Pass the selected object to the new view controller.
-        print("sup")
+        if segue.identifier == homeToMainSegueIdentifier, let destination = segue.destination as? DrawingViewController {
+            destination.dataModelFromHomeVC = dataModels[0]
+        }
     }
     
 

@@ -11,7 +11,7 @@ import CoreData
 
 var count = 0
 
-class ViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver {
+class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver {
     
     let canvasView = PKCanvasView()
     
@@ -19,24 +19,17 @@ class ViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserv
     let canvasOverscrollHeight: CGFloat = 500
     
     let toolPicker = PKToolPicker()
+    
+    var dataModelFromHomeVC: AuditionDataModel?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
         canvasView.delegate = self
         canvasView.drawingPolicy = .anyInput
         toolPicker.setVisible(true, forFirstResponder: canvasView)
         toolPicker.addObserver(canvasView)
         canvasView.becomeFirstResponder()
         view.addSubview(canvasView)
-        
-////        navigationItem.title = "Hello"
-//        navigationItem.title = nil
-//        let button = UIButton(type: .system)
-//        button.setTitle("Hey", for: .normal)
-//        button.setTitleColor(.blue, for: .normal)
-//        navigationItem.titleView?.addSubview(button)
-        
     }
     
     override func viewDidLayoutSubviews() {
@@ -66,6 +59,10 @@ class ViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserv
         saveContext()
         
         print("drawing saved")
+    }
+    
+    func storeDataModel() {
+        
     }
     
     func saveContext () {
