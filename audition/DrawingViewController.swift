@@ -29,7 +29,25 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         toolPicker.setVisible(true, forFirstResponder: canvasView)
         toolPicker.addObserver(canvasView)
         canvasView.becomeFirstResponder()
+        
+        // TODO: for our current implementation where each drawing is contained in one blob,
+        // we need to find the most recent blob and use the data from it to create a PKDrawing.
+        do {
+            let mostRecentBlob = try dataModelFromHomeVC?.checkoutBlobs()[0]
+            canvasView.drawing = try PKDrawing(data: mostRecentBlob!.contents)
+        } catch {
+            print("error: DrawingViewController could not load Blob")
+        }
         view.addSubview(canvasView)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        canvasView.delegate = self
+        canvasView.drawingPolicy = .anyInput
+        toolPicker.setVisible(true, forFirstResponder: canvasView)
+        toolPicker.addObserver(canvasView)
+        canvasView.becomeFirstResponder()
     }
     
     override func viewDidLayoutSubviews() {
@@ -61,8 +79,9 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         print("drawing saved")
     }
     
-    func storeDataModel() {
-        
+    func storeDataModel() throws {
+        try dataModelFromHomeVC?.add(AuditionFile(content: canvasView.drawing.dataRepresentation(), name: "drawing"))
+        try dataModelFromHomeVC?.commit(message: "new drawing")
     }
     
     func saveContext () {
@@ -82,7 +101,11 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         if canvasView.drawing.bounds.isEmpty {
             print("Drawing is empty, skipping commit.")
         } else {
-            storeDrawing()
+            do {
+                try storeDataModel()
+            } catch {
+                print("Storing data model failed")
+            }
         }
     }
     

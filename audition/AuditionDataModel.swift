@@ -118,6 +118,8 @@ class AuditionDataModel: CustomStringConvertible, Codable {
     
     // returns: the hash of the created commit
     func commit(message: String) throws -> String {
+        // TODO: decide if empty commmits should be allowed
+        
         // write the tree from the index
         let h = writeTree()
         
@@ -138,7 +140,10 @@ class AuditionDataModel: CustomStringConvertible, Codable {
     // check out the HEAD
     func checkout() throws -> Tree {
         do {
-            return try checkout(commit: branches[HEAD]!)
+            guard let HEADcommit = branches[HEAD] else {
+                throw AuditionError.runtimeError("HEAD does not point to an existing branch")
+            }
+            return try checkout(commit: HEADcommit)
         } catch {
             throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD")
         }
