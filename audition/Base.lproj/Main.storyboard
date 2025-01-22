@@ -78,10 +78,10 @@
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <state key="normal" title="Button"/>
                                     <buttonConfiguration key="configuration" style="plain" title="Branch"/>
+                                    <connections>
+                                        <action selector="branchButtonPressed:" destination="Dki-bu-HI5" eventType="touchUpInside" id="Yq7-X5-M2C"/>
+                                    </connections>
                                 </button>
-                                <connections>
-                                    <action selector="branchButtonPressed:" destination="Dki-bu-HI5" id="YoK-Aj-ZHo"/>
-                                </connections>
                             </barButtonItem>
                             <barButtonItem style="plain" id="5OU-mx-qti">
                                 <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="efi-HK-k90">

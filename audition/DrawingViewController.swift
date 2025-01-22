@@ -121,7 +121,15 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     
     @IBAction func branchButtonPressed(_ sender: Any) {
         print("branch button pressed")
-        
+        let count = dataModelFromHomeVC?.branches.count
+        do {
+            let branchName = "branch \(count!)"
+            try dataModelFromHomeVC?.checkout(branch: branchName, newBranch: true)
+            displayAlert(title: "Branch created", msg: "You are now on branch \(branchName)")
+            
+        } catch let error {
+            displayError(msg: "\(error)")
+        }
     }
     
     @IBAction func commitButtonPressed(_ sender: Any) {
@@ -146,12 +154,23 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
                 let commits: [Commit] = try dataModelFromHomeVC!.log()
                 destination.commits = commits
             } catch let error {
-                let msg = "error: Failed to compile commits and send to LogViewController: \(error)"
-                let alert = UIAlertController(title: "Error", message: msg, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .default, handler: { _ in NSLog(msg)}))
-                self.present(alert, animated: true, completion: nil)
+                displayError(msg: "error: Failed to compile commits and send to LogViewController: \(error)")
             }
         }
     }
     
+    func displayError(msg: String) {
+        displayAlert(title: "Error", msg: msg)
+    }
+    
+    func displayAlert(title: String, msg: String) {
+        let alert = UIAlertController(title: title, message: msg, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .default, handler: {
+            _ in NSLog(msg)
+            self.toolPicker.setVisible(true, forFirstResponder: self.canvasView)
+            self.toolPicker.addObserver(self.canvasView)
+            self.canvasView.becomeFirstResponder()
+        }))
+        self.present(alert, animated: true, completion: nil)
+    }
 }
