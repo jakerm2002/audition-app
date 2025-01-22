@@ -665,7 +665,7 @@ struct auditionTests {
         #expect((try a1.showTree(commit: commit1).sha256DigestValue) == t1.sha256DigestValue)
     }
     
-    @Test func testCheckoutBlobs() async throws {
+    @Test func testShowBlobs() async throws {
         let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
         let filename1 = "README.md"
         
@@ -683,8 +683,8 @@ struct auditionTests {
         let b1 = Blob(contents: content1)
         let t1 = Tree(entries: [TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
         
-        try #require(try a1.checkoutBlobs().count == 1)
-        #expect((try a1.checkoutBlobs()[0].sha256DigestValue) == b1.sha256DigestValue)
+        try #require(try a1.showBlobs().count == 1)
+        #expect((try a1.showBlobs()[0].sha256DigestValue) == b1.sha256DigestValue)
         
         let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
         let filename2 = "hello.txt"
@@ -705,9 +705,9 @@ struct auditionTests {
         let commitObj1 = a1.objects[commit1] as! Commit
         let commitObj2 = a1.objects[commit2] as! Commit
         
-        try #require(try a1.checkoutBlobs().count == 2)
-        #expect((try a1.checkoutBlobs()[0].sha256DigestValue) == b2.sha256DigestValue)
-        #expect((try a1.checkoutBlobs()[1].sha256DigestValue) == b1.sha256DigestValue)
+        try #require(try a1.showBlobs().count == 2)
+        #expect((try a1.showBlobs()[0].sha256DigestValue) == b2.sha256DigestValue)
+        #expect((try a1.showBlobs()[1].sha256DigestValue) == b1.sha256DigestValue)
     }
     
     @Test func testCreateBranch() async throws {

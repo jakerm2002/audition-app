@@ -39,7 +39,7 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         // TODO: for our current implementation where each drawing is contained in one blob,
         // we need to find the most recent blob and use the data from it to create a PKDrawing.
         do {
-            let mostRecentBlob = try dataModelFromHomeVC?.checkoutBlobs()[0]
+            let mostRecentBlob = try dataModelFromHomeVC?.showBlobs()[0]
             canvasView.drawing = try PKDrawing(data: mostRecentBlob!.contents)
         } catch {
             print("error: DrawingViewController could not load Blob")
@@ -95,7 +95,7 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
             // grab the blob that was included in the commit
             // we're assuming there will only be one, this will NOT BE TRUE in the future
             // once we are committing individual strokes instead of the entire drawing
-            let aBlob = try dataModelFromHomeVC?.checkoutBlobs(commit: commit.sha256DigestValue!)[0]
+            let aBlob = try dataModelFromHomeVC?.showBlobs(commit: commit.sha256DigestValue!)[0]
             let d = try PKDrawing(data: aBlob!.contents)
             let new = PKCanvasView()
             new.drawing = d

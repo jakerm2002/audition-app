@@ -186,14 +186,14 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         return tree
     }
     
-    func checkoutBlobs() throws -> [Blob] {
+    func showBlobs() throws -> [Blob] {
         guard let HEADcommit = branches[HEAD] else {
             throw AuditionError.runtimeError("HEAD does not point to an existing branch")
         }
-        return try checkoutBlobs(commit: HEADcommit)
+        return try showBlobs(commit: HEADcommit)
     }
     
-    func checkoutBlobs(commit: String) throws -> [Blob] {
+    func showBlobs(commit: String) throws -> [Blob] {
         let t = try showTree(commit: commit)
         
         var blobs = [Blob]()
