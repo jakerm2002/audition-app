@@ -119,6 +119,11 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         }
     }
     
+    @IBAction func branchButtonPressed(_ sender: Any) {
+        print("branch button pressed")
+        
+    }
+    
     @IBAction func commitButtonPressed(_ sender: Any) {
         print("commit button pressed")
         
