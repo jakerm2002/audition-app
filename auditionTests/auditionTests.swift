@@ -710,8 +710,198 @@ struct auditionTests {
         #expect((try a1.checkoutBlobs()[1].sha256DigestValue) == b1.sha256DigestValue)
     }
     
-    @Test func testNewBranch() async throws {
+    @Test func testCreateBranch() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
         
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage1 = "initial commit"
+        let commit1: String = try a1.commit(message: commitMessage1)
+        
+        let b1 = Blob(contents: content1)
+        let t1 = Tree(entries: [TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        
+        let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
+        let filename2 = "hello.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        try a1.add(f2)
+        
+        let commitMessage2 = "second commit"
+        let commit2: String = try a1.commit(message: commitMessage2)
+        
+        let b2 = Blob(contents: content2)
+        let t2 = Tree(entries: [TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2), TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        
+        let newBranchName = "featureA"
+        try a1.createBranch(branchName: newBranchName)
+        try #require(a1.branches["main"] != nil)
+        #expect(a1.branches["main"] == commit2)
+        try #require(a1.branches[newBranchName] != nil)
+        #expect(a1.branches[newBranchName] == commit2)
+        #expect(a1.HEAD == "main")
+    }
+    
+    @Test func testCheckoutBranch() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage1 = "initial commit"
+        let commit1: String = try a1.commit(message: commitMessage1)
+        
+        let b1 = Blob(contents: content1)
+        let t1 = Tree(entries: [TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        
+        let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
+        let filename2 = "hello.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        try a1.add(f2)
+        
+        let commitMessage2 = "second commit"
+        let commit2: String = try a1.commit(message: commitMessage2)
+        
+        let b2 = Blob(contents: content2)
+        let t2 = Tree(entries: [TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2), TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        
+        let newBranchName = "featureA"
+        
+        // test checkout with non-existent branch
+        try #require(throws: AuditionError.self) {
+            try a1.checkout(branch: newBranchName)
+        }
+        
+        try a1.createBranch(branchName: newBranchName)
+        
+        try a1.checkout(branch: newBranchName)
+        #expect(a1.HEAD == newBranchName)
+    }
+    
+    @Test func testCreateAndCheckoutBranch() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage1 = "initial commit"
+        let commit1: String = try a1.commit(message: commitMessage1)
+        
+        let b1 = Blob(contents: content1)
+        let t1 = Tree(entries: [TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        
+        let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
+        let filename2 = "hello.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        try a1.add(f2)
+        
+        let commitMessage2 = "second commit"
+        let commit2: String = try a1.commit(message: commitMessage2)
+        
+        let b2 = Blob(contents: content2)
+        let t2 = Tree(entries: [TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2), TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        
+        let newBranchName = "featureA"
+        
+        // test checkout with non-existent branch
+        try #require(throws: AuditionError.self) {
+            try a1.checkout(branch: newBranchName, newBranch: false)
+        }
+        
+        try a1.checkout(branch: newBranchName, newBranch: true)
+        try #require(a1.branches["main"] != nil)
+        #expect(a1.branches["main"] == commit2)
+        try #require(a1.branches[newBranchName] != nil)
+        #expect(a1.branches[newBranchName] == commit2)
+        #expect(a1.HEAD == newBranchName)
+    }
+    
+    @Test func testCommitBranch() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage1 = "initial commit"
+        let commit1: String = try a1.commit(message: commitMessage1)
+        
+        let b1 = Blob(contents: content1)
+        let t1 = Tree(entries: [TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        
+        let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
+        let filename2 = "hello.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        try a1.add(f2)
+        
+        let commitMessage2 = "second commit"
+        let commit2: String = try a1.commit(message: commitMessage2)
+        
+        let b2 = Blob(contents: content2)
+        let t2 = Tree(entries: [TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2), TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        
+        let newBranchName = "featureA"
+        try a1.checkout(branch: newBranchName, newBranch: true)
+        
+        let content3 = Data(String(stringLiteral: "see ya later!").utf8)
+        let filename3 = "goodbye.txt"
+        
+        let f3 = AuditionFile(content: content3, name: filename3)
+        
+        try a1.add(f3)
+        
+        let commitMessage3 = "third commit"
+        let commit3: String = try a1.commit(message: commitMessage3)
+        
+        let b3 = Blob(contents: content3)
+        let t3 = Tree(entries: [TreeEntry(type: .blob, hash: b3.sha256DigestValue!, name: filename3), TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2), TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
+        
+        #expect(a1.branches["main"] == commit2)
+        #expect(a1.branches[newBranchName] == commit3)
+        #expect(a1.HEAD == newBranchName)
     }
     
     @Test func testEmptyCommitNotAllowed() async throws {

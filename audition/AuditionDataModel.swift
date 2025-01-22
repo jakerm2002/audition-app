@@ -137,6 +137,31 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         return commit
     }
     
+    // creates a branch off of the current branch
+    func createBranch(branchName: String) throws {
+        guard branches[branchName] == nil else {
+            throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
+        }
+        
+        guard let HEADcommit = branches[HEAD] else {
+            throw AuditionError.runtimeError("Current branch unknown: HEAD does not point to an existing branch")
+        }
+        
+        branches[branchName] = HEADcommit
+    }
+    
+    func checkout(branch: String, newBranch: Bool = false) throws {
+        // ensure that there will be a new branch created, or that a branch already exists
+        guard newBranch || branches[branch] != nil else {
+            throw AuditionError.runtimeError("A branch named '\(branch)' does not exist")
+        }
+        if newBranch {
+            try createBranch(branchName: branch)
+        }
+        
+        HEAD = branch
+    }
+    
     // check out the HEAD
     func checkout() throws -> Tree {
         guard let HEADcommit = branches[HEAD] else {
