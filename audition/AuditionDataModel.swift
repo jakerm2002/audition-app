@@ -169,7 +169,7 @@ class AuditionDataModel: CustomStringConvertible, Codable {
     }
     
     func checkoutBlobs(commit: String) throws -> [Blob] {
-        let t = try checkout()
+        let t = try checkout(commit: commit)
         
         var blobs = [Blob]()
         for entry in t.entries {
