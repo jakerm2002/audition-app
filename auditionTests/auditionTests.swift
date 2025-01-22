@@ -621,7 +621,7 @@ struct auditionTests {
         #expect(logFromCommit[1].timestamp.distance(to: .now) < TimeInterval(1))
     }
     
-    @Test func testCheckout() async throws {
+    @Test func testShowTree() async throws {
         let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
         let filename1 = "README.md"
         
@@ -658,11 +658,11 @@ struct auditionTests {
         let commitObj1 = a1.objects[commit1] as! Commit
         let commitObj2 = a1.objects[commit2] as! Commit
         
-        #expect(try a1.checkout().sha256DigestValue == commitObj2.tree)
-        #expect(try a1.checkout().sha256DigestValue == t2.sha256DigestValue)
+        #expect(try a1.showTree().sha256DigestValue == commitObj2.tree)
+        #expect(try a1.showTree().sha256DigestValue == t2.sha256DigestValue)
         
-        #expect((try a1.checkout(commit: commit1).sha256DigestValue) == commitObj1.tree)
-        #expect((try a1.checkout(commit: commit1).sha256DigestValue) == t1.sha256DigestValue)
+        #expect((try a1.showTree(commit: commit1).sha256DigestValue) == commitObj1.tree)
+        #expect((try a1.showTree(commit: commit1).sha256DigestValue) == t1.sha256DigestValue)
     }
     
     @Test func testCheckoutBlobs() async throws {
