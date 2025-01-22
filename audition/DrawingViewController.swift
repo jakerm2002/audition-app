@@ -11,9 +11,13 @@ import CoreData
 
 var count = 0
 
-class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver {
+protocol DrawingModifiable {
+    func setDrawingData(commit: Commit)
+}
+
+class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver, DrawingModifiable {
     
-    let canvasView = PKCanvasView()
+    var canvasView = PKCanvasView()
     
     let canvasWidth: CGFloat = 768
     let canvasOverscrollHeight: CGFloat = 500
@@ -21,6 +25,8 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     let toolPicker = PKToolPicker()
     
     var dataModelFromHomeVC: AuditionDataModel?
+    
+    let drawingToLogSegueIdentifier = "DrawingToLogSegueIdentifier"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,7 +35,25 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         toolPicker.setVisible(true, forFirstResponder: canvasView)
         toolPicker.addObserver(canvasView)
         canvasView.becomeFirstResponder()
+        
+        // TODO: for our current implementation where each drawing is contained in one blob,
+        // we need to find the most recent blob and use the data from it to create a PKDrawing.
+        do {
+            let mostRecentBlob = try dataModelFromHomeVC?.checkoutBlobs()[0]
+            canvasView.drawing = try PKDrawing(data: mostRecentBlob!.contents)
+        } catch {
+            print("error: DrawingViewController could not load Blob")
+        }
         view.addSubview(canvasView)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        canvasView.delegate = self
+        canvasView.drawingPolicy = .anyInput
+        toolPicker.setVisible(true, forFirstResponder: canvasView)
+        toolPicker.addObserver(canvasView)
+        canvasView.becomeFirstResponder()
     }
     
     override func viewDidLayoutSubviews() {
@@ -61,8 +85,27 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         print("drawing saved")
     }
     
-    func storeDataModel() {
-        
+    func storeDataModel() throws {
+        try dataModelFromHomeVC?.add(AuditionFile(content: canvasView.drawing.dataRepresentation(), name: "drawing"))
+        try dataModelFromHomeVC?.commit(message: "new drawing")
+    }
+    
+    func setDrawingData(commit: Commit) {
+        do {
+            // grab the blob that was included in the commit
+            // we're assuming there will only be one, this will NOT BE TRUE in the future
+            // once we are committing individual strokes instead of the entire drawing
+            let aBlob = try dataModelFromHomeVC?.checkoutBlobs(commit: commit.sha256DigestValue!)[0]
+            let d = try PKDrawing(data: aBlob!.contents)
+            let new = PKCanvasView()
+            new.drawing = d
+            canvasView.removeFromSuperview()
+            canvasView = new
+            view.addSubview(canvasView)
+            
+        } catch {
+            print("error: DrawingViewController could not load/set drawing data")
+        }
     }
     
     func saveContext () {
@@ -82,7 +125,27 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         if canvasView.drawing.bounds.isEmpty {
             print("Drawing is empty, skipping commit.")
         } else {
-            storeDrawing()
+            do {
+                try storeDataModel()
+            } catch {
+                print("Storing data model failed")
+            }
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == drawingToLogSegueIdentifier, let destination = segue.destination as? LogViewController {
+            // compile the commits, then send them over
+            do {
+                destination.delegate = self
+                let commits: [Commit] = try dataModelFromHomeVC!.log()
+                destination.commits = commits
+            } catch let error {
+                let msg = "error: Failed to compile commits and send to LogViewController: \(error)"
+                let alert = UIAlertController(title: "Error", message: msg, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .default, handler: { _ in NSLog(msg)}))
+                self.present(alert, animated: true, completion: nil)
+            }
         }
     }
     

@@ -19,10 +19,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="URx-HR-2rc">
-                                <rect key="frame" x="373" y="573" width="75" height="35"/>
+                                <rect key="frame" x="380" y="573" width="62" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Start"/>
                                 <connections>
                                     <segue destination="Dki-bu-HI5" kind="show" identifier="HomeToMainSegueIdentifier" id="hxb-xa-8xC"/>
                                 </connections>
@@ -79,7 +79,7 @@
                                     <state key="normal" title="Button"/>
                                     <buttonConfiguration key="configuration" style="plain" title="See Log"/>
                                     <connections>
-                                        <segue destination="bSB-26-alT" kind="show" id="BHd-dY-Xxe"/>
+                                        <segue destination="bSB-26-alT" kind="show" identifier="DrawingToLogSegueIdentifier" id="BHd-dY-Xxe"/>
                                     </connections>
                                 </button>
                             </barButtonItem>
@@ -203,7 +203,13 @@
                             <constraint firstItem="nKl-qO-V9M" firstAttribute="bottom" secondItem="OEy-5n-YDD" secondAttribute="bottom" id="qhF-dl-Jp2"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="kC8-qG-3dv"/>
+                    <navigationItem key="navigationItem" id="kC8-qG-3dv">
+                        <barButtonItem key="backBarButtonItem" title="Back" id="Cik-cd-9uc">
+                            <connections>
+                                <action selector="backButtonPressed:" destination="bSB-26-alT" id="M88-wN-xhI"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="tableView" destination="nKl-qO-V9M" id="qSp-Cg-u4C"/>
                     </connections>

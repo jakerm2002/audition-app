@@ -118,6 +118,8 @@ class AuditionDataModel: CustomStringConvertible, Codable {
     
     // returns: the hash of the created commit
     func commit(message: String) throws -> String {
+        // TODO: decide if empty commmits should be allowed
+        
         // write the tree from the index
         let h = writeTree()
         
@@ -137,10 +139,13 @@ class AuditionDataModel: CustomStringConvertible, Codable {
     
     // check out the HEAD
     func checkout() throws -> Tree {
+        guard let HEADcommit = branches[HEAD] else {
+            throw AuditionError.runtimeError("HEAD does not point to an existing branch")
+        }
         do {
-            return try checkout(commit: branches[HEAD]!)
-        } catch {
-            throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD")
+            return try checkout(commit: HEADcommit)
+        } catch let error {
+            throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD: \(error)")
         }
     }
     
@@ -157,7 +162,14 @@ class AuditionDataModel: CustomStringConvertible, Codable {
     }
     
     func checkoutBlobs() throws -> [Blob] {
-        let t = try checkout()
+        guard let HEADcommit = branches[HEAD] else {
+            throw AuditionError.runtimeError("HEAD does not point to an existing branch")
+        }
+        return try checkoutBlobs(commit: HEADcommit)
+    }
+    
+    func checkoutBlobs(commit: String) throws -> [Blob] {
+        let t = try checkout(commit: commit)
         
         var blobs = [Blob]()
         for entry in t.entries {
@@ -174,7 +186,7 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         do {
             return try log(branch: HEAD)
         } catch {
-            throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD")
+            throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD. Perhaps there is nothing committed yet?")
         }
     }
     

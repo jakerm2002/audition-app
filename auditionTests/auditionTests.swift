@@ -709,4 +709,12 @@ struct auditionTests {
         #expect((try a1.checkoutBlobs()[0].sha256DigestValue) == b2.sha256DigestValue)
         #expect((try a1.checkoutBlobs()[1].sha256DigestValue) == b1.sha256DigestValue)
     }
+    
+    @Test func testNewBranch() async throws {
+        
+    }
+    
+    @Test func testEmptyCommitNotAllowed() async throws {
+        
+    }
 }
