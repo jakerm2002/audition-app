@@ -203,7 +203,13 @@
                             <constraint firstItem="nKl-qO-V9M" firstAttribute="bottom" secondItem="OEy-5n-YDD" secondAttribute="bottom" id="qhF-dl-Jp2"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="kC8-qG-3dv"/>
+                    <navigationItem key="navigationItem" id="kC8-qG-3dv">
+                        <barButtonItem key="backBarButtonItem" title="Back" id="Cik-cd-9uc">
+                            <connections>
+                                <action selector="backButtonPressed:" destination="bSB-26-alT" id="M88-wN-xhI"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="tableView" destination="nKl-qO-V9M" id="qSp-Cg-u4C"/>
                     </connections>

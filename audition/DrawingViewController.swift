@@ -11,7 +11,11 @@ import CoreData
 
 var count = 0
 
-class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver {
+protocol DrawingModifiable {
+    func setDrawingData(commit: Commit)
+}
+
+class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver, DrawingModifiable {
     
     let canvasView = PKCanvasView()
     
@@ -86,6 +90,21 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         try dataModelFromHomeVC?.commit(message: "new drawing")
     }
     
+    func setDrawingData(commit: Commit) {
+        //
+        // grab one of the blobs in the commit
+//        try dataModelFromHomeVC?.checkout(commit: commit.sha256DigestValue!)
+//        let mostRecentBlob = try dataModelFromHomeVC?.checkoutBlobs()[0]
+//        canvasView.drawing = try PKDrawing(data: mostRecentBlob!.contents)
+        do {
+            // TODO: this doesn't work. we need to grab the blob that was included in the most recent commit
+            let aBlob = try dataModelFromHomeVC?.checkoutBlobs(commit: commit.sha256DigestValue!)[0]
+            canvasView.drawing = try PKDrawing(data: aBlob!.contents)
+        } catch {
+            print("error: DrawingViewController could not load/set drawing data")
+        }
+    }
+    
     func saveContext () {
         if context.hasChanges {
             do {
@@ -115,6 +134,7 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         if segue.identifier == drawingToLogSegueIdentifier, let destination = segue.destination as? LogViewController {
             // compile the commits, then send them over
             do {
+                destination.delegate = self
                 let commits: [Commit] = try dataModelFromHomeVC!.log()
                 destination.commits = commits
             } catch let error {

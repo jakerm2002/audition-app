@@ -139,13 +139,13 @@ class AuditionDataModel: CustomStringConvertible, Codable {
     
     // check out the HEAD
     func checkout() throws -> Tree {
+        guard let HEADcommit = branches[HEAD] else {
+            throw AuditionError.runtimeError("HEAD does not point to an existing branch")
+        }
         do {
-            guard let HEADcommit = branches[HEAD] else {
-                throw AuditionError.runtimeError("HEAD does not point to an existing branch")
-            }
             return try checkout(commit: HEADcommit)
-        } catch {
-            throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD")
+        } catch let error {
+            throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD: \(error)")
         }
     }
     
@@ -162,6 +162,13 @@ class AuditionDataModel: CustomStringConvertible, Codable {
     }
     
     func checkoutBlobs() throws -> [Blob] {
+        guard let HEADcommit = branches[HEAD] else {
+            throw AuditionError.runtimeError("HEAD does not point to an existing branch")
+        }
+        return try checkoutBlobs(commit: HEADcommit)
+    }
+    
+    func checkoutBlobs(commit: String) throws -> [Blob] {
         let t = try checkout()
         
         var blobs = [Blob]()

@@ -15,6 +15,8 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
     
     let logViewCellIdentifier = "LogViewCellIdentifier"
     
+    var delegate: UIViewController?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -43,5 +45,13 @@ class LogViewController: UIViewController, UITableViewDelegate, UITableViewDataS
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        let commit = commits[indexPath.row]
+        print("user selected commit \(indexPath.row)")
+        let drawingVC = delegate as! DrawingModifiable
+        drawingVC.setDrawingData(commit: commit)
+        _ = navigationController?.popViewController(animated: true)
+    }
+    
+    @IBAction func backButtonPressed(_ sender: Any) {
     }
 }
