@@ -708,6 +708,9 @@ struct auditionTests {
         try #require(try a1.showBlobs().count == 2)
         #expect((try a1.showBlobs()[0].sha256DigestValue) == b2.sha256DigestValue)
         #expect((try a1.showBlobs()[1].sha256DigestValue) == b1.sha256DigestValue)
+        
+        try #require(try a1.showBlobs(commit: commit1).count == 1)
+        #expect((try a1.showBlobs(commit: commit1)[0].sha256DigestValue) == b1.sha256DigestValue)
     }
     
     @Test func testCreateBranch() async throws {
