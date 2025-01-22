@@ -17,7 +17,7 @@ protocol DrawingModifiable {
 
 class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver, DrawingModifiable {
     
-    let canvasView = PKCanvasView()
+    var canvasView = PKCanvasView()
     
     let canvasWidth: CGFloat = 768
     let canvasOverscrollHeight: CGFloat = 500
@@ -91,15 +91,18 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     }
     
     func setDrawingData(commit: Commit) {
-        //
-        // grab one of the blobs in the commit
-//        try dataModelFromHomeVC?.checkout(commit: commit.sha256DigestValue!)
-//        let mostRecentBlob = try dataModelFromHomeVC?.checkoutBlobs()[0]
-//        canvasView.drawing = try PKDrawing(data: mostRecentBlob!.contents)
         do {
-            // TODO: this doesn't work. we need to grab the blob that was included in the most recent commit
+            // grab the blob that was included in the commit
+            // we're assuming there will only be one, this will NOT BE TRUE in the future
+            // once we are committing individual strokes instead of the entire drawing
             let aBlob = try dataModelFromHomeVC?.checkoutBlobs(commit: commit.sha256DigestValue!)[0]
-            canvasView.drawing = try PKDrawing(data: aBlob!.contents)
+            let d = try PKDrawing(data: aBlob!.contents)
+            let new = PKCanvasView()
+            new.drawing = d
+            canvasView.removeFromSuperview()
+            canvasView = new
+            view.addSubview(canvasView)
+            
         } catch {
             print("error: DrawingViewController could not load/set drawing data")
         }
