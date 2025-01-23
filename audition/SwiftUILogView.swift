@@ -14,16 +14,18 @@ struct SwiftUILogView: View {
     @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
     
-    // Calculate the commits array once and store it in a property
     @State var commits: [Commit] = []
     @State private var singleSelection: String? = nil
     
-    // Initialize the commits array in the initializer
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         List(commits, id: \.sha256DigestValue!, selection: $singleSelection) { commit in
             LazyVStack(alignment: .leading) {
-                Button(action: {setDrawingData(commit: commit)},
+                Button(action: {
+                            setDrawingData(commit: commit)
+                            dismiss()
+                        },
                        label: {
                             VStack(alignment: .leading) {
                                 Text(commit.message).tint(.primary)
@@ -46,7 +48,7 @@ struct SwiftUILogView: View {
             do {
                 commits = try dataModel.log()
             } catch {
-                print("error: No commits yet")
+                print("ERROR: No commits yet")
                 commits = []
             }
         }
@@ -61,9 +63,9 @@ struct SwiftUILogView: View {
             let newDrawing = try PKDrawing(data: aBlob.contents)
             rendition = newDrawing
             updatesCounter += 1
-            print("exiting setDrawingData")
+            print("setDrawingData succeeded")
         } catch let error {
-            print("setDrawingData failed to get blobs: \(error)")
+            print("setDrawingData FAILED to get blobs: \(error)")
         }
     }
 }

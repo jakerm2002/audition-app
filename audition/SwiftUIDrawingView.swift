@@ -46,9 +46,9 @@ struct SwiftUIDrawingView: View {
         } else {
             do {
                 try storeDataModel()
-                print("Data model stored succesfully")
+                print("storeDataModel succeeded")
             } catch {
-                print("Storing data model failed")
+                print("storeDataModel FAILED")
             }
         }
     }
@@ -59,7 +59,7 @@ struct MyCanvas: UIViewRepresentable {
     @Binding var toolPicker: PKToolPicker
     
     func makeUIView(context: Context) -> PKCanvasView {
-        print("makeUIView")
+        print("makeUIView called")
         let canvasView = PKCanvasView()
         canvasView.drawing = rendition
         canvasView.drawingPolicy = .anyInput
@@ -71,7 +71,6 @@ struct MyCanvas: UIViewRepresentable {
     }
 
     func updateUIView(_ canvasView: PKCanvasView, context: Context) {
-        print("updateUIView")
         canvasView.delegate = nil
         canvasView.drawing = rendition
         canvasView.delegate = context.coordinator
