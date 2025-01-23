@@ -12,6 +12,7 @@ struct SwiftUILogView: View {
     
     @EnvironmentObject var dataModel: AuditionDataModel
     @Binding var rendition: PKDrawing
+    @Binding var updatesCounter: Int
     
     // Calculate the commits array once and store it in a property
     @State var commits: [Commit] = []
@@ -59,6 +60,7 @@ struct SwiftUILogView: View {
             let aBlob = try dataModel.showBlobs(commit: commit.sha256DigestValue!)[0]
             let newDrawing = try PKDrawing(data: aBlob.contents)
             rendition = newDrawing
+            updatesCounter += 1
             print("exiting setDrawingData")
         } catch let error {
             print("setDrawingData failed to get blobs: \(error)")
@@ -67,5 +69,5 @@ struct SwiftUILogView: View {
 }
 
 #Preview {
-    SwiftUILogView(rendition: Binding.constant(PKDrawing()))
+    SwiftUILogView(rendition: Binding.constant(PKDrawing()), updatesCounter: Binding.constant(0))
 }

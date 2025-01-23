@@ -8,37 +8,22 @@
 import SwiftUI
 import PencilKit
 
-struct Canvas {
-    var view: PKCanvasView = PKCanvasView()
-    var id: Int = 0
-    
-    mutating func changeDrawing(data: Data) {
-        do {
-            let d = try PKDrawing(data: data)
-            let new = PKCanvasView()
-            new.drawing = d
-            view = new
-            id += 1
-            print("changing drawing")
-        }
-        catch {
-            print("changeDrawing failed")
-        }
-    }
-}
-
 struct SwiftUIDrawingView: View {
     
     @EnvironmentObject var dataModel: AuditionDataModel
     @State private var rendition = PKDrawing()
+    
+    // used to force replacement of PKCanvasView (call MyCanvas.makeUIView) when a drawing is changed
+    @State private var updatesCounter = 0
     @State private var toolPicker = PKToolPicker()
     
     var body: some View {
         MyCanvas(rendition: $rendition, toolPicker: $toolPicker)
+            .id(updatesCounter)
             .toolbar {
                 Button("Tree") {}
                 NavigationLink("Log") {
-                    SwiftUILogView(rendition: $rendition).environmentObject(dataModel)
+                    SwiftUILogView(rendition: $rendition, updatesCounter: $updatesCounter).environmentObject(dataModel)
                 }
                 Button("Branch") {
                     print("branch button pressed")
@@ -86,6 +71,7 @@ struct MyCanvas: UIViewRepresentable {
     }
 
     func updateUIView(_ canvasView: PKCanvasView, context: Context) {
+        print("updateUIView")
         canvasView.delegate = nil
         canvasView.drawing = rendition
         canvasView.delegate = context.coordinator
