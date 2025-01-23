@@ -24,16 +24,16 @@ struct AuditionFile {
     let name: String
 }
 
-class AuditionDataModel: CustomStringConvertible, Codable {
-    private(set) var objects: [String : AuditionObjectProtocol]
-    private(set) var index: [TreeEntry]
+class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject {
+    @Published private(set) var objects: [String : AuditionObjectProtocol]
+    @Published private(set) var index: [TreeEntry]
     
-    private(set) var HEAD: String {
+    @Published private(set) var HEAD: String {
         didSet {
             delegate?.headDidChange(HEAD)
         }
     }
-    private(set) var branches: [String : String]
+    @Published private(set) var branches: [String : String]
     
     weak var delegate: AuditionDataModelDelegate?
     

@@ -10,6 +10,8 @@ import PencilKit
 
 struct SwiftUIDrawingView: View {
     
+    @EnvironmentObject var dataModel: AuditionDataModel
+    
     @State private var canvasView = PKCanvasView()
     @State private var toolPicker = PKToolPicker()
     
@@ -18,10 +20,32 @@ struct SwiftUIDrawingView: View {
             .toolbar {
                 Button("Tree") {}
                 Button("Log") {}
-                Button("Branch") {}
-                Button("Commit") {}
+                Button("Branch") {
+                    print("branch button pressed")
+                }
+                Button("Commit to '\(dataModel.currentBranch ?? dataModel.HEAD)'", action: commitButtonPressed)
             }
             .toolbarRole(.editor)
+    }
+    
+    func storeDataModel() throws {
+        try dataModel.add(AuditionFile(content: canvasView.drawing.dataRepresentation(), name: "drawing"))
+        _ = try dataModel.commit(message: "new drawing")
+    }
+    
+    func commitButtonPressed() {
+        print("commit button pressed")
+        
+        if canvasView.drawing.bounds.isEmpty {
+            print("Drawing is empty, skipping commit.")
+        } else {
+            do {
+                try storeDataModel()
+                print("Data model stored succesfully")
+            } catch {
+                print("Storing data model failed")
+            }
+        }
     }
 }
 

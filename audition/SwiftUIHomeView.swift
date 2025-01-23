@@ -11,7 +11,7 @@ struct SwiftUIHomeView: View {
     var body: some View {
         NavigationStack {
             NavigationLink("Start") {
-                SwiftUIDrawingView()
+                SwiftUIDrawingView().environmentObject(AuditionDataModel())
             }.navigationTitle("Drawings")
         }
     }
