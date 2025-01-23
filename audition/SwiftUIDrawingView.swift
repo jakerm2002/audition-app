@@ -25,9 +25,7 @@ struct SwiftUIDrawingView: View {
                 NavigationLink("Log") {
                     SwiftUILogView(rendition: $rendition, updatesCounter: $updatesCounter).environmentObject(dataModel)
                 }
-                Button("Branch") {
-                    print("branch button pressed")
-                }
+                Button("Branch", action: branchButtonPressed)
                 Button("Commit to '\(dataModel.currentBranch ?? dataModel.HEAD)'", action: commitButtonPressed)
             }
             .toolbarRole(.editor)
@@ -36,6 +34,19 @@ struct SwiftUIDrawingView: View {
     func storeDataModel() throws {
         try dataModel.add(AuditionFile(content: rendition.dataRepresentation(), name: "drawing"))
         _ = try dataModel.commit(message: "new drawing")
+    }
+    
+    func branchButtonPressed() {
+        print("branch button pressed")
+        let count = dataModel.branches.count
+        do {
+            let branchName = "branch \(count)"
+            try dataModel.checkout(branch: branchName, newBranch: true)
+            print("Branch created. You are now on branch '\(branchName)'")
+            
+        } catch let error {
+            print("\(error)")
+        }
     }
     
     func commitButtonPressed() {
