@@ -11,7 +11,7 @@ import PencilKit
 struct SwiftUILogView: View {
     
     @EnvironmentObject var dataModel: AuditionDataModel
-    @Binding var canvas: Canvas
+    @Binding var rendition: PKDrawing
     
     // Calculate the commits array once and store it in a property
     @State var commits: [Commit] = []
@@ -57,7 +57,8 @@ struct SwiftUILogView: View {
         // once we are committing individual strokes instead of the entire drawing
         do {
             let aBlob = try dataModel.showBlobs(commit: commit.sha256DigestValue!)[0]
-            canvas.changeDrawing(data: aBlob.contents)
+            let newDrawing = try PKDrawing(data: aBlob.contents)
+            rendition = newDrawing
             print("exiting setDrawingData")
         } catch let error {
             print("setDrawingData failed to get blobs: \(error)")
@@ -66,5 +67,5 @@ struct SwiftUILogView: View {
 }
 
 #Preview {
-    SwiftUILogView(canvas: Binding.constant(Canvas()))
+    SwiftUILogView(rendition: Binding.constant(PKDrawing()))
 }
