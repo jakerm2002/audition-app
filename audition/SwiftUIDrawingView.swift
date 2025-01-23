@@ -71,8 +71,11 @@ struct MyCanvas: UIViewRepresentable {
     }
 
     func updateUIView(_ canvasView: PKCanvasView, context: Context) {
-        canvasView.delegate = nil
-        canvasView.drawing = rendition
+//        canvasView.delegate = nil
+        // if the below line is commented out, there is a chance that the two drawings could become un-synchronized
+        // however, the below line could cause slowdown due to trying to set the canvasView.drawing every time,
+        // even though there is a reasonable belief that they will be the same
+//        canvasView.drawing = rendition
         canvasView.delegate = context.coordinator
     }
     
@@ -94,9 +97,12 @@ class Coordinator: NSObject {
 // MARK: - PKCanvasViewDelegate
 extension Coordinator: PKCanvasViewDelegate {
     func canvasViewDrawingDidChange(_ canvasView: PKCanvasView) {
-        DispatchQueue.main.async {
+        // using DispatchQueue.main.async could cause problems if the setting of rendition
+        // is delayed long enough where if the user presses 'Commit' before rendition is set,
+        // then the changes will not be added to the commit
+//        DispatchQueue.main.async {
             self.parent.rendition = canvasView.drawing
-        }
+//        }
     }
 }
 
