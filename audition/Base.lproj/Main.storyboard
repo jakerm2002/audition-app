@@ -107,6 +107,9 @@
                             </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
+                    <connections>
+                        <outlet property="commitButton" destination="aMQ-3E-wMZ" id="IAk-qS-he2"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="unv-gD-Fd2" sceneMemberID="firstResponder"/>
             </objects>

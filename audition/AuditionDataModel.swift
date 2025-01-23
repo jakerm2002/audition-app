@@ -11,6 +11,14 @@ enum AuditionError: Error {
     case runtimeError(String)
 }
 
+protocol AuditionDataModelDelegate: AnyObject {
+    func headDidChange(_ newValue: String)
+}
+
+extension AuditionDataModelDelegate {
+    func headDidChange(_ newValue: String) { }
+}
+
 struct AuditionFile {
     let content: Data
     let name: String
@@ -20,8 +28,14 @@ class AuditionDataModel: CustomStringConvertible, Codable {
     private(set) var objects: [String : AuditionObjectProtocol]
     private(set) var index: [TreeEntry]
     
-    private(set) var HEAD: String
+    private(set) var HEAD: String {
+        didSet {
+            delegate?.headDidChange(HEAD)
+        }
+    }
     private(set) var branches: [String : String]
+    
+    weak var delegate: AuditionDataModelDelegate?
     
     init() {
         self.objects = [:]
@@ -35,6 +49,10 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         self.index = index
         self.HEAD = HEAD
         self.branches = branches
+    }
+    
+    var currentBranch: String? {
+        return branches[HEAD] != nil ? HEAD : nil
     }
     
     // params:

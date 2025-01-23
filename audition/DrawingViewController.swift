@@ -15,7 +15,7 @@ protocol DrawingModifiable {
     func setDrawingData(commit: Commit)
 }
 
-class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver, DrawingModifiable {
+class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver, DrawingModifiable, AuditionDataModelDelegate {
     
     var canvasView = PKCanvasView()
     
@@ -28,6 +28,8 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     
     let drawingToLogSegueIdentifier = "DrawingToLogSegueIdentifier"
 
+    @IBOutlet weak var commitButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         canvasView.delegate = self
@@ -35,6 +37,11 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         toolPicker.setVisible(true, forFirstResponder: canvasView)
         toolPicker.addObserver(canvasView)
         canvasView.becomeFirstResponder()
+        
+        dataModelFromHomeVC?.delegate = self
+        if let dataModelFromHomeVC {
+            setCommitButtonBranch(branch: dataModelFromHomeVC.HEAD)
+        }
         
         // TODO: for our current implementation where each drawing is contained in one blob,
         // we need to find the most recent blob and use the data from it to create a PKDrawing.
@@ -59,6 +66,10 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         canvasView.frame = view.bounds
+    }
+    
+    func setCommitButtonBranch(branch: String) {
+        commitButton.setTitle("Commit to '\(branch)'", for: .normal)
     }
     
     func storeDrawing() {
@@ -87,7 +98,7 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     
     func storeDataModel() throws {
         try dataModelFromHomeVC?.add(AuditionFile(content: canvasView.drawing.dataRepresentation(), name: "drawing"))
-        try dataModelFromHomeVC?.commit(message: "new drawing")
+        _ = try dataModelFromHomeVC?.commit(message: "new drawing")
     }
     
     func setDrawingData(commit: Commit) {
@@ -119,13 +130,17 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         }
     }
     
+    func headDidChange(_ newValue: String) {
+        setCommitButtonBranch(branch: newValue)
+    }
+    
     @IBAction func branchButtonPressed(_ sender: Any) {
         print("branch button pressed")
         let count = dataModelFromHomeVC?.branches.count
         do {
             let branchName = "branch \(count!)"
             try dataModelFromHomeVC?.checkout(branch: branchName, newBranch: true)
-            displayAlert(title: "Branch created", msg: "You are now on branch \(branchName)")
+            displayAlert(title: "Branch created", msg: "You are now on branch '\(branchName)'")
             
         } catch let error {
             displayError(msg: "\(error)")
