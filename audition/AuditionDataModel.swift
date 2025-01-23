@@ -11,6 +11,14 @@ enum AuditionError: Error {
     case runtimeError(String)
 }
 
+protocol AuditionDataModelDelegate: AnyObject {
+    func headDidChange(_ newValue: String)
+}
+
+extension AuditionDataModelDelegate {
+    func headDidChange(_ newValue: String) { }
+}
+
 struct AuditionFile {
     let content: Data
     let name: String
@@ -20,8 +28,14 @@ class AuditionDataModel: CustomStringConvertible, Codable {
     private(set) var objects: [String : AuditionObjectProtocol]
     private(set) var index: [TreeEntry]
     
-    private(set) var HEAD: String
+    private(set) var HEAD: String {
+        didSet {
+            delegate?.headDidChange(HEAD)
+        }
+    }
     private(set) var branches: [String : String]
+    
+    weak var delegate: AuditionDataModelDelegate?
     
     init() {
         self.objects = [:]
@@ -35,6 +49,10 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         self.index = index
         self.HEAD = HEAD
         self.branches = branches
+    }
+    
+    var currentBranch: String? {
+        return branches[HEAD] != nil ? HEAD : nil
     }
     
     // params:
@@ -137,19 +155,44 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         return commit
     }
     
+    // creates a branch off of the current branch
+    func createBranch(branchName: String) throws {
+        guard branches[branchName] == nil else {
+            throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
+        }
+        
+        guard let HEADcommit = branches[HEAD] else {
+            throw AuditionError.runtimeError("Current branch unknown: HEAD does not point to an existing branch")
+        }
+        
+        branches[branchName] = HEADcommit
+    }
+    
+    func checkout(branch: String, newBranch: Bool = false) throws {
+        // ensure that there will be a new branch created, or that a branch already exists
+        guard newBranch || branches[branch] != nil else {
+            throw AuditionError.runtimeError("A branch named '\(branch)' does not exist")
+        }
+        if newBranch {
+            try createBranch(branchName: branch)
+        }
+        
+        HEAD = branch
+    }
+    
     // check out the HEAD
-    func checkout() throws -> Tree {
+    func showTree() throws -> Tree {
         guard let HEADcommit = branches[HEAD] else {
             throw AuditionError.runtimeError("HEAD does not point to an existing branch")
         }
         do {
-            return try checkout(commit: HEADcommit)
+            return try showTree(commit: HEADcommit)
         } catch let error {
             throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD: \(error)")
         }
     }
     
-    func checkout(commit: String) throws -> Tree {
+    func showTree(commit: String) throws -> Tree {
         guard let commit = objects[commit] as? Commit else {
             throw AuditionError.runtimeError("Unable to read commit \(commit)")
         }
@@ -161,15 +204,15 @@ class AuditionDataModel: CustomStringConvertible, Codable {
         return tree
     }
     
-    func checkoutBlobs() throws -> [Blob] {
+    func showBlobs() throws -> [Blob] {
         guard let HEADcommit = branches[HEAD] else {
             throw AuditionError.runtimeError("HEAD does not point to an existing branch")
         }
-        return try checkoutBlobs(commit: HEADcommit)
+        return try showBlobs(commit: HEADcommit)
     }
     
-    func checkoutBlobs(commit: String) throws -> [Blob] {
-        let t = try checkout(commit: commit)
+    func showBlobs(commit: String) throws -> [Blob] {
+        let t = try showTree(commit: commit)
         
         var blobs = [Blob]()
         for entry in t.entries {

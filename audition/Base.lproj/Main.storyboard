@@ -63,7 +63,7 @@
                             </barButtonItem>
                             <barButtonItem style="plain" id="7Oo-Ch-Em3">
                                 <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="aMQ-3E-wMZ">
-                                    <rect key="frame" x="463" y="7.5" width="182" height="35"/>
+                                    <rect key="frame" x="596" y="7.5" width="149" height="35"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <state key="normal" title="Button"/>
                                     <buttonConfiguration key="configuration" style="plain" title="Commit"/>
@@ -72,12 +72,23 @@
                                     </connections>
                                 </button>
                             </barButtonItem>
-                            <barButtonItem style="plain" id="5OU-mx-qti">
-                                <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="efi-HK-k90">
-                                    <rect key="frame" x="273" y="7.5" width="182" height="35"/>
+                            <barButtonItem style="plain" id="g7P-Hy-kQ6">
+                                <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="p1n-qd-LeZ">
+                                    <rect key="frame" x="414" y="7.5" width="182" height="35"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <state key="normal" title="Button"/>
-                                    <buttonConfiguration key="configuration" style="plain" title="See Log"/>
+                                    <buttonConfiguration key="configuration" style="plain" title="Branch"/>
+                                    <connections>
+                                        <action selector="branchButtonPressed:" destination="Dki-bu-HI5" eventType="touchUpInside" id="Yq7-X5-M2C"/>
+                                    </connections>
+                                </button>
+                            </barButtonItem>
+                            <barButtonItem style="plain" id="5OU-mx-qti">
+                                <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="efi-HK-k90">
+                                    <rect key="frame" x="232" y="7.5" width="182" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <state key="normal" title="Button"/>
+                                    <buttonConfiguration key="configuration" style="plain" title="Log"/>
                                     <connections>
                                         <segue destination="bSB-26-alT" kind="show" identifier="DrawingToLogSegueIdentifier" id="BHd-dY-Xxe"/>
                                     </connections>
@@ -85,10 +96,10 @@
                             </barButtonItem>
                             <barButtonItem style="plain" id="CCJ-d4-VQ2">
                                 <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="jSf-Ht-dqJ">
-                                    <rect key="frame" x="83" y="7.5" width="182" height="35"/>
+                                    <rect key="frame" x="50" y="7.5" width="182" height="35"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <state key="normal" title="Button"/>
-                                    <buttonConfiguration key="configuration" style="plain" title="See Tree"/>
+                                    <buttonConfiguration key="configuration" style="plain" title="Tree"/>
                                     <connections>
                                         <segue destination="hCW-pn-JFJ" kind="show" id="vkZ-8k-cbg"/>
                                     </connections>
@@ -96,6 +107,9 @@
                             </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
+                    <connections>
+                        <outlet property="commitButton" destination="aMQ-3E-wMZ" id="IAk-qS-he2"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="unv-gD-Fd2" sceneMemberID="firstResponder"/>
             </objects>

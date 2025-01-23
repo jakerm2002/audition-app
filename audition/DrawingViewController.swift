@@ -15,7 +15,7 @@ protocol DrawingModifiable {
     func setDrawingData(commit: Commit)
 }
 
-class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver, DrawingModifiable {
+class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver, DrawingModifiable, AuditionDataModelDelegate {
     
     var canvasView = PKCanvasView()
     
@@ -28,6 +28,8 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     
     let drawingToLogSegueIdentifier = "DrawingToLogSegueIdentifier"
 
+    @IBOutlet weak var commitButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         canvasView.delegate = self
@@ -36,10 +38,15 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         toolPicker.addObserver(canvasView)
         canvasView.becomeFirstResponder()
         
+        dataModelFromHomeVC?.delegate = self
+        if let dataModelFromHomeVC {
+            setCommitButtonBranch(branch: dataModelFromHomeVC.HEAD)
+        }
+        
         // TODO: for our current implementation where each drawing is contained in one blob,
         // we need to find the most recent blob and use the data from it to create a PKDrawing.
         do {
-            let mostRecentBlob = try dataModelFromHomeVC?.checkoutBlobs()[0]
+            let mostRecentBlob = try dataModelFromHomeVC?.showBlobs()[0]
             canvasView.drawing = try PKDrawing(data: mostRecentBlob!.contents)
         } catch {
             print("error: DrawingViewController could not load Blob")
@@ -59,6 +66,10 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         canvasView.frame = view.bounds
+    }
+    
+    func setCommitButtonBranch(branch: String) {
+        commitButton.setTitle("Commit to '\(branch)'", for: .normal)
     }
     
     func storeDrawing() {
@@ -87,7 +98,7 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     
     func storeDataModel() throws {
         try dataModelFromHomeVC?.add(AuditionFile(content: canvasView.drawing.dataRepresentation(), name: "drawing"))
-        try dataModelFromHomeVC?.commit(message: "new drawing")
+        _ = try dataModelFromHomeVC?.commit(message: "new drawing")
     }
     
     func setDrawingData(commit: Commit) {
@@ -95,7 +106,7 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
             // grab the blob that was included in the commit
             // we're assuming there will only be one, this will NOT BE TRUE in the future
             // once we are committing individual strokes instead of the entire drawing
-            let aBlob = try dataModelFromHomeVC?.checkoutBlobs(commit: commit.sha256DigestValue!)[0]
+            let aBlob = try dataModelFromHomeVC?.showBlobs(commit: commit.sha256DigestValue!)[0]
             let d = try PKDrawing(data: aBlob!.contents)
             let new = PKCanvasView()
             new.drawing = d
@@ -116,6 +127,23 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
                 let nserror = error as NSError
                 fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
             }
+        }
+    }
+    
+    func headDidChange(_ newValue: String) {
+        setCommitButtonBranch(branch: newValue)
+    }
+    
+    @IBAction func branchButtonPressed(_ sender: Any) {
+        print("branch button pressed")
+        let count = dataModelFromHomeVC?.branches.count
+        do {
+            let branchName = "branch \(count!)"
+            try dataModelFromHomeVC?.checkout(branch: branchName, newBranch: true)
+            displayAlert(title: "Branch created", msg: "You are now on branch '\(branchName)'")
+            
+        } catch let error {
+            displayError(msg: "\(error)")
         }
     }
     
@@ -140,13 +168,25 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
                 destination.delegate = self
                 let commits: [Commit] = try dataModelFromHomeVC!.log()
                 destination.commits = commits
+                destination.title = "Commits from \(commits.first!.sha256DigestValue!.prefix(7))"
             } catch let error {
-                let msg = "error: Failed to compile commits and send to LogViewController: \(error)"
-                let alert = UIAlertController(title: "Error", message: msg, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .default, handler: { _ in NSLog(msg)}))
-                self.present(alert, animated: true, completion: nil)
+                displayError(msg: "error: Failed to compile commits and send to LogViewController: \(error)")
             }
         }
     }
     
+    func displayError(msg: String) {
+        displayAlert(title: "Error", msg: msg)
+    }
+    
+    func displayAlert(title: String, msg: String) {
+        let alert = UIAlertController(title: title, message: msg, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .default, handler: {
+            _ in NSLog(msg)
+            self.toolPicker.setVisible(true, forFirstResponder: self.canvasView)
+            self.toolPicker.addObserver(self.canvasView)
+            self.canvasView.becomeFirstResponder()
+        }))
+        self.present(alert, animated: true, completion: nil)
+    }
 }
