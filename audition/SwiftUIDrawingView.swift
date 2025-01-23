@@ -8,15 +8,17 @@
 import SwiftUI
 import PencilKit
 
-class Canvas: ObservableObject {
-    @Published var view = PKCanvasView()
+struct Canvas {
+    var view: PKCanvasView = PKCanvasView()
+    var id: Int = 0
     
-    func changeDrawing(data: Data) {
+    mutating func changeDrawing(data: Data) {
         do {
             let d = try PKDrawing(data: data)
             let new = PKCanvasView()
             new.drawing = d
             view = new
+            id += 1
             print("changing drawing")
         }
         catch {
@@ -28,16 +30,16 @@ class Canvas: ObservableObject {
 struct SwiftUIDrawingView: View {
     
     @EnvironmentObject var dataModel: AuditionDataModel
-    @StateObject private var canvas: Canvas = Canvas()
+    @State private var canvas: Canvas = Canvas()
     
     @State private var toolPicker = PKToolPicker()
     
     var body: some View {
-        MyCanvas(canvas: canvas, toolPicker: $toolPicker)
+        MyCanvas(canvas: $canvas, toolPicker: $toolPicker)
             .toolbar {
                 Button("Tree") {}
                 NavigationLink("Log") {
-                    SwiftUILogView(canvas: canvas).environmentObject(dataModel)
+                    SwiftUILogView(canvas: $canvas).environmentObject(dataModel)
                 }
                 Button("Branch") {
                     print("branch button pressed")
@@ -69,10 +71,11 @@ struct SwiftUIDrawingView: View {
 }
 
 struct MyCanvas: UIViewRepresentable {
-    @ObservedObject var canvas: Canvas
+    @Binding var canvas: Canvas
     @Binding var toolPicker: PKToolPicker
     
     func makeUIView(context: Context) -> PKCanvasView {
+        print("makeUIView")
         canvas.view.drawingPolicy = .anyInput
         canvas.view.becomeFirstResponder()
         toolPicker.setVisible(true, forFirstResponder: canvas.view)

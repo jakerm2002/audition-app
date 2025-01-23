@@ -11,7 +11,7 @@ import PencilKit
 struct SwiftUILogView: View {
     
     @EnvironmentObject var dataModel: AuditionDataModel
-    @ObservedObject var canvas: Canvas
+    @Binding var canvas: Canvas
     
     // Calculate the commits array once and store it in a property
     @State var commits: [Commit] = []
@@ -66,5 +66,5 @@ struct SwiftUILogView: View {
 }
 
 #Preview {
-    SwiftUILogView(canvas: ObservedObject(wrappedValue: Canvas()).wrappedValue)
+    SwiftUILogView(canvas: Binding.constant(Canvas()))
 }
