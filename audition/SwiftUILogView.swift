@@ -11,7 +11,7 @@ import PencilKit
 struct SwiftUILogView: View {
     
     @EnvironmentObject var dataModel: AuditionDataModel
-    @Binding var canvasView: PKCanvasView
+    @ObservedObject var canvas: Canvas
     
     // Calculate the commits array once and store it in a property
     @State var commits: [Commit] = []
@@ -60,10 +60,10 @@ struct SwiftUILogView: View {
             let d = try PKDrawing(data: aBlob.contents)
             let new = PKCanvasView()
             new.drawing = d
-            //        canvasView.removeFromSuperview()
-            //        canvasView = new
-            //        view.addSubview(canvasView)
-            canvasView = new
+//                canvas.view.removeFromSuperview()
+            canvas.view = new
+//            view.addSubview(canvas.view)
+            print("exiting setDrawingData")
         } catch {
             print("Setting drawing data failed")
         }
@@ -71,5 +71,5 @@ struct SwiftUILogView: View {
 }
 
 #Preview {
-    SwiftUILogView(canvasView: Binding.constant(PKCanvasView()))
+    SwiftUILogView(canvas: ObservedObject(wrappedValue: Canvas()).wrappedValue)
 }

@@ -8,19 +8,23 @@
 import SwiftUI
 import PencilKit
 
+class Canvas: ObservableObject {
+    @Published var view = PKCanvasView()
+}
+
 struct SwiftUIDrawingView: View {
     
     @EnvironmentObject var dataModel: AuditionDataModel
+    @StateObject private var canvas: Canvas = Canvas()
     
-    @State private var canvasView = PKCanvasView()
     @State private var toolPicker = PKToolPicker()
     
     var body: some View {
-        MyCanvas(canvasView: $canvasView, toolPicker: $toolPicker)
+        MyCanvas(canvas: canvas, toolPicker: $toolPicker)
             .toolbar {
                 Button("Tree") {}
                 NavigationLink("Log") {
-                    SwiftUILogView(canvasView: $canvasView).environmentObject(dataModel)
+                    SwiftUILogView(canvas: canvas).environmentObject(dataModel)
                 }
                 Button("Branch") {
                     print("branch button pressed")
@@ -31,14 +35,14 @@ struct SwiftUIDrawingView: View {
     }
     
     func storeDataModel() throws {
-        try dataModel.add(AuditionFile(content: canvasView.drawing.dataRepresentation(), name: "drawing"))
+        try dataModel.add(AuditionFile(content: canvas.view.drawing.dataRepresentation(), name: "drawing"))
         _ = try dataModel.commit(message: "new drawing")
     }
     
     func commitButtonPressed() {
         print("commit button pressed")
         
-        if canvasView.drawing.bounds.isEmpty {
+        if canvas.view.drawing.bounds.isEmpty {
             print("Drawing is empty, skipping commit.")
         } else {
             do {
@@ -52,15 +56,15 @@ struct SwiftUIDrawingView: View {
 }
 
 struct MyCanvas: UIViewRepresentable {
-    @Binding var canvasView: PKCanvasView
+    @ObservedObject var canvas: Canvas
     @Binding var toolPicker: PKToolPicker
     
     func makeUIView(context: Context) -> PKCanvasView {
-        canvasView.drawingPolicy = .anyInput
-        canvasView.becomeFirstResponder()
-        toolPicker.setVisible(true, forFirstResponder: canvasView)
-        toolPicker.addObserver(canvasView)
-        return canvasView
+        canvas.view.drawingPolicy = .anyInput
+        canvas.view.becomeFirstResponder()
+        toolPicker.setVisible(true, forFirstResponder: canvas.view)
+        toolPicker.addObserver(canvas.view)
+        return canvas.view
     }
 
     func updateUIView(_ canvasView: PKCanvasView, context: Context) { }
