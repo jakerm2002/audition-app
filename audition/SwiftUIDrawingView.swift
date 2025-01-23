@@ -20,7 +20,7 @@ struct SwiftUIDrawingView: View {
             .toolbar {
                 Button("Tree") {}
                 NavigationLink("Log") {
-                    SwiftUILogView().environmentObject(dataModel)
+                    SwiftUILogView(canvasView: $canvasView).environmentObject(dataModel)
                 }
                 Button("Branch") {
                     print("branch button pressed")

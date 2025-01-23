@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import PencilKit
 
 struct SwiftUILogView: View {
     
     @EnvironmentObject var dataModel: AuditionDataModel
+    @Binding var canvasView: PKCanvasView
     
     // Calculate the commits array once and store it in a property
     @State var commits: [Commit] = []
@@ -20,9 +22,7 @@ struct SwiftUILogView: View {
     var body: some View {
         List(commits, id: \.sha256DigestValue!, selection: $singleSelection) { commit in
             LazyVStack(alignment: .leading) {
-                Button(action: {
-                            print("Perform action here...")
-                        },
+                Button(action: {setDrawingData(commit: commit)},
                        label: {
                             VStack(alignment: .leading) {
                                 Text(commit.message).tint(.primary)
@@ -50,8 +50,26 @@ struct SwiftUILogView: View {
             }
         }
     }
+    
+    func setDrawingData(commit: Commit) {
+        // grab the blob that was included in the commit
+        // we're assuming there will only be one, this will NOT BE TRUE in the future
+        // once we are committing individual strokes instead of the entire drawing
+        do {
+            let aBlob = try dataModel.showBlobs(commit: commit.sha256DigestValue!)[0]
+            let d = try PKDrawing(data: aBlob.contents)
+            let new = PKCanvasView()
+            new.drawing = d
+            //        canvasView.removeFromSuperview()
+            //        canvasView = new
+            //        view.addSubview(canvasView)
+            canvasView = new
+        } catch {
+            print("Setting drawing data failed")
+        }
+    }
 }
 
 #Preview {
-    SwiftUILogView()
+    SwiftUILogView(canvasView: Binding.constant(PKCanvasView()))
 }
