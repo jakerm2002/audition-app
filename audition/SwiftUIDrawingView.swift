@@ -10,6 +10,19 @@ import PencilKit
 
 class Canvas: ObservableObject {
     @Published var view = PKCanvasView()
+    
+    func changeDrawing(data: Data) {
+        do {
+            let d = try PKDrawing(data: data)
+            let new = PKCanvasView()
+            new.drawing = d
+            view = new
+            print("changing drawing")
+        }
+        catch {
+            print("changeDrawing failed")
+        }
+    }
 }
 
 struct SwiftUIDrawingView: View {

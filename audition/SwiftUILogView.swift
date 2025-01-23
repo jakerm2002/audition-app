@@ -57,15 +57,10 @@ struct SwiftUILogView: View {
         // once we are committing individual strokes instead of the entire drawing
         do {
             let aBlob = try dataModel.showBlobs(commit: commit.sha256DigestValue!)[0]
-            let d = try PKDrawing(data: aBlob.contents)
-            let new = PKCanvasView()
-            new.drawing = d
-//                canvas.view.removeFromSuperview()
-            canvas.view = new
-//            view.addSubview(canvas.view)
+            canvas.changeDrawing(data: aBlob.contents)
             print("exiting setDrawingData")
-        } catch {
-            print("Setting drawing data failed")
+        } catch let error {
+            print("setDrawingData failed to get blobs: \(error)")
         }
     }
 }
