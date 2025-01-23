@@ -168,6 +168,7 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
                 destination.delegate = self
                 let commits: [Commit] = try dataModelFromHomeVC!.log()
                 destination.commits = commits
+                destination.title = "Commits from \(commits.first!.sha256DigestValue!.prefix(7))"
             } catch let error {
                 displayError(msg: "error: Failed to compile commits and send to LogViewController: \(error)")
             }
