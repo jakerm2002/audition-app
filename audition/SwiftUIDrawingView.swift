@@ -78,14 +78,41 @@ struct MyCanvas: UIViewRepresentable {
         let canvasView = PKCanvasView()
         canvasView.drawing = rendition
         canvasView.drawingPolicy = .anyInput
+        canvasView.delegate = context.coordinator // new
         canvasView.becomeFirstResponder()
         toolPicker.setVisible(true, forFirstResponder: canvasView)
         toolPicker.addObserver(canvasView)
         return canvasView
     }
 
-    func updateUIView(_ canvasView: PKCanvasView, context: Context) { }
+    func updateUIView(_ canvasView: PKCanvasView, context: Context) {
+        canvasView.delegate = nil
+        canvasView.drawing = rendition
+        canvasView.delegate = context.coordinator
+    }
     
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+}
+
+// MARK: - Coordinator
+class Coordinator: NSObject {
+    let parent: MyCanvas
+
+    // MARK: - Initializers
+    init(parent: MyCanvas) {
+        self.parent = parent
+    }
+}
+
+// MARK: - PKCanvasViewDelegate
+extension Coordinator: PKCanvasViewDelegate {
+    func canvasViewDrawingDidChange(_ canvasView: PKCanvasView) {
+        DispatchQueue.main.async {
+            self.parent.rendition = canvasView.drawing
+        }
+    }
 }
 
 #Preview {
