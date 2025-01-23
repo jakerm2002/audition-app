@@ -19,7 +19,9 @@ struct SwiftUIDrawingView: View {
         MyCanvas(canvasView: $canvasView, toolPicker: $toolPicker)
             .toolbar {
                 Button("Tree") {}
-                Button("Log") {}
+                NavigationLink("Log") {
+                    SwiftUILogView().environmentObject(dataModel)
+                }
                 Button("Branch") {
                     print("branch button pressed")
                 }
