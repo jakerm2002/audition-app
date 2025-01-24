@@ -28,20 +28,20 @@ struct CardView: View {
                     }
                 }
             }
-            .frame(alignment: .center)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .background(Color.white)
             VStack(alignment: .leading) {
                 Group {
-                    Text("Drawing name").fontWeight(.bold)
-                    Text("Last modified").foregroundStyle(.secondary).font(.subheadline)
+                    Text("Drawing name").foregroundStyle(Color.primary).fontWeight(.bold)
+                    Text("Last modified").foregroundStyle(Color.secondary).font(.subheadline)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 8.0)
             .padding(.horizontal, 10.0)
-            .background(.quinary)
+            .background(Color(uiColor: .systemGray6))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.white)
         .clipShape(.rect(cornerRadius: 12))
         .shadow(radius: 5)
     }
@@ -58,8 +58,8 @@ struct SwiftUIHomeView: View {
             ScrollView {
                 LazyVGrid(columns: columns) {
                     ForEach(models) { model in
-                        if let thumbnail = model.thumbnail {
-                            CardView(image: thumbnail)
+                        NavigationLink(destination: SwiftUIDrawingView().environmentObject(model)) {
+                            CardView(image: model.thumbnail)
                                 .frame(height: 175)
                         }
                     }
