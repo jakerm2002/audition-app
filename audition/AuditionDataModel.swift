@@ -264,6 +264,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         return commits
     }
     
+    // TODO: Make the AuditionDataModel maintain a thumbnail of itself instead of having other objects potentially call thumbnail redundantly
     var thumbnail: UIImage? {
         print("thumbnail being generated")
         let d: PKDrawing

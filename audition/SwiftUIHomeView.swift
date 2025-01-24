@@ -9,41 +9,40 @@ import SwiftUI
 
 struct CardView: View {
     
-    var image: UIImage?
-    
-    init(image: UIImage? = nil) {
-        self.image = image
-    }
+    @StateObject var model: AuditionDataModel
     
     var body: some View {
-        VStack(spacing: 0.0) {
-            HStack {
-                Group {
-                    if let image {
-                        Image(uiImage: image)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                    } else {
-                        Image(systemName: "exclamationmark.triangle.fill").imageScale(.large)
+        NavigationLink(destination: SwiftUIDrawingView().environmentObject(model)) {
+            VStack(spacing: 0.0) {
+                HStack {
+                    Group {
+                        if let image = model.thumbnail {
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        } else {
+                            Image(systemName: "exclamationmark.triangle.fill").imageScale(.large)
+                        }
                     }
                 }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            .background(Color.white)
-            VStack(alignment: .leading) {
-                Group {
-                    Text("Drawing name").fontWeight(.bold)
-                    Text("Last modified").foregroundStyle(.secondary).font(.subheadline)
+                .padding(.all)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .background(Color.white)
+                VStack(alignment: .leading) {
+                    Group {
+                        Text("Drawing name").fontWeight(.bold)
+                        Text("Last modified").foregroundStyle(.secondary).font(.subheadline)
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 8.0)
+                .padding(.horizontal, 10.0)
+                .background(Color(uiColor: .systemGray6))
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 8.0)
-            .padding(.horizontal, 10.0)
-            .background(Color(uiColor: .systemGray6))
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipShape(.rect(cornerRadius: 12))
-        .shadow(radius: 5)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipShape(.rect(cornerRadius: 12))
+            .shadow(radius: 5)
+        }.foregroundStyle(.primary)
     }
 }
 
@@ -58,10 +57,8 @@ struct SwiftUIHomeView: View {
             ScrollView {
                 LazyVGrid(columns: columns) {
                     ForEach(models) { model in
-                        NavigationLink(destination: SwiftUIDrawingView().environmentObject(model)) {
-                            CardView(image: model.thumbnail)
-                                .frame(height: 175)
-                        }.foregroundStyle(.primary)
+                        CardView(model: model)
+                            .frame(height: 175)
                     }
                 }.padding()
             }.navigationTitle("Drawings")
