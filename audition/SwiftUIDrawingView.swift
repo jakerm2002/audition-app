@@ -30,6 +30,13 @@ struct SwiftUIDrawingView: View {
             }
             .toolbarRole(.editor)
             .onAppear {
+                do {
+                    let mostRecentBlob = try dataModel.showBlobs()[0]
+                    rendition = try PKDrawing(data: mostRecentBlob.contents)
+                    print("SwiftUIDrawingView found initial drawing to display")
+                } catch {
+                    print("error: failed to load initial drawing from AuditionDataModel")
+                }
                 print("SwiftUIDrawingView received: \(dataModel.description) with thumbnail \(dataModel.thumbnail?.size.width ?? -1)")
             }
     }
@@ -93,7 +100,7 @@ struct MyCanvas: UIViewRepresentable {
         // if the below line is commented out, there is a chance that the two drawings could become un-synchronized
         // however, the below line could cause slowdown due to trying to set the canvasView.drawing every time,
         // even though there is a reasonable belief that they will be the same
-//        canvasView.drawing = rendition
+        canvasView.drawing = rendition
         canvasView.delegate = context.coordinator
     }
     
@@ -125,5 +132,6 @@ extension Coordinator: PKCanvasViewDelegate {
 }
 
 #Preview {
-    SwiftUIDrawingView()
+    let sampleModel = AuditionDataModel()
+    SwiftUIDrawingView().environmentObject(sampleModel)
 }
