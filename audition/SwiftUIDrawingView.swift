@@ -30,7 +30,7 @@ struct SwiftUIDrawingView: View {
             }
             .toolbarRole(.editor)
             .onAppear {
-                print("SwiftUIDrawingView received: \(dataModel.description) with thumbnail \(dataModel.thumbnail!.size.width)")
+                print("SwiftUIDrawingView received: \(dataModel.description) with thumbnail \(dataModel.thumbnail?.size.width ?? -1)")
             }
     }
     
