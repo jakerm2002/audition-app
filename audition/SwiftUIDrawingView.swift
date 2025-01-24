@@ -76,6 +76,10 @@ struct MyCanvas: UIViewRepresentable {
         canvasView.drawingPolicy = .anyInput
         canvasView.delegate = context.coordinator // new
         canvasView.becomeFirstResponder()
+        // TODO: figure out if dark mode should be supported
+        // TODO: if dark mode supported, .unspecified doesn't follow system color theme, needs fix
+        toolPicker.colorUserInterfaceStyle = .unspecified
+        toolPicker.overrideUserInterfaceStyle = .unspecified
         toolPicker.setVisible(true, forFirstResponder: canvasView)
         toolPicker.addObserver(canvasView)
         return canvasView
