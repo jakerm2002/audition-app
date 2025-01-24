@@ -12,7 +12,7 @@ struct CardView: View {
     @StateObject var model: AuditionDataModel
     
     var body: some View {
-        NavigationLink(destination: SwiftUIDrawingView().environmentObject(model)) {
+        NavigationLink(destination: SwiftUIDrawingView(fromHomeView: true).environmentObject(model)) {
             VStack(spacing: 0.0) {
                 HStack {
                     Group {

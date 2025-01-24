@@ -13,6 +13,8 @@ struct SwiftUIDrawingView: View {
     @EnvironmentObject var dataModel: AuditionDataModel
     @State private var rendition = PKDrawing()
     
+    @State var fromHomeView: Bool
+    
     // used to force replacement of PKCanvasView (call MyCanvas.makeUIView) when a drawing is changed
     @State private var updatesCounter = 0
     @State private var toolPicker = PKToolPicker()
@@ -30,15 +32,22 @@ struct SwiftUIDrawingView: View {
             }
             .toolbarRole(.editor)
             .onAppear {
-                do {
-                    let mostRecentBlob = try dataModel.showBlobs()[0]
-                    rendition = try PKDrawing(data: mostRecentBlob.contents)
-                    print("SwiftUIDrawingView found initial drawing to display")
-                } catch {
-                    print("error: failed to load initial drawing from AuditionDataModel")
+                if fromHomeView {
+                    fromHomeView = false
+                    loadInitialDrawing()
                 }
                 print("SwiftUIDrawingView received: \(dataModel.description) with thumbnail \(dataModel.thumbnail?.size.width ?? -1)")
             }
+    }
+    
+    func loadInitialDrawing() {
+        do {
+            let mostRecentBlob = try dataModel.showBlobs()[0]
+            rendition = try PKDrawing(data: mostRecentBlob.contents)
+            print("SwiftUIDrawingView found initial drawing to display")
+        } catch {
+            print("error: failed to load initial drawing from AuditionDataModel")
+        }
     }
     
     func storeDataModel() throws {
@@ -133,5 +142,5 @@ extension Coordinator: PKCanvasViewDelegate {
 
 #Preview {
     let sampleModel = AuditionDataModel()
-    SwiftUIDrawingView().environmentObject(sampleModel)
+    SwiftUIDrawingView(fromHomeView: true).environmentObject(sampleModel)
 }
