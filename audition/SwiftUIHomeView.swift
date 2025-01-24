@@ -16,18 +16,31 @@ struct CardView: View {
     }
     
     var body: some View {
-        VStack {
-            Group {
-                if let image {
-                    Image("mclaren")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                } else {
-                    Image(systemName: "exclamationmark.triangle.fill").imageScale(.large)
+        VStack(spacing: 0.0) {
+            HStack {
+                Group {
+                    if let image {
+                        Image("mclaren")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } else {
+                        Image(systemName: "exclamationmark.triangle.fill").imageScale(.large)
+                    }
                 }
-            }.frame(height: 100)
+            }
+            .frame(alignment: .center)
+            VStack(alignment: .leading) {
+                Group {
+                    Text("Drawing name").fontWeight(.bold)
+                    Text("Last modified").foregroundStyle(.secondary).font(.subheadline)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 8.0)
+            .padding(.horizontal, 10.0)
+            .background(.quinary)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.white)
         .clipShape(.rect(cornerRadius: 12))
         .shadow(radius: 5)
@@ -47,7 +60,7 @@ struct SwiftUIHomeView: View {
                     ForEach(models) { model in
                         if let thumbnail = model.thumbnail {
                             CardView(image: thumbnail)
-                                .frame(height: 150)
+                                .frame(height: 175)
                         }
                     }
                 }.padding()
