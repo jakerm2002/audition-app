@@ -20,7 +20,7 @@ struct CardView: View {
             HStack {
                 Group {
                     if let image {
-                        Image("mclaren")
+                        Image(uiImage: image)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                     } else {
@@ -28,7 +28,7 @@ struct CardView: View {
                     }
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .center)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .background(Color.white)
             VStack(alignment: .leading) {
                 Group {
@@ -51,7 +51,7 @@ struct SwiftUIHomeView: View {
     
     let columns = [GridItem](repeating: GridItem(.flexible(), spacing: 16), count: 5)
     
-    let models: [AuditionDataModel] = [AuditionDataModel(), AuditionDataModel(), AuditionDataModel(), AuditionDataModel(), AuditionDataModel()]
+    @State var models: [AuditionDataModel] = [AuditionDataModel(), AuditionDataModel(), AuditionDataModel(), AuditionDataModel(), AuditionDataModel()]
     
     var body: some View {
         NavigationStack {

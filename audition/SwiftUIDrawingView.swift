@@ -29,6 +29,9 @@ struct SwiftUIDrawingView: View {
                 Button("Commit to '\(dataModel.currentBranch ?? dataModel.HEAD)'", action: commitButtonPressed)
             }
             .toolbarRole(.editor)
+            .onAppear {
+                print("SwiftUIDrawingView received: \(dataModel.description) with thumbnail \(dataModel.thumbnail!.size.width)")
+            }
     }
     
     func storeDataModel() throws {

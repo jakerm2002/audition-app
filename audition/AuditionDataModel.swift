@@ -265,6 +265,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     }
     
     var thumbnail: UIImage? {
+        print("thumbnail being generated")
         let d: PKDrawing
         
         if currentBranch != nil {
@@ -278,8 +279,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
             }
             
         } else {
-            d = PKDrawing()
-            return d.image(from: d.bounds, scale: 0.1)
+            return nil
         }
     }
     
