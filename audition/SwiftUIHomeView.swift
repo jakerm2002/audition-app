@@ -32,8 +32,8 @@ struct CardView: View {
             .background(Color.white)
             VStack(alignment: .leading) {
                 Group {
-                    Text("Drawing name").foregroundStyle(Color.primary).fontWeight(.bold)
-                    Text("Last modified").foregroundStyle(Color.secondary).font(.subheadline)
+                    Text("Drawing name").fontWeight(.bold)
+                    Text("Last modified").foregroundStyle(.secondary).font(.subheadline)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -61,7 +61,7 @@ struct SwiftUIHomeView: View {
                         NavigationLink(destination: SwiftUIDrawingView().environmentObject(model)) {
                             CardView(image: model.thumbnail)
                                 .frame(height: 175)
-                        }
+                        }.foregroundStyle(.primary)
                     }
                 }.padding()
             }.navigationTitle("Drawings")
