@@ -92,7 +92,6 @@ struct MyCanvas: UIViewRepresentable {
         print("makeUIView called")
         let canvasView = PKCanvasView()
         canvasView.drawing = rendition
-        canvasView.drawingPolicy = .anyInput
         canvasView.delegate = context.coordinator // new
         canvasView.becomeFirstResponder()
         // TODO: figure out if dark mode should be supported
