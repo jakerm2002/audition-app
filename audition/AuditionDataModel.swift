@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import PencilKit
 
 enum AuditionError: Error {
     case runtimeError(String)
@@ -24,16 +25,16 @@ struct AuditionFile {
     let name: String
 }
 
-class AuditionDataModel: CustomStringConvertible, Codable {
-    private(set) var objects: [String : AuditionObjectProtocol]
-    private(set) var index: [TreeEntry]
+class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable {
+    @Published private(set) var objects: [String : AuditionObjectProtocol]
+    @Published private(set) var index: [TreeEntry]
     
-    private(set) var HEAD: String {
+    @Published private(set) var HEAD: String {
         didSet {
             delegate?.headDidChange(HEAD)
         }
     }
-    private(set) var branches: [String : String]
+    @Published private(set) var branches: [String : String]
     
     weak var delegate: AuditionDataModelDelegate?
     
@@ -261,6 +262,26 @@ class AuditionDataModel: CustomStringConvertible, Codable {
             }
         }
         return commits
+    }
+    
+    // TODO: Make the AuditionDataModel maintain a thumbnail of itself instead of having other objects potentially call thumbnail redundantly
+    var thumbnail: UIImage? {
+        print("thumbnail being generated")
+        let d: PKDrawing
+        
+        if currentBranch != nil {
+            do {
+                let blobs = try showBlobs()
+                d = try PKDrawing(data: blobs[0].contents)
+                return d.image(from: d.bounds, scale: 3.0)
+            } catch {
+                print("error: failed to create thumbnail from AuditionDataModel: \(error)")
+                return nil
+            }
+            
+        } else {
+            return nil
+        }
     }
     
     

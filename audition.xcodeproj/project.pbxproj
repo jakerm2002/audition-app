@@ -12,6 +12,9 @@
 		6653536B2D38A2770038930B /* AuditionObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6653536A2D38A26B0038930B /* AuditionObject.swift */; };
 		6653536E2D38B3F00038930B /* AuditionDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6653536D2D38B3EC0038930B /* AuditionDataModel.swift */; };
 		6669FDF52B094AAF00D8D17C /* TreeCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6669FDF42B094AAF00D8D17C /* TreeCollectionViewCell.swift */; };
+		667B14092D41EE0D002DFF7B /* SwiftUILogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 667B14082D41EE0D002DFF7B /* SwiftUILogView.swift */; };
+		667B140B2D41F0DA002DFF7B /* SwiftUIDrawingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 667B140A2D41F0DA002DFF7B /* SwiftUIDrawingView.swift */; };
+		667B140D2D41F353002DFF7B /* SwiftUIHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 667B140C2D41F353002DFF7B /* SwiftUIHomeView.swift */; };
 		668F96962A06302300E6B96F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 668F96952A06302300E6B96F /* AppDelegate.swift */; };
 		668F96982A06302300E6B96F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 668F96972A06302300E6B96F /* SceneDelegate.swift */; };
 		668F969A2A06302300E6B96F /* DrawingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 668F96992A06302300E6B96F /* DrawingViewController.swift */; };
@@ -40,6 +43,9 @@
 		6653536C2D38AAF40038930B /* AuditionObject.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = AuditionObject.playground; path = /Users/jakemedina/Developer/AuditionObject.playground; sourceTree = "<absolute>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		6653536D2D38B3EC0038930B /* AuditionDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuditionDataModel.swift; sourceTree = "<group>"; };
 		6669FDF42B094AAF00D8D17C /* TreeCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeCollectionViewCell.swift; sourceTree = "<group>"; };
+		667B14082D41EE0D002DFF7B /* SwiftUILogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUILogView.swift; sourceTree = "<group>"; };
+		667B140A2D41F0DA002DFF7B /* SwiftUIDrawingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIDrawingView.swift; sourceTree = "<group>"; };
+		667B140C2D41F353002DFF7B /* SwiftUIHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIHomeView.swift; sourceTree = "<group>"; };
 		668F96922A06302300E6B96F /* audition.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = audition.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		668F96952A06302300E6B96F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		668F96972A06302300E6B96F /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -98,6 +104,9 @@
 			isa = PBXGroup;
 			children = (
 				663931CD2D3C30E800906A00 /* LogViewController.swift */,
+				667B140C2D41F353002DFF7B /* SwiftUIHomeView.swift */,
+				667B14082D41EE0D002DFF7B /* SwiftUILogView.swift */,
+				667B140A2D41F0DA002DFF7B /* SwiftUIDrawingView.swift */,
 				6653536C2D38AAF40038930B /* AuditionObject.playground */,
 				6653536A2D38A26B0038930B /* AuditionObject.swift */,
 				6653536D2D38B3EC0038930B /* AuditionDataModel.swift */,
@@ -232,8 +241,11 @@
 				669872842B0943EE008A431A /* TreeViewController.swift in Sources */,
 				6653536E2D38B3F00038930B /* AuditionDataModel.swift in Sources */,
 				668F96982A06302300E6B96F /* SceneDelegate.swift in Sources */,
+				667B140B2D41F0DA002DFF7B /* SwiftUIDrawingView.swift in Sources */,
 				6669FDF52B094AAF00D8D17C /* TreeCollectionViewCell.swift in Sources */,
+				667B140D2D41F353002DFF7B /* SwiftUIHomeView.swift in Sources */,
 				665353692D377A700038930B /* TreeNode.swift in Sources */,
+				667B14092D41EE0D002DFF7B /* SwiftUILogView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -324,7 +336,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -378,7 +390,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -403,7 +415,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -432,7 +444,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

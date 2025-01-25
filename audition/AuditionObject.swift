@@ -116,7 +116,7 @@ class Tree: AuditionObjectProtocol {
     }
 }
 
-class Commit: AuditionObjectProtocol, Hashable {
+class Commit: AuditionObjectProtocol, Hashable, ObservableObject {
     let type: AuditionObjectType
     let tree: String
     let parents: [String]
