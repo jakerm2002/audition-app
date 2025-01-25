@@ -99,6 +99,9 @@ struct MyCanvas: UIViewRepresentable {
         // TODO: if dark mode supported, .unspecified doesn't follow system color theme, needs fix
         toolPicker.colorUserInterfaceStyle = .unspecified
         toolPicker.overrideUserInterfaceStyle = .unspecified
+        // TODO: if dark mode supported, figure out if we need to convert colors that the PKInkingTool draws
+//        let color = PKInkingTool.convertColor(.white, from: .light, to: .dark)
+//        let tool = PKInkingTool(.pen, color: color, width: CGFloat(width.rawValue))
         toolPicker.setVisible(true, forFirstResponder: canvasView)
         toolPicker.addObserver(canvasView)
         return canvasView
