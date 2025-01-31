@@ -41,35 +41,7 @@ func getAllBranchRefs(model: AuditionDataModel) -> [String] {
 }
 */
 
-struct CommitWalkInfo {
-    var visited: Bool = true
-    var inDegree: Int = 0
-}
 
-func computeInDegreeDict(model: AuditionDataModel) throws -> [String : CommitWalkInfo] {
-    var commits: [String : CommitWalkInfo] = [:]
-    
-    for branchRef in model.branches.values {
-        try countInDegreesFromCommit(id: branchRef, commits: &commits, model: model)
-    }
-    
-    return commits
-}
-
-// call this function on all branch refs
-func countInDegreesFromCommit(id: String, commits: inout [String : CommitWalkInfo], model: AuditionDataModel) throws {
-    if commits[id]?.visited == false {
-        commits[id] = CommitWalkInfo()
-        guard let commitObj: Commit = model.objects[id] as? Commit else {
-            throw AuditionError.runtimeError("error: countInDegreesFromCommit looking at a branchRef that does not point to a valid commit.")
-        }
-        let parents: [String] = commitObj.parents
-        for p in parents {
-            commits[p, default: CommitWalkInfo(visited: false)].inDegree += 1
-            try countInDegreesFromCommit(id: p, commits: &commits, model: model)
-        }
-    }
-}
 
 #Preview {
 //    let sampleModel = AuditionDataModel()

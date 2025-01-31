@@ -284,6 +284,35 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
     
+    struct CommitWalkInfo: Equatable {
+        var visited: Bool = true
+        var inDegree: Int = 0
+    }
+
+    func computeInDegreeDict() throws -> [String : CommitWalkInfo] {
+        var commits: [String : CommitWalkInfo] = [:]
+        
+        for branchRef in branches.values {
+            try countInDegreesFromCommit(id: branchRef, commits: &commits)
+        }
+        
+        return commits
+    }
+
+    // call this function on all branch refs
+    func countInDegreesFromCommit(id: String, commits: inout [String : CommitWalkInfo]) throws {
+        if commits[id]?.visited == false {
+            commits[id] = CommitWalkInfo()
+            guard let commitObj: Commit = objects[id] as? Commit else {
+                throw AuditionError.runtimeError("error: countInDegreesFromCommit looking at a branchRef that does not point to a valid commit.")
+            }
+            let parents: [String] = commitObj.parents
+            for p in parents {
+                commits[p, default: CommitWalkInfo(visited: false)].inDegree += 1
+                try countInDegreesFromCommit(id: p, commits: &commits)
+            }
+        }
+    }
     
     enum CodingKeys: String, CodingKey {
         case objects
