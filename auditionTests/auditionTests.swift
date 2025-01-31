@@ -910,4 +910,77 @@ struct auditionTests {
     @Test func testEmptyCommitNotAllowed() async throws {
         
     }
+    
+    @Test func testComputeInDegreeDict() async throws {
+        let content1 = Data(String(stringLiteral: "test one").utf8)
+        let filename1 = "test1.txt"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage1 = "initial commit"
+        var commit1: String = try a1.commit(message: commitMessage1)
+        
+        let content2 = Data(String(stringLiteral: "test two").utf8)
+        let filename2 = "test2.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        try a1.add(f2)
+        
+        let commitMessage2 = "second commit"
+        var commit2: String = try a1.commit(message: commitMessage2)
+        
+        let expected1: [String : AuditionDataModel.CommitWalkInfo] = [
+            commit1 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 1),
+            commit2 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 0)
+        ]
+        
+        let actual1 = try a1.computeInDegreeDict()
+        
+        #expect(actual1 == expected1)
+        
+        let content3 = Data(String(stringLiteral: "test three").utf8)
+        let filename3 = "test3.txt"
+        
+        let f3 = AuditionFile(
+            content: content3,
+            name: filename3
+        )
+        
+        // CREATE A NEW MODEL
+        let a2 = AuditionDataModel()
+        try a2.add(f1)
+        
+        commit1 = try a2.commit(message: commitMessage1)
+        
+        // add a branch from the initial commit
+        try a2.createBranch(branchName: "b1")
+        try a2.createBranch(branchName: "b2")
+        
+        try a2.checkout(branch: "b1")
+        try a2.add(f2)
+        commit2 = try a2.commit(message: commitMessage2)
+        
+        try a2.checkout(branch: "b2")
+        try a2.add(f3)
+        let commitMessage3 = "third commit"
+        var commit3: String = try a2.commit(message: commitMessage3)
+        
+        let expected2: [String : AuditionDataModel.CommitWalkInfo] = [
+            commit1 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 2),
+            commit2 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 0),
+            commit3 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 0),
+        ]
+        
+        #expect(try a2.computeInDegreeDict() == expected2)
+    }
 }
