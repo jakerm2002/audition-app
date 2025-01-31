@@ -285,14 +285,14 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     }
     
     struct CommitWalkInfo: Equatable {
-        var visited: Bool = true
+        var visited: Bool = false
         var inDegree: Int = 0
     }
 
     func computeInDegreeDict() throws -> [String : CommitWalkInfo] {
         var commits: [String : CommitWalkInfo] = [:]
         
-        for branchRef in branches.values {
+        for (branchName, branchRef) in branches {
             try countInDegreesFromCommit(id: branchRef, commits: &commits)
         }
         
@@ -301,14 +301,23 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
 
     // call this function on all branch refs
     func countInDegreesFromCommit(id: String, commits: inout [String : CommitWalkInfo]) throws {
-        if commits[id]?.visited == false {
+        guard let commitObj: Commit = objects[id] as? Commit else {
+            throw AuditionError.runtimeError("error: countInDegreesFromCommit looking at a branchRef that does not point to a valid commit.")
+        }
+        
+        if commits[id] == nil {
             commits[id] = CommitWalkInfo()
-            guard let commitObj: Commit = objects[id] as? Commit else {
-                throw AuditionError.runtimeError("error: countInDegreesFromCommit looking at a branchRef that does not point to a valid commit.")
-            }
+        }
+        
+        if commits[id]!.visited == false {
+            commits[id]!.visited = true
             let parents: [String] = commitObj.parents
             for p in parents {
-                commits[p, default: CommitWalkInfo(visited: false)].inDegree += 1
+                if commits[p] != nil {
+                    commits[p]!.inDegree += 1
+                } else {
+                    commits[p] = CommitWalkInfo(visited: false, inDegree: 1)
+                }
                 try countInDegreesFromCommit(id: p, commits: &commits)
             }
         }
