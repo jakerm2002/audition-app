@@ -947,6 +947,7 @@ struct auditionTests {
         let actual1 = try a1.computeInDegreeDict()
         
         #expect(actual1 == expected1)
+        print("test with 2 nodes finished")
         
         let content3 = Data(String(stringLiteral: "test three").utf8)
         let filename3 = "test3.txt"
@@ -982,5 +983,49 @@ struct auditionTests {
         ]
         
         #expect(try a2.computeInDegreeDict() == expected2)
+        print("test with 3 nodes finished")
+        
+        
+        // test multiple branch points pointing to the same commits
+        try a2.checkout(branch: "main")
+        try a2.createBranch(branchName: "main2")
+        try a2.checkout(branch: "b1")
+        try a2.createBranch(branchName: "b1a")
+        try a2.checkout(branch: "b2")
+        try a2.createBranch(branchName: "b2a")
+        
+        #expect(try a2.computeInDegreeDict() == expected2)
+        print("test with 3 nodes testing multiple branches pointed to the same commits finished")
+        
+        a2.unsafeDeleteBranch(branchName: "main2")
+        a2.unsafeDeleteBranch(branchName: "b1a")
+        a2.unsafeDeleteBranch(branchName: "b2a")
+        
+        // add a commit to the b1 branch
+        try a2.checkout(branch: "b1")
+        try a2.add(AuditionFile(
+                content: Data(String(stringLiteral: "test four").utf8),
+                name: "test4.txt"
+            )
+        )
+        
+        let commit4 = try a2.commit(message: "fourth commit")
+        
+        // manually modify the commit to make it have two parents
+        let commitObj4 = a2.objects[commit4] as! Commit
+        var newParents: [String] = Array(commitObj4.parents)
+        newParents.append(a2.branches["b2"]!)
+//        a2.objects[commit4] = Commit(tree: commitObj4.tree, parents: newParents, message: commitObj4.message, timestamp: commitObj4.timestamp)
+        a2.unsafeSetObject(key: commit4, value: Commit(tree: commitObj4.tree, parents: newParents, message: commitObj4.message, timestamp: commitObj4.timestamp))
+        
+        let expected3: [String : AuditionDataModel.CommitWalkInfo] = [
+            commit1 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 2), // main
+            commit2 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 1), //
+            commit3 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 1), // b2
+            commit4 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 0), // b2
+        ]
+        
+        #expect(try a2.computeInDegreeDict() == expected3)
+        print("test with 4 nodes finished")
     }
 }

@@ -298,9 +298,21 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         
         return commits
     }
+    
+    // NOT SAFE: ONLY USE FOR TESTING
+    // manually set an object in the object store
+    func unsafeSetObject(key: String, value: AuditionObjectProtocol) {
+        objects[key] = value
+    }
+    
+    // NOT SAFE: LEAVES COMMITS DANGLING, ONLY USE FOR TESTING
+    func unsafeDeleteBranch(branchName: String) {
+        branches.removeValue(forKey: branchName)
+    }
 
     // call this function on all branch refs
     func countInDegreesFromCommit(id: String, commits: inout [String : CommitWalkInfo]) throws {
+        print("COUNTME777")
         guard let commitObj: Commit = objects[id] as? Commit else {
             throw AuditionError.runtimeError("error: countInDegreesFromCommit looking at a branchRef that does not point to a valid commit.")
         }
