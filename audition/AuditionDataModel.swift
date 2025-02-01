@@ -312,7 +312,6 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
 
     // call this function on all branch refs
     func countInDegreesFromCommit(id: String, commits: inout [String : CommitWalkInfo]) throws {
-        print("COUNTME777")
         guard let commitObj: Commit = objects[id] as? Commit else {
             throw AuditionError.runtimeError("error: countInDegreesFromCommit looking at a branchRef that does not point to a valid commit.")
         }
