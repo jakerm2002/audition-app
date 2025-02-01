@@ -67,8 +67,8 @@ struct NodeView: View {
             if newInDegree == 0 {
                 result.append(parent)
             }
-            commitInfo[parent] = AuditionDataModel.CommitWalkInfo(visited: currentParentInfo!.visited, inDegree: newInDegree)
-            print("CONFIRM UPDATING INDEGREE FOR COMMIT \(parent.prefix(7)): \(commitInfo[parent]!)")
+            commitInfo[parent]?.inDegree = newInDegree
+            print("CONFIRM UPDATING INDEGREE FOR COMMIT \(parent.prefix(7)): \(commitInfo[parent]!.description)")
         }
         print("parents to render are \(result)")
         return result
@@ -76,8 +76,8 @@ struct NodeView: View {
 
     var body: some View {
         VStack {
-//            Text(commitID.prefix(7)).modifier(RoundedCircleStyle())
-            Text("\(commitInfo[commitID]!.inDegree)").modifier(RoundedCircleStyle())
+            Text(commitID.prefix(7)).modifier(RoundedCircleStyle())
+//            Text("\(commitInfo[commitID]!.inDegree)").modifier(RoundedCircleStyle())
             HStack { //HStack may not be necessary
                 ForEach(getParentsToRender(), id: \.self) { parent in
                     NodeView(commitID: parent, model: model, commitInfo: $commitInfo)

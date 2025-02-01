@@ -284,9 +284,27 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
     
-    struct CommitWalkInfo: Equatable {
+    class CommitWalkInfo: Equatable {
+        static func == (lhs: AuditionDataModel.CommitWalkInfo, rhs: AuditionDataModel.CommitWalkInfo) -> Bool {
+            return lhs.visited == rhs.visited && lhs.inDegree == rhs.inDegree
+        }
+        
         var visited: Bool = false
         var inDegree: Int = 0
+        
+        init(){
+            self.visited = false
+            self.inDegree = 0
+        }
+        
+        init(visited: Bool, inDegree: Int) {
+            self.visited = visited
+            self.inDegree = inDegree
+        }
+        
+        public var description: String {
+            return ("CommitWalkInfo(visited: \(visited), inDegree: \(inDegree)")
+        }
     }
 
     func computeInDegreeDict() throws -> [String : CommitWalkInfo] {
