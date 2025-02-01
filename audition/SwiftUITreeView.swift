@@ -61,14 +61,17 @@ struct NodeView: View {
         var result: [String] = []
         for parent in parents {
             let currentParentInfo = commitInfo[parent]
+            print("CURRENT IN DEGREE FOR COMMIT \(parent.prefix(7)) IS \(currentParentInfo!.inDegree)")
             let newInDegree = currentParentInfo!.inDegree - 1
+            print("NEW IN DEGREE FOR COMMIT \(parent.prefix(7)) IS \(newInDegree)")
             if newInDegree == 0 {
                 result.append(parent)
             }
             commitInfo[parent] = AuditionDataModel.CommitWalkInfo(visited: currentParentInfo!.visited, inDegree: newInDegree)
+            print("CONFIRM UPDATING INDEGREE FOR COMMIT \(parent.prefix(7)): \(commitInfo[parent]!)")
         }
-        print("parents to render are \(parents)")
-        return parents
+        print("parents to render are \(result)")
+        return result
     }
 
     var body: some View {
