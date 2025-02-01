@@ -52,14 +52,41 @@ struct RoundedCircleStyle: ViewModifier {
 
 struct NodeView: View {
     let commitID: String
+    let model: AuditionDataModel
+    @Binding var commitInfo: [String : AuditionDataModel.CommitWalkInfo]
+    
+    func getParentsToRender() -> [String] {
+        let commitObj = model.objects[commitID] as! Commit
+        let parents = commitObj.parents
+        var result: [String] = []
+        for parent in parents {
+            let currentParentInfo = commitInfo[parent]
+            let newInDegree = currentParentInfo!.inDegree - 1
+            if newInDegree == 0 {
+                result.append(parent)
+            }
+            commitInfo[parent] = AuditionDataModel.CommitWalkInfo(visited: currentParentInfo!.visited, inDegree: newInDegree)
+        }
+        print("parents to render are \(parents)")
+        return parents
+    }
+
     var body: some View {
-        Text(commitID.prefix(7)).modifier(RoundedCircleStyle())
+        VStack {
+//            Text(commitID.prefix(7)).modifier(RoundedCircleStyle())
+            Text("\(commitInfo[commitID]!.inDegree)").modifier(RoundedCircleStyle())
+            HStack { //HStack may not be necessary
+                ForEach(getParentsToRender(), id: \.self) { parent in
+                    NodeView(commitID: parent, model: model, commitInfo: $commitInfo)
+                }
+            }
+        }
     }
 }
 
 struct SwiftUITreeView: View {
     let model: AuditionDataModel
-    let commitInfo: [String : AuditionDataModel.CommitWalkInfo]
+    @State var commitInfo: [String : AuditionDataModel.CommitWalkInfo]
     
     init(model: AuditionDataModel) {
         self.model = model
@@ -75,7 +102,7 @@ struct SwiftUITreeView: View {
         HStack {
             ForEach(Array(model.branches.values), id: \.self) { branchRef in
                 if let info = commitInfo[branchRef], info.inDegree == 0 {
-                    NodeView(commitID: branchRef)
+                    NodeView(commitID: branchRef, model: model, commitInfo: $commitInfo)
                 }
             }
         }
@@ -178,5 +205,6 @@ func generateSampleDataThreeCommits() -> AuditionDataModel {
 }
 
 #Preview {
+//    SwiftUITreeView(model: generateSampleData())
     SwiftUITreeView(model: generateSampleDataThreeCommits())
 }
