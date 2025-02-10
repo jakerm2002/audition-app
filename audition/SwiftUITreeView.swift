@@ -249,7 +249,7 @@ struct SwiftUITreeView: View {
                 DrawTree(tree: tree, node: { Node(x: $0) })
                     .animation(.default)
                     .onAppear{
-                        tree = model.getRootsAsTrees()[0]
+                        tree = model.getRootsAsTrees().first ?? tree
                     }
             }
         }
@@ -357,5 +357,6 @@ func generateSampleDataThreeCommits() -> AuditionDataModel {
 
 #Preview {
 //    SwiftUITreeView(model: generateSampleData())
-    SwiftUITreeView(model: generateSampleDataThreeCommits())
+    @Previewable @State var model = generateSampleDataThreeCommits()
+    SwiftUITreeView(model: $model)
 }
