@@ -326,6 +326,74 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         return rootNodes
     }
     
+    class CommitWalkInfo: Equatable {
+        static func == (lhs: AuditionDataModel.CommitWalkInfo, rhs: AuditionDataModel.CommitWalkInfo) -> Bool {
+            return lhs.visited == rhs.visited && lhs.inDegree == rhs.inDegree
+        }
+        
+        var visited: Bool = false
+        var inDegree: Int = 0
+        
+        init(){
+            self.visited = false
+            self.inDegree = 0
+        }
+        
+        init(visited: Bool, inDegree: Int) {
+            self.visited = visited
+            self.inDegree = inDegree
+        }
+        
+        public var description: String {
+            return ("CommitWalkInfo(visited: \(visited), inDegree: \(inDegree)")
+        }
+    }
+
+    func computeInDegreeDict() throws -> [String : CommitWalkInfo] {
+        var commits: [String : CommitWalkInfo] = [:]
+        
+        for (branchName, branchRef) in branches {
+            try countInDegreesFromCommit(id: branchRef, commits: &commits)
+        }
+        
+        return commits
+    }
+    
+    // NOT SAFE: ONLY USE FOR TESTING
+    // manually set an object in the object store
+    func unsafeSetObject(key: String, value: AuditionObjectProtocol) {
+        objects[key] = value
+    }
+    
+    // NOT SAFE: LEAVES COMMITS DANGLING, ONLY USE FOR TESTING
+    func unsafeDeleteBranch(branchName: String) {
+        branches.removeValue(forKey: branchName)
+    }
+
+    // call this function on all branch refs
+    func countInDegreesFromCommit(id: String, commits: inout [String : CommitWalkInfo]) throws {
+        guard let commitObj: Commit = objects[id] as? Commit else {
+            throw AuditionError.runtimeError("error: countInDegreesFromCommit looking at a branchRef that does not point to a valid commit.")
+        }
+        
+        if commits[id] == nil {
+            commits[id] = CommitWalkInfo()
+        }
+        
+        if commits[id]!.visited == false {
+            commits[id]!.visited = true
+            let parents: [String] = commitObj.parents
+            for p in parents {
+                if commits[p] != nil {
+                    commits[p]!.inDegree += 1
+                } else {
+                    commits[p] = CommitWalkInfo(visited: false, inDegree: 1)
+                }
+                try countInDegreesFromCommit(id: p, commits: &commits)
+            }
+        }
+    }
+    
     enum CodingKeys: String, CodingKey {
         case objects
         case index

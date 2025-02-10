@@ -910,4 +910,122 @@ struct auditionTests {
     @Test func testEmptyCommitNotAllowed() async throws {
         
     }
+    
+    @Test func testComputeInDegreeDict() async throws {
+        let content1 = Data(String(stringLiteral: "test one").utf8)
+        let filename1 = "test1.txt"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage1 = "initial commit"
+        var commit1: String = try a1.commit(message: commitMessage1)
+        
+        let content2 = Data(String(stringLiteral: "test two").utf8)
+        let filename2 = "test2.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        try a1.add(f2)
+        
+        let commitMessage2 = "second commit"
+        var commit2: String = try a1.commit(message: commitMessage2)
+        
+        let expected1: [String : AuditionDataModel.CommitWalkInfo] = [
+            commit1 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 1),
+            commit2 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 0)
+        ]
+        
+        let actual1 = try a1.computeInDegreeDict()
+        
+        #expect(actual1 == expected1)
+        print("test with 2 nodes finished")
+        
+        let content3 = Data(String(stringLiteral: "test three").utf8)
+        let filename3 = "test3.txt"
+        
+        let f3 = AuditionFile(
+            content: content3,
+            name: filename3
+        )
+        
+        // CREATE A NEW MODEL
+        let a2 = AuditionDataModel()
+        try a2.add(f1)
+        
+        commit1 = try a2.commit(message: commitMessage1)
+        
+        // add a branch from the initial commit
+        try a2.createBranch(branchName: "b1")
+        try a2.createBranch(branchName: "b2")
+        
+        try a2.checkout(branch: "b1")
+        try a2.add(f2)
+        commit2 = try a2.commit(message: commitMessage2)
+        
+        try a2.checkout(branch: "b2")
+        try a2.add(f3)
+        let commitMessage3 = "third commit"
+        var commit3: String = try a2.commit(message: commitMessage3)
+        
+        let expected2: [String : AuditionDataModel.CommitWalkInfo] = [
+            commit1 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 2),
+            commit2 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 0),
+            commit3 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 0),
+        ]
+        
+        #expect(try a2.computeInDegreeDict() == expected2)
+        print("test with 3 nodes finished")
+        
+        
+        // test multiple branch points pointing to the same commits
+        try a2.checkout(branch: "main")
+        try a2.createBranch(branchName: "main2")
+        try a2.checkout(branch: "b1")
+        try a2.createBranch(branchName: "b1a")
+        try a2.checkout(branch: "b2")
+        try a2.createBranch(branchName: "b2a")
+        
+        #expect(try a2.computeInDegreeDict() == expected2)
+        print("test with 3 nodes testing multiple branches pointed to the same commits finished")
+        
+        a2.unsafeDeleteBranch(branchName: "main2")
+        a2.unsafeDeleteBranch(branchName: "b1a")
+        a2.unsafeDeleteBranch(branchName: "b2a")
+        
+        // add a commit to the b1 branch
+        try a2.checkout(branch: "b1")
+        try a2.add(AuditionFile(
+                content: Data(String(stringLiteral: "test four").utf8),
+                name: "test4.txt"
+            )
+        )
+        
+        let commit4 = try a2.commit(message: "fourth commit")
+        
+        // manually modify the commit to make it have two parents
+        let commitObj4 = a2.objects[commit4] as! Commit
+        var newParents: [String] = Array(commitObj4.parents)
+        newParents.append(a2.branches["b2"]!)
+//        a2.objects[commit4] = Commit(tree: commitObj4.tree, parents: newParents, message: commitObj4.message, timestamp: commitObj4.timestamp)
+        a2.unsafeSetObject(key: commit4, value: Commit(tree: commitObj4.tree, parents: newParents, message: commitObj4.message, timestamp: commitObj4.timestamp))
+        
+        let expected3: [String : AuditionDataModel.CommitWalkInfo] = [
+            commit1 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 2), // main
+            commit2 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 1), //
+            commit3 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 1), // b2
+            commit4 : AuditionDataModel.CommitWalkInfo(visited: true, inDegree: 0), // b2
+        ]
+        
+        #expect(try a2.computeInDegreeDict() == expected3)
+        print("test with 4 nodes finished")
+    }
 }
