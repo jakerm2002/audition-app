@@ -301,7 +301,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
                         p.addChild(cur)
                     } else {
                         let pCommitObj = objects[pCommit] as! Commit
-                        let p = DisplayTree(commit: pCommitObj, value: pCommit, children: [cur])
+                        let p = DisplayTree(commit: pCommitObj, value: String(pCommit.prefix(7)), children: [cur])
                         alg(p)
                     }
                 }
@@ -317,10 +317,14 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
         
         // TODO: change sortedBranches to be an array of branches with in-degree of zero
-        let sortedBranches: [String] = []
-        for commit in sortedBranches {
-            let w = DisplayTree(commit: objects[commit] as! Commit, value: commit, children: [])
-            alg(w)
+        do {
+            let sortedBranches: [String] = try getBranchesWithInDegreeZero()
+            for commit in sortedBranches {
+                let w = DisplayTree(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [])
+                alg(w)
+            }
+        } catch let error {
+            print("ERROR: AuditionDataModel.getRootsAsTrees failed: \(error)")
         }
         print("************* END OF ALGORITHM ***************")
         return rootNodes
@@ -392,6 +396,17 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
                 try countInDegreesFromCommit(id: p, commits: &commits)
             }
         }
+    }
+    
+    func getBranchesWithInDegreeZero() throws -> [String] {
+        let branchInfo = try computeInDegreeDict()
+        var result: [String] = []
+        for (branch, info) in branchInfo {
+            if info.inDegree == 0 {
+                result.append(branch)
+            }
+        }
+        return result
     }
     
     enum CodingKeys: String, CodingKey {
