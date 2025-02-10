@@ -284,6 +284,47 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
     
+    func getRootsAsTrees() -> [DisplayTree<String>] {
+        print("************* STARTING ALGORITHM ***************")
+        var wrappers: [String : DisplayTree<String>] = [:]
+        var rootNodes: [DisplayTree<String>] = []
+        
+        func alg(_ cur: DisplayTree<String>) {
+            // mark cur as visited
+            wrappers[cur.commit.sha256DigestValue!] = cur
+            
+            // if cur has parents
+            if !cur.commit.parents.isEmpty {
+                for pCommit in cur.commit.parents {
+                    // parent visited?
+                    if let p = wrappers[pCommit] {
+                        p.addChild(cur)
+                    } else {
+                        let pCommitObj = objects[pCommit] as! Commit
+                        let p = DisplayTree(commit: pCommitObj, value: pCommit, children: [cur])
+                        alg(p)
+                    }
+                }
+            } else {
+                // at this point, if the node has no parents,
+                // it can be considered a root node.
+                //
+                // we don't have to check if a root node is already in the array
+                // because a node will never be accessed more than once.
+                // this is because we don't look at already visited nodes
+                rootNodes.append(cur)
+            }
+        }
+        
+        // TODO: change sortedBranches to be an array of branches with in-degree of zero
+        let sortedBranches: [String] = []
+        for commit in sortedBranches {
+            let w = DisplayTree(commit: objects[commit] as! Commit, value: commit, children: [])
+            alg(w)
+        }
+        print("************* END OF ALGORITHM ***************")
+        return rootNodes
+    }
     
     enum CodingKeys: String, CodingKey {
         case objects
