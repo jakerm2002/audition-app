@@ -1069,4 +1069,55 @@ struct auditionTests {
         #expect(try a2.computeInDegreeDict() == expected3)
         print("test with 4 nodes finished")
     }
+    
+    @Test func testDetachedHEAD() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage1 = "initial commit"
+        let commit1: String = try a1.commit(message: commitMessage1)
+        
+        let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
+        let filename2 = "hello.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        try a1.add(f2)
+        
+        let commitMessage2 = "second commit"
+        let commit2: String = try a1.commit(message: commitMessage2)
+        
+        let content3 = Data(String(stringLiteral: "see ya later!").utf8)
+        let filename3 = "goodbye.txt"
+        let f3 = AuditionFile(
+            content: content3,
+            name: filename3
+        )
+        let commitMessage3 = "third commit"
+        
+        try a1.checkout(commit: commit1)
+        #expect(throws: AuditionError.self) {
+            try a1.add(f3)
+            _ = try a1.commit(message: commitMessage3)
+        }
+        
+        try a1.checkout(commit: commit2)
+        #expect(throws: AuditionError.self) {
+            try a1.add(f3)
+            _ = try a1.commit(message: commitMessage3)
+        }
+        
+        try a1.checkout(branch: "main")
+    }
 }
