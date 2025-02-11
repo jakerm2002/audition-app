@@ -139,14 +139,17 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     func commit(message: String) throws -> String {
         // TODO: decide if empty commmits should be allowed
         
-        // write the tree from the index
-        let h = writeTree()
-        
         let commit: String
-        // write the commit from the tree
+        
         if let parent = branches[HEAD] {
+            // write the tree from the index
+            let h = writeTree()
+            // write the commit from the tree
             commit = try commitTree(tree: h, parents: [parent], message: message)
+        } else if let parent = objects[HEAD] as? Commit {
+            throw AuditionError.runtimeError("Error: Commit not successful. Commits cannot be made in 'detached HEAD' mode.")
         } else {
+            let h = writeTree()
             commit = try commitTree(tree: h, message: message)
         }
         
