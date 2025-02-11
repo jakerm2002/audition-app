@@ -139,14 +139,17 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     func commit(message: String) throws -> String {
         // TODO: decide if empty commmits should be allowed
         
-        // write the tree from the index
-        let h = writeTree()
-        
         let commit: String
-        // write the commit from the tree
+        
         if let parent = branches[HEAD] {
+            // write the tree from the index
+            let h = writeTree()
+            // write the commit from the tree
             commit = try commitTree(tree: h, parents: [parent], message: message)
+        } else if let parent = objects[HEAD] as? Commit {
+            throw AuditionError.runtimeError("Error: Commit not successful. Commits cannot be made in 'detached HEAD' mode.")
         } else {
+            let h = writeTree()
             commit = try commitTree(tree: h, message: message)
         }
         
@@ -156,17 +159,19 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         return commit
     }
     
-    // creates a branch off of the current branch
+    // creates a branch from the current HEAD
     func createBranch(branchName: String) throws {
         guard branches[branchName] == nil else {
             throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
         }
         
-        guard let HEADcommit = branches[HEAD] else {
-            throw AuditionError.runtimeError("Current branch unknown: HEAD does not point to an existing branch")
+        if let HEADcommit = branches[HEAD] {
+            branches[branchName] = HEADcommit
+        } else if let HEADcommit = objects[HEAD] as? Commit {
+            branches[branchName] = HEADcommit.sha256DigestValue!
+        } else {
+            throw AuditionError.runtimeError("Cannot create new branch: HEAD does not point to an existing branch or commit")
         }
-        
-        branches[branchName] = HEADcommit
     }
     
     func checkout(branch: String, newBranch: Bool = false) throws {
@@ -179,6 +184,18 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
         
         HEAD = branch
+    }
+    
+    func checkout(commit: String) throws {
+        // ensure that there will be a new branch created, or that a branch already exists
+        guard objects[commit] != nil else {
+            throw AuditionError.runtimeError("Commit '\(commit)' does not exist")
+        }
+        
+        guard objects[commit] is Commit else {
+            throw AuditionError.runtimeError("Ref '\(commit)' does not refer to a commit")
+        }
+        HEAD = commit
     }
     
     // check out the HEAD
@@ -230,7 +247,11 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         do {
             return try log(branch: HEAD)
         } catch {
-            throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD. Perhaps there is nothing committed yet?")
+            do {
+                return try log(commit: HEAD)
+            } catch {
+                throw AuditionError.runtimeError("Unable to read ref pointed to by HEAD. Perhaps there is nothing committed yet?")
+            }
         }
     }
     

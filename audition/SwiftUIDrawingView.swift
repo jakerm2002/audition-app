@@ -79,8 +79,8 @@ struct SwiftUIDrawingView: View {
             do {
                 try storeDataModel()
                 print("storeDataModel succeeded")
-            } catch {
-                print("storeDataModel FAILED")
+            } catch let error{
+                print("storeDataModel FAILED: \(error)")
             }
         }
     }

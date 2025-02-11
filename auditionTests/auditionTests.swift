@@ -543,6 +543,19 @@ struct auditionTests {
         )
         
         let a1 = AuditionDataModel()
+        
+        #expect(throws: AuditionError.self) {
+            try a1.log()
+        }
+        
+        #expect(throws: AuditionError.self) {
+            try a1.log(branch: "main")
+        }
+        
+        #expect(throws: AuditionError.self) {
+            try a1.log(commit: "abcdef012345")
+        }
+        
         try a1.add(f1)
         
         let commitMessage1 = "initial commit"
@@ -574,7 +587,10 @@ struct auditionTests {
         let logFromBranch: [Commit] = try a1.log(branch: "main")
         let logFromCommit: [Commit] = try a1.log(commit: commitObj2.sha256DigestValue!)
         
-        // test log()
+        try a1.checkout(commit: commitObj2.sha256DigestValue!)
+        let logFromCommit1: [Commit] = try a1.log()
+        
+        // test log() where HEAD is a branch
         try #require(logFromHEAD.count == 2)
         
         #expect(logFromHEAD[0].type == .commit)
@@ -605,6 +621,11 @@ struct auditionTests {
         #expect(logFromBranch[1].message == commitMessage1)
         #expect(logFromBranch[1].timestamp.distance(to: .now) < TimeInterval(1))
         
+        // test log(branch:) only works on branches
+        #expect(throws: AuditionError.self) {
+            try a1.log(branch: commitObj2.sha256DigestValue!)
+        }
+        
         // test log(commit:)
         try #require(logFromCommit.count == 2)
         
@@ -619,6 +640,26 @@ struct auditionTests {
         #expect(logFromCommit[1].parents == [])
         #expect(logFromCommit[1].message == commitMessage1)
         #expect(logFromCommit[1].timestamp.distance(to: .now) < TimeInterval(1))
+        
+        // test log(commit:) only works on commits
+        #expect(throws: AuditionError.self) {
+            try a1.log(commit: "main")
+        }
+        
+        // test log() where HEAD is a commit
+        try #require(logFromCommit1.count == 2)
+        
+        #expect(logFromCommit1[0].type == .commit)
+        #expect(logFromCommit1[0].tree == t2.sha256DigestValue!)
+        #expect(logFromCommit1[0].parents == [commit1])
+        #expect(logFromCommit1[0].message == commitMessage2)
+        #expect(logFromCommit1[0].timestamp.distance(to: .now) < TimeInterval(1))
+        
+        #expect(logFromCommit[1].type == .commit)
+        #expect(logFromCommit1[1].tree == t1.sha256DigestValue!)
+        #expect(logFromCommit1[1].parents == [])
+        #expect(logFromCommit1[1].message == commitMessage1)
+        #expect(logFromCommit1[1].timestamp.distance(to: .now) < TimeInterval(1))
     }
     
     @Test func testShowTree() async throws {
@@ -1027,5 +1068,56 @@ struct auditionTests {
         
         #expect(try a2.computeInDegreeDict() == expected3)
         print("test with 4 nodes finished")
+    }
+    
+    @Test func testDetachedHEAD() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage1 = "initial commit"
+        let commit1: String = try a1.commit(message: commitMessage1)
+        
+        let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
+        let filename2 = "hello.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        try a1.add(f2)
+        
+        let commitMessage2 = "second commit"
+        let commit2: String = try a1.commit(message: commitMessage2)
+        
+        let content3 = Data(String(stringLiteral: "see ya later!").utf8)
+        let filename3 = "goodbye.txt"
+        let f3 = AuditionFile(
+            content: content3,
+            name: filename3
+        )
+        let commitMessage3 = "third commit"
+        
+        try a1.checkout(commit: commit1)
+        #expect(throws: AuditionError.self) {
+            try a1.add(f3)
+            _ = try a1.commit(message: commitMessage3)
+        }
+        
+        try a1.checkout(commit: commit2)
+        #expect(throws: AuditionError.self) {
+            try a1.add(f3)
+            _ = try a1.commit(message: commitMessage3)
+        }
+        
+        try a1.checkout(branch: "main")
     }
 }
