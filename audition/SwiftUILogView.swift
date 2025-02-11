@@ -23,6 +23,11 @@ struct SwiftUILogView: View {
         List(commits, id: \.sha256DigestValue!, selection: $singleSelection) { commit in
             LazyVStack(alignment: .leading) {
                 Button(action: {
+                            do {
+                                try dataModel.checkout(commit: commit.sha256DigestValue!)
+                            } catch {
+                                print("ERROR: Checking out ref failed")
+                            }
                             setDrawingData(commit: commit)
                             dismiss()
                         },
