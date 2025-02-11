@@ -241,8 +241,12 @@ struct SwiftUITreeView: View {
                              Gradient.Stop(color: Color.black, location: 0.95),
                              Gradient.Stop(color: Color.clear, location: 1.0)])
     
-    @Binding var model: AuditionDataModel
+    @EnvironmentObject var model: AuditionDataModel
     @State var tree = sampleTree()
+    @Binding var updatesCounter: Int
+    
+    @Environment(\.dismiss) var dismiss
+    
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
             HStack {
@@ -257,6 +261,17 @@ struct SwiftUITreeView: View {
         // fades away content when it reaches the edges of the screen
         .mask(LinearGradient(gradient: edgeFade, startPoint: .top, endPoint: .bottom))
         .mask(LinearGradient(gradient: edgeFade, startPoint: .leading, endPoint: .trailing))
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    updatesCounter += 1
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.backward")
+                }
+            }
+        }
     }
 }
 
@@ -357,6 +372,6 @@ func generateSampleDataThreeCommits() -> AuditionDataModel {
 
 #Preview {
 //    SwiftUITreeView(model: generateSampleData())
-    @Previewable @State var model = generateSampleDataThreeCommits()
-    SwiftUITreeView(model: $model)
+    var model: AuditionDataModel = generateSampleDataThreeCommits()
+    SwiftUITreeView(updatesCounter: Binding.constant(0)).environmentObject(model)
 }
