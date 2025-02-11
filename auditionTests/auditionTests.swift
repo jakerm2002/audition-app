@@ -543,6 +543,19 @@ struct auditionTests {
         )
         
         let a1 = AuditionDataModel()
+        
+        #expect(throws: AuditionError.self) {
+            try a1.log()
+        }
+        
+        #expect(throws: AuditionError.self) {
+            try a1.log(branch: "main")
+        }
+        
+        #expect(throws: AuditionError.self) {
+            try a1.log(commit: "abcdef012345")
+        }
+        
         try a1.add(f1)
         
         let commitMessage1 = "initial commit"
@@ -574,7 +587,10 @@ struct auditionTests {
         let logFromBranch: [Commit] = try a1.log(branch: "main")
         let logFromCommit: [Commit] = try a1.log(commit: commitObj2.sha256DigestValue!)
         
-        // test log()
+        try a1.checkout(commit: commitObj2.sha256DigestValue!)
+        let logFromCommit1: [Commit] = try a1.log()
+        
+        // test log() where HEAD is a branch
         try #require(logFromHEAD.count == 2)
         
         #expect(logFromHEAD[0].type == .commit)
@@ -605,6 +621,11 @@ struct auditionTests {
         #expect(logFromBranch[1].message == commitMessage1)
         #expect(logFromBranch[1].timestamp.distance(to: .now) < TimeInterval(1))
         
+        // test log(branch:) only works on branches
+        #expect(throws: AuditionError.self) {
+            try a1.log(branch: commitObj2.sha256DigestValue!)
+        }
+        
         // test log(commit:)
         try #require(logFromCommit.count == 2)
         
@@ -619,6 +640,26 @@ struct auditionTests {
         #expect(logFromCommit[1].parents == [])
         #expect(logFromCommit[1].message == commitMessage1)
         #expect(logFromCommit[1].timestamp.distance(to: .now) < TimeInterval(1))
+        
+        // test log(commit:) only works on commits
+        #expect(throws: AuditionError.self) {
+            try a1.log(commit: "main")
+        }
+        
+        // test log() where HEAD is a commit
+        try #require(logFromCommit1.count == 2)
+        
+        #expect(logFromCommit1[0].type == .commit)
+        #expect(logFromCommit1[0].tree == t2.sha256DigestValue!)
+        #expect(logFromCommit1[0].parents == [commit1])
+        #expect(logFromCommit1[0].message == commitMessage2)
+        #expect(logFromCommit1[0].timestamp.distance(to: .now) < TimeInterval(1))
+        
+        #expect(logFromCommit[1].type == .commit)
+        #expect(logFromCommit1[1].tree == t1.sha256DigestValue!)
+        #expect(logFromCommit1[1].parents == [])
+        #expect(logFromCommit1[1].message == commitMessage1)
+        #expect(logFromCommit1[1].timestamp.distance(to: .now) < TimeInterval(1))
     }
     
     @Test func testShowTree() async throws {
