@@ -247,7 +247,11 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         do {
             return try log(branch: HEAD)
         } catch {
-            throw AuditionError.runtimeError("Unable to read branch pointed to by HEAD. Perhaps there is nothing committed yet?")
+            do {
+                return try log(commit: HEAD)
+            } catch {
+                throw AuditionError.runtimeError("Unable to read ref pointed to by HEAD. Perhaps there is nothing committed yet?")
+            }
         }
     }
     

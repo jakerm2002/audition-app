@@ -63,8 +63,8 @@ struct SwiftUILogView: View {
         .onAppear {
             do {
                 commits = try dataModel.log()
-            } catch {
-                print("ERROR: No commits yet")
+            } catch let error{
+                print("ERROR: Error showing log: \(error)")
                 commits = []
             }
         }
