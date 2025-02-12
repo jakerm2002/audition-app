@@ -71,12 +71,12 @@ struct SwiftUILogDetailView: View {
 struct SwiftUILogView: View {
     
     @EnvironmentObject var dataModel: AuditionDataModel
-    @Binding var rendition: PKDrawing
-    @Binding var updatesCounter: Int
-    
     @State var branches: [String : String] = [:]
     @State var commits: [Commit] = []
     @State private var sidebarSelection: String? = nil
+    
+    @Binding var rendition: PKDrawing
+    @Binding var updatesCounter: Int
     
     @Environment(\.dismiss) var dismiss
     
@@ -95,7 +95,7 @@ struct SwiftUILogView: View {
         }
     }
     
-    func showBranch(branch: String) {
+    func setCommitsFromBranch(branch: String) {
         do {
             commits = try dataModel.log(branch: branch)
         } catch let error {
@@ -103,7 +103,7 @@ struct SwiftUILogView: View {
         }
     }
     
-    func showHEAD() {
+    func setCommitsFromHEAD() {
         do {
             commits = try dataModel.log()
         } catch let error {
@@ -113,7 +113,7 @@ struct SwiftUILogView: View {
     
     var body: some View {
         NavigationSplitView(sidebar: {
-            List (branches.sorted(by: >), id: \.key, selection: $sidebarSelection) { key, value in
+            List (branches.sorted(by: <), id: \.key, selection: $sidebarSelection) { key, value in
                 HStack {
                     NavigationLink(key, value: key)
                     Spacer()
@@ -143,20 +143,20 @@ struct SwiftUILogView: View {
             if let branchName = sidebarSelection {
                 SwiftUILogDetailView(commits: $commits, rendition: $rendition, updatesCounter: $updatesCounter)
                     .navigationTitle(branchName)
-                    .onAppear { showBranch(branch: branchName) }
-                    .onChange(of: branchName) { showBranch(branch: branchName) }
+                    .onAppear { setCommitsFromBranch(branch: branchName) }
+                    .onChange(of: branchName) { setCommitsFromBranch(branch: branchName) }
             }
             // HEAD points to a commit
             else if dataModel.objects[dataModel.HEAD] is Commit {
                 SwiftUILogDetailView(commits: $commits, rendition: $rendition, updatesCounter: $updatesCounter)
                     .navigationTitle(String(dataModel.HEAD.prefix(7)))
-                    .onAppear { showHEAD() }
+                    .onAppear { setCommitsFromHEAD() }
             }
             // HEAD points to a branch with no commits (it's probably the default branch, 'main')
             else {
                 SwiftUILogDetailView(commits: $commits, rendition: $rendition, updatesCounter: $updatesCounter)
                     .navigationTitle(String(dataModel.HEAD))
-                    .onAppear { showHEAD() }
+                    .onAppear { setCommitsFromHEAD() }
             }
         })
         .onAppear {
