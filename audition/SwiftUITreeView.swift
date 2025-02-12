@@ -232,12 +232,6 @@ struct DrawTree<A, Node>: View where Node: View {
     }
 }
 
-
-func sampleTree() -> DisplayTree<String> {
-    let root = DisplayTree(commit: Commit(tree: "", parents: [], message: "", timestamp: .now), value: "Loading")
-    return root
-}
-
 struct SwiftUITreeView: View {
     var edgeFade = Gradient(stops:
                             [Gradient.Stop(color: Color.clear, location: 0.0),
@@ -246,18 +240,20 @@ struct SwiftUITreeView: View {
                              Gradient.Stop(color: Color.clear, location: 1.0)])
     
     @EnvironmentObject var model: AuditionDataModel
-    @State var tree = sampleTree()
+    @State var tree: DisplayTree<String>?
     @Binding var updatesCounter: Int
     
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
-            HStack {
+            if let tree {
                 DrawTree(tree: tree, node: { Node(x: $0) })
                     .animation(.default)
-                    .onAppear{
-                        tree = model.getRootsAsTrees().first ?? tree
+            } else {
+                ContentUnavailableView("No Tree Available", image: "")
+                    .onAppear {
+                        tree = model.getRootsAsTrees().first
                     }
             }
         }
