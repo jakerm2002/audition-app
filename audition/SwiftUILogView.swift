@@ -41,11 +41,11 @@ struct SwiftUILogDetailView: View {
                 Button(action: {
                             do {
                                 try dataModel.checkout(commit: commit.sha256DigestValue!)
-                            } catch let error{
+                                setDrawingData(commit: commit)
+                                dismiss()
+                            } catch let error {
                                 print("ERROR in SwiftUILogView: Checking out ref failed: \(error)")
                             }
-                            setDrawingData(commit: commit)
-                            dismiss()
                         },
                        label: {
                             VStack(alignment: .leading) {
@@ -80,6 +80,21 @@ struct SwiftUILogView: View {
     
     @Environment(\.dismiss) var dismiss
     
+    func setDrawingData(commit: Commit) {
+        // grab the blob that was included in the commit
+        // we're assuming there will only be one, this will NOT BE TRUE in the future
+        // once we are committing individual strokes instead of the entire drawing
+        do {
+            let aBlob = try dataModel.showBlobs(commit: commit.sha256DigestValue!)[0]
+            let newDrawing = try PKDrawing(data: aBlob.contents)
+            rendition = newDrawing
+            updatesCounter += 1
+            print("setDrawingData succeeded")
+        } catch let error {
+            print("setDrawingData FAILED to get blobs: \(error)")
+        }
+    }
+    
     func showBranch(branch: String) {
         do {
             commits = try dataModel.log(branch: branch)
@@ -105,6 +120,10 @@ struct SwiftUILogView: View {
                     Button(action: {
                         do {
                             try dataModel.checkout(branch: key)
+                            guard let commit = dataModel.objects[value] as? Commit else {
+                                throw AuditionError.runtimeError("Branch ref does not point to a commit.")
+                            }
+                            setDrawingData(commit: commit)
                             dismiss()
                         } catch let error {
                             print("ERROR in SwiftUILogView: Checking out branch failed: \(error)")
