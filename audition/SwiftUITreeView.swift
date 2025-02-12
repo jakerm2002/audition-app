@@ -49,10 +49,15 @@ struct Node<A: CustomStringConvertible>: View {
     
     var body: some View {
         return ZStack {
-            Circle()
-                .fill(Color(uiColor: .systemBackground))
-                .stroke(Color.primary, lineWidth: 2)
-            Text("\(x.value)").font(.title2)
+            Image("moon")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipShape(Circle())
+                .overlay {
+                    Circle()
+                        .stroke(Color.primary, lineWidth: 2)
+                }
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {
