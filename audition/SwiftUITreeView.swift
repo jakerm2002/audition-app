@@ -51,9 +51,8 @@ struct Node<A: CustomStringConvertible>: View {
         return ZStack {
             Circle()
                 .fill(Color(uiColor: .systemBackground))
-            Circle()
                 .stroke(Color.primary, lineWidth: 2)
-            Text("\(x.value)").font(.title)
+            Text("\(x.value)").font(.title2)
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {
