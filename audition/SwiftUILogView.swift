@@ -95,7 +95,21 @@ struct SwiftUILogView: View {
     var body: some View {
         NavigationSplitView(sidebar: {
             List (branches.sorted(by: >), id: \.key, selection: $sidebarSelection) { key, value in
-                NavigationLink(key, value: key)
+                HStack {
+                    NavigationLink(key, value: key)
+                    Spacer()
+                    Button(action: {
+                        do {
+                            try dataModel.checkout(branch: key)
+                            dismiss()
+                        } catch let error{
+                            print("ERROR: Checking out branch failed: \(error)")
+                        }
+                    }, label: {
+                        Image(systemName: "arrow.left")
+                    })
+                    .buttonStyle(.bordered)
+                }
             }
             .navigationTitle("Branches")
             .onAppear {
