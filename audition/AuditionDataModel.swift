@@ -165,6 +165,10 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
             throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
         }
         
+        guard objects[branchName] == nil else {
+            throw AuditionError.runtimeError("A branch cannot be named after an existing object ref")
+        }
+        
         if let HEADcommit = branches[HEAD] {
             branches[branchName] = HEADcommit
         } else if let HEADcommit = objects[HEAD] as? Commit {

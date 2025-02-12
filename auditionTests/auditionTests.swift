@@ -1120,4 +1120,41 @@ struct auditionTests {
         
         try a1.checkout(branch: "main")
     }
+    
+    // since there is some functionality in AuditionDataModel that
+    // relies on checking branches[HEAD] exists to see if HEAD is a branch,
+    // then checking objects[HEAD] is Commit to see if HEAD is a commit,
+    // having a branch with a name that is the same as an existing commit's hash may cause unintended behavior
+    @Test func testDisallowCreateBranchNamedAfterExistingObjectHash() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let a1 = AuditionDataModel()
+        try a1.add(f1)
+        
+        let commitMessage1 = "initial commit"
+        let commit1: String = try a1.commit(message: commitMessage1)
+        
+        let content2 = Data(String(stringLiteral: "hi how are you?").utf8)
+        let filename2 = "hello.txt"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        try a1.add(f2)
+        
+        let commitMessage2 = "second commit"
+        let commit2: String = try a1.commit(message: commitMessage2)
+        
+        #expect(throws: AuditionError.self) {
+            try a1.createBranch(branchName: commit2)
+        }
+    }
 }
