@@ -14,60 +14,76 @@ struct SwiftUILogView: View {
     @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
     
+    @State var branches: [String : String] = [:]
     @State var commits: [Commit] = []
     @State private var singleSelection: String? = nil
     
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        List(commits, id: \.sha256DigestValue!, selection: $singleSelection) { commit in
-            LazyVStack(alignment: .leading) {
-                Button(action: {
-                            do {
-                                try dataModel.checkout(commit: commit.sha256DigestValue!)
-                            } catch {
-                                print("ERROR: Checking out ref failed")
-                            }
-                            setDrawingData(commit: commit)
-                            dismiss()
-                        },
-                       label: {
-                            VStack(alignment: .leading) {
-                                Text(commit.message).tint(.primary)
-                                HStack {
-                                    Text(commit.sha256DigestValue!.prefix(7)).tint(.primary)
-                                    Text(DateFormatter.localizedString(from: commit.timestamp, dateStyle: .medium, timeStyle: .medium)).tint(.primary)
-                                }
-                            }
-                })
-                .contentShape(Rectangle())
-            }
-        }
-        .navigationTitle(commits.isEmpty ? "Log" : "Commits from \(commits.first!.sha256DigestValue!.prefix(7))")
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    updatesCounter += 1
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.backward")
+        NavigationSplitView(sidebar: {
+            List {
+                ForEach(branches.sorted(by: >), id: \.key) { key, value in
+                    NavigationLink(key) {
+                        
+                    }
                 }
             }
-        }
-        .overlay {
-            if commits.isEmpty {
-                ContentUnavailableView("No Commits", image: "")
+            .navigationTitle("Branches")
+            .onAppear {
+                branches = dataModel.branches
             }
-        }
-        .onAppear {
-            do {
-                commits = try dataModel.log()
-            } catch let error{
-                print("ERROR: Error showing log: \(error)")
-                commits = []
+        }, detail: {
+            List(commits, id: \.sha256DigestValue!, selection: $singleSelection) { commit in
+                LazyVStack(alignment: .leading) {
+                    Button(action: {
+                                do {
+                                    try dataModel.checkout(commit: commit.sha256DigestValue!)
+                                } catch {
+                                    print("ERROR: Checking out ref failed")
+                                }
+                                setDrawingData(commit: commit)
+                                dismiss()
+                            },
+                           label: {
+                                VStack(alignment: .leading) {
+                                    Text(commit.message).tint(.primary)
+                                    HStack {
+                                        Text(commit.sha256DigestValue!.prefix(7)).tint(.primary)
+                                        Text(DateFormatter.localizedString(from: commit.timestamp, dateStyle: .medium, timeStyle: .medium)).tint(.primary)
+                                    }
+                                }
+                    })
+                    .contentShape(Rectangle())
+                }
             }
-        }
+            .navigationTitle(commits.isEmpty ? "Log" : "Commits from \(commits.first!.sha256DigestValue!.prefix(7))")
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        updatesCounter += 1
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.backward")
+                    }
+                }
+            }
+            .overlay {
+                if commits.isEmpty {
+                    ContentUnavailableView("No Commits", image: "")
+                }
+            }
+            .onAppear {
+                do {
+                    commits = try dataModel.log()
+                } catch let error{
+                    print("ERROR: Error showing log: \(error)")
+                    commits = []
+                }
+            }
+        })
+
     }
     
     func setDrawingData(commit: Commit) {
@@ -87,5 +103,6 @@ struct SwiftUILogView: View {
 }
 
 #Preview {
-    SwiftUILogView(rendition: Binding.constant(PKDrawing()), updatesCounter: Binding.constant(0))
+    var model: AuditionDataModel = generateSampleDataThreeCommits()
+    SwiftUILogView(rendition: Binding.constant(PKDrawing()), updatesCounter: Binding.constant(0)).environmentObject(model)
 }
