@@ -12,7 +12,7 @@ import PencilKit
 struct SwiftUILogDetailView: View {
     
     @EnvironmentObject var dataModel: AuditionDataModel
-    @State private var singleSelection: String? = nil
+    @State private var commitSelection: String? = nil
     
     @Binding var commits: [Commit]
     @Binding var rendition: PKDrawing
@@ -36,7 +36,7 @@ struct SwiftUILogDetailView: View {
     }
     
     var body: some View {
-        List(commits, id: \.sha256DigestValue!, selection: $singleSelection) { commit in
+        List(commits, id: \.sha256DigestValue!, selection: $commitSelection) { commit in
             LazyVStack(alignment: .leading) {
                 Button(action: {
                             do {
