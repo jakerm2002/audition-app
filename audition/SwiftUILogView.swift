@@ -120,9 +120,22 @@ struct SwiftUILogView: View {
                         }
                     }
             } else {
-                
+                SwiftUILogDetailView(commits: $commits, rendition: $rendition, updatesCounter: $updatesCounter)
+                    .navigationTitle(String(dataModel.HEAD.prefix(7)))
+                    .onAppear {
+                        do {
+                            commits = try dataModel.log()
+                        } catch let error {
+                            print("ERROR: \(error)")
+                        }
+                    }
             }
         })
+        .onAppear {
+            if let currentBranch = dataModel.currentBranch {
+                sidebarSelection = currentBranch
+            }
+        }
 
     }
 }
