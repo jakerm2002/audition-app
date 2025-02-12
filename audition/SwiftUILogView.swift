@@ -80,6 +80,22 @@ struct SwiftUILogView: View {
     
     @Environment(\.dismiss) var dismiss
     
+    func showBranch(branch: String) {
+        do {
+            commits = try dataModel.log(branch: branch)
+        } catch let error {
+            print("ERROR in SwiftUILogView: Couldn't log branch \(branch): \(error)")
+        }
+    }
+    
+    func showHEAD() {
+        do {
+            commits = try dataModel.log()
+        } catch let error {
+            print("ERROR in SwiftUILogView: Couldn't log HEAD \(dataModel.HEAD): \(error)")
+        }
+    }
+    
     var body: some View {
         NavigationSplitView(sidebar: {
             List (branches.sorted(by: >), id: \.key, selection: $sidebarSelection) { key, value in
@@ -107,30 +123,12 @@ struct SwiftUILogView: View {
             if let branchName = sidebarSelection {
                 SwiftUILogDetailView(commits: $commits, rendition: $rendition, updatesCounter: $updatesCounter)
                     .navigationTitle(branchName)
-                    .onAppear {
-                        do {
-                            commits = try dataModel.log(branch: branchName)
-                        } catch let error {
-                            print("ERROR in SwiftUILogView: Couldn't log branch \(branchName): \(error)")
-                        }
-                    }
-                    .onChange(of: branchName) {
-                        do {
-                            commits = try dataModel.log(branch: branchName)
-                        } catch let error {
-                            print("ERROR in SwiftUILogView: Couldn't log branch \(branchName): \(error)")
-                        }
-                    }
+                    .onAppear { showBranch(branch: branchName) }
+                    .onChange(of: branchName) { showBranch(branch: branchName) }
             } else {
                 SwiftUILogDetailView(commits: $commits, rendition: $rendition, updatesCounter: $updatesCounter)
                     .navigationTitle(String(dataModel.HEAD.prefix(7)))
-                    .onAppear {
-                        do {
-                            commits = try dataModel.log()
-                        } catch let error {
-                            print("ERROR in SwiftUILogView: Couldn't log HEAD \(dataModel.HEAD): \(error)")
-                        }
-                    }
+                    .onAppear { showHEAD() }
             }
         })
         .onAppear {
