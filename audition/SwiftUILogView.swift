@@ -59,18 +59,6 @@ struct SwiftUILogDetailView: View {
                 .contentShape(Rectangle())
             }
         }
-//        .navigationTitle(commits.isEmpty ? "Log" : "Commits from \(commits.first!.sha256DigestValue!.prefix(7))")
-//        .navigationBarBackButtonHidden(true)
-//        .toolbar {
-//            ToolbarItem(placement: .topBarLeading) {
-//                Button {
-//                    updatesCounter += 1
-//                    dismiss()
-//                } label: {
-//                    Image(systemName: "chevron.backward")
-//                }
-//            }
-//        }
         .overlay {
             if commits.isEmpty {
                 ContentUnavailableView("No Commits", image: "")
@@ -148,6 +136,17 @@ struct SwiftUILogView: View {
         .onAppear {
             if let currentBranch = dataModel.currentBranch {
                 sidebarSelection = currentBranch
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    updatesCounter += 1
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.backward")
+                }
             }
         }
 
