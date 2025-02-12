@@ -45,25 +45,36 @@ struct CircleStyle: ButtonStyle {
 
 
 struct Node<A: CustomStringConvertible>: View {
+    @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var x: DisplayTree<A>
+    
+    @State var img: UIImage?
     
     var body: some View {
         return ZStack {
-            Image("moon")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipShape(Circle())
-                .overlay {
-                    Circle()
-                        .stroke(Color.primary, lineWidth: 2)
-                }
+            if let img {
+                Image(uiImage: img)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .clipShape(Circle())
+                    .background(in: Circle())
+                    .overlay {
+                        Circle()
+                            .stroke(Color.primary, lineWidth: 2)
+                    }
+            } else {
+                Circle()
+                    .stroke(Color.primary, lineWidth: 2)
+            }
+            Text(x.commit.sha256DigestValue!.prefix(7))
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {
                 print("laying out initial tree...")
                 self.x.relayout()
             }
+            img = dataModel.getThumbnailFromCommit(commit: x.commit)
         }
     }
 }

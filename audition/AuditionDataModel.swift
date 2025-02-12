@@ -309,6 +309,26 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
     
+    func getThumbnailFromCommit(commit: Commit) -> UIImage? {
+        let d: PKDrawing
+        
+        if currentBranch != nil {
+            do {
+                let blobs = try showBlobs(commit: commit.sha256DigestValue!)
+                // TODO: 
+                #warning("Need better handling to determine if blob contents contain JPEG image (or in the future, PKStroke data)")
+                d = try PKDrawing(data: blobs[0].contents)
+                return d.image(from: d.bounds, scale: 3.0)
+            } catch {
+                print("error: failed to create thumbnail from AuditionDataModel: \(error)")
+                return nil
+            }
+            
+        } else {
+            return nil
+        }
+    }
+    
     func getRootsAsTrees() -> [DisplayTree<String>] {
         print("************* STARTING ALGORITHM ***************")
         var wrappers: [String : DisplayTree<String>] = [:]
