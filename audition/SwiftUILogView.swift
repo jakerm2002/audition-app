@@ -41,8 +41,8 @@ struct SwiftUILogDetailView: View {
                 Button(action: {
                             do {
                                 try dataModel.checkout(commit: commit.sha256DigestValue!)
-                            } catch {
-                                print("ERROR: Checking out ref failed")
+                            } catch let error{
+                                print("ERROR in SwiftUILogView: Checking out ref failed: \(error)")
                             }
                             setDrawingData(commit: commit)
                             dismiss()
@@ -90,8 +90,8 @@ struct SwiftUILogView: View {
                         do {
                             try dataModel.checkout(branch: key)
                             dismiss()
-                        } catch let error{
-                            print("ERROR: Checking out branch failed: \(error)")
+                        } catch let error {
+                            print("ERROR in SwiftUILogView: Checking out branch failed: \(error)")
                         }
                     }, label: {
                         Image(systemName: "arrow.left")
@@ -111,14 +111,14 @@ struct SwiftUILogView: View {
                         do {
                             commits = try dataModel.log(branch: branchName)
                         } catch let error {
-                            print("ERROR: \(error)")
+                            print("ERROR in SwiftUILogView: Couldn't log branch \(branchName): \(error)")
                         }
                     }
                     .onChange(of: branchName) {
                         do {
                             commits = try dataModel.log(branch: branchName)
                         } catch let error {
-                            print("ERROR: \(error)")
+                            print("ERROR in SwiftUILogView: Couldn't log branch \(branchName): \(error)")
                         }
                     }
             } else {
@@ -128,7 +128,7 @@ struct SwiftUILogView: View {
                         do {
                             commits = try dataModel.log()
                         } catch let error {
-                            print("ERROR: \(error)")
+                            print("ERROR in SwiftUILogView: Couldn't log HEAD \(dataModel.HEAD): \(error)")
                         }
                     }
             }
