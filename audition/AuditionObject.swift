@@ -7,6 +7,7 @@
 
 import Foundation
 import CryptoKit
+import PencilKit
 
 protocol SHA256Hashable {
     var sha256DigestObject: SHA256Digest? { get }
@@ -60,10 +61,23 @@ enum AuditionObjectType: String, Equatable, Codable {
 class Blob: AuditionObjectProtocol {
     let type: AuditionObjectType
     let contents: Data
+    let contentTypeIdentifier: String?
     
-    init(contents: Data) {
+    init(contents: Data, contentTypeIdentifier: String? = nil) {
         type = AuditionObjectType.blob
         self.contents = contents
+        self.contentTypeIdentifier = contentTypeIdentifier
+    }
+    
+    var isDrawing: Bool {
+        return contentTypeIdentifier == (PKAppleDrawingTypeIdentifier as String)
+    }
+    
+    func createDrawing() throws -> PKDrawing {
+        guard isDrawing else {
+            throw AuditionError.runtimeError("Cannot create drawing from Blob. Blob contentTypeIdentifier does not indicate that this blob contains a PKDrawing.")
+        }
+        return try PKDrawing(data: contents)
     }
     
     public var description: String {

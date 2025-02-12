@@ -65,9 +65,10 @@ struct Node<A: CustomStringConvertible>: View {
                     }
             } else {
                 Circle()
+                    .fill(Color(uiColor: .systemBackground))
                     .stroke(Color.primary, lineWidth: 2)
+                Text(x.commit.sha256DigestValue!.prefix(7))
             }
-            Text(x.commit.sha256DigestValue!.prefix(7))
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {

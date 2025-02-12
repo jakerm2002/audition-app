@@ -7,6 +7,7 @@
 
 import Testing
 import Foundation
+import PencilKit
 
 @testable import audition
 
@@ -1156,5 +1157,50 @@ struct auditionTests {
         #expect(throws: AuditionError.self) {
             try a1.createBranch(branchName: commit2)
         }
+    }
+    
+    @Test func testCheckTypeIdentifier() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let content2 = PKDrawing().dataRepresentation()
+        let filename2 = "testDrawingA"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        let content3 = PKDrawing().dataRepresentation()
+        let filename3 = "testDrawingB"
+        
+        let f3 = AuditionFile(
+            content: content3,
+            contentTypeIdentifier: PKAppleDrawingTypeIdentifier,
+            name: filename3
+        )
+        
+        #expect(f1.contentTypeIdentifier == nil)
+        #expect(f2.contentTypeIdentifier == nil)
+        #expect(f3.contentTypeIdentifier == PKAppleDrawingTypeIdentifier as String)
+        
+        let b1 = Blob(contents: f1.content, contentTypeIdentifier: f1.contentTypeIdentifier)
+        let b2 = Blob(contents: f2.content, contentTypeIdentifier: f2.contentTypeIdentifier)
+        let b3 = Blob(contents: f3.content, contentTypeIdentifier: f3.contentTypeIdentifier)
+        
+        #expect(throws: AuditionError.self) {
+            try b1.createDrawing()
+        }
+        
+        #expect(throws: AuditionError.self) {
+            try b2.createDrawing()
+        }
+        
+        _ = try b3.createDrawing()
     }
 }
