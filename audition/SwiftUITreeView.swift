@@ -74,7 +74,7 @@ struct Node<A: CustomStringConvertible>: View {
                 print("laying out initial tree...")
                 self.x.relayout()
             }
-            img = dataModel.getThumbnailFromCommit(commit: x.commit)
+            img = dataModel.getThumbnail(commit: x.commit)
         }
     }
 }

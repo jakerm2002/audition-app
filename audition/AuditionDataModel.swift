@@ -292,30 +292,22 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     // TODO: Make the AuditionDataModel maintain a thumbnail of itself instead of having other objects potentially call thumbnail redundantly
     var thumbnail: UIImage? {
         print("thumbnail being generated")
-        let d: PKDrawing
-        
-        if currentBranch != nil {
-            do {
-                let blobs = try showBlobs()
-                d = try PKDrawing(data: blobs[0].contents)
-                return d.image(from: d.bounds, scale: 3.0)
-            } catch {
-                print("error: failed to create thumbnail from AuditionDataModel: \(error)")
-                return nil
-            }
-            
-        } else {
-            return nil
-        }
+        return getThumbnail()
     }
     
-    func getThumbnailFromCommit(commit: Commit) -> UIImage? {
+    // if no commit passed, get thumbnail from head
+    func getThumbnail(commit: Commit? = nil) -> UIImage? {
         let d: PKDrawing
         
         if currentBranch != nil {
             do {
-                let blobs = try showBlobs(commit: commit.sha256DigestValue!)
-                // TODO: 
+                let blobs: [Blob]
+                if let commit {
+                    blobs = try showBlobs(commit: commit.sha256DigestValue!)
+                } else {
+                    blobs = try showBlobs()
+                }
+                // TODO:
                 #warning("Need better handling to determine if blob contents contain JPEG image (or in the future, PKStroke data)")
                 d = try PKDrawing(data: blobs[0].contents)
                 return d.image(from: d.bounds, scale: 3.0)
