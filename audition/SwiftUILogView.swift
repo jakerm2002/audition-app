@@ -120,14 +120,23 @@ struct SwiftUILogView: View {
                 branches = dataModel.branches
             }
         }, detail: {
+            // HEAD points to a branch that has been committed to
             if let branchName = sidebarSelection {
                 SwiftUILogDetailView(commits: $commits, rendition: $rendition, updatesCounter: $updatesCounter)
                     .navigationTitle(branchName)
                     .onAppear { showBranch(branch: branchName) }
                     .onChange(of: branchName) { showBranch(branch: branchName) }
-            } else {
+            }
+            // HEAD points to a commit
+            else if dataModel.objects[dataModel.HEAD] is Commit {
                 SwiftUILogDetailView(commits: $commits, rendition: $rendition, updatesCounter: $updatesCounter)
                     .navigationTitle(String(dataModel.HEAD.prefix(7)))
+                    .onAppear { showHEAD() }
+            }
+            // HEAD points to a branch with no commits (it's probably the default branch, 'main')
+            else {
+                SwiftUILogDetailView(commits: $commits, rendition: $rendition, updatesCounter: $updatesCounter)
+                    .navigationTitle(String(dataModel.HEAD))
                     .onAppear { showHEAD() }
             }
         })
