@@ -8,10 +8,32 @@
 import SwiftUI
 import PencilKit
 
-/*
+
 struct SwiftUILogDetailView: View {
     
     @EnvironmentObject var dataModel: AuditionDataModel
+    @State private var singleSelection: String? = nil
+    
+    @Binding var commits: [Commit]
+    @Binding var rendition: PKDrawing
+    @Binding var updatesCounter: Int
+    
+    @Environment(\.dismiss) var dismiss
+    
+    func setDrawingData(commit: Commit) {
+        // grab the blob that was included in the commit
+        // we're assuming there will only be one, this will NOT BE TRUE in the future
+        // once we are committing individual strokes instead of the entire drawing
+        do {
+            let aBlob = try dataModel.showBlobs(commit: commit.sha256DigestValue!)[0]
+            let newDrawing = try PKDrawing(data: aBlob.contents)
+            rendition = newDrawing
+            updatesCounter += 1
+            print("setDrawingData succeeded")
+        } catch let error {
+            print("setDrawingData FAILED to get blobs: \(error)")
+        }
+    }
     
     var body: some View {
         List(commits, id: \.sha256DigestValue!, selection: $singleSelection) { commit in
@@ -37,34 +59,26 @@ struct SwiftUILogDetailView: View {
                 .contentShape(Rectangle())
             }
         }
-        .navigationTitle(commits.isEmpty ? "Log" : "Commits from \(commits.first!.sha256DigestValue!.prefix(7))")
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    updatesCounter += 1
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.backward")
-                }
-            }
-        }
+//        .navigationTitle(commits.isEmpty ? "Log" : "Commits from \(commits.first!.sha256DigestValue!.prefix(7))")
+//        .navigationBarBackButtonHidden(true)
+//        .toolbar {
+//            ToolbarItem(placement: .topBarLeading) {
+//                Button {
+//                    updatesCounter += 1
+//                    dismiss()
+//                } label: {
+//                    Image(systemName: "chevron.backward")
+//                }
+//            }
+//        }
         .overlay {
             if commits.isEmpty {
                 ContentUnavailableView("No Commits", image: "")
             }
         }
-        .onAppear {
-            do {
-                commits = try dataModel.log()
-            } catch let error{
-                print("ERROR: Error showing log: \(error)")
-                commits = []
-            }
-        }
     }
 }
- */
+
 
 struct SwiftUILogView: View {
     
@@ -74,7 +88,6 @@ struct SwiftUILogView: View {
     
     @State var branches: [String : String] = [:]
     @State var commits: [Commit] = []
-    @State private var singleSelection: String? = nil
     @State private var sidebarSelection: String? = nil
     
     @Environment(\.dismiss) var dismiss
@@ -90,30 +103,27 @@ struct SwiftUILogView: View {
             }
         }, detail: {
             if let branchName = sidebarSelection {
-                Text(branchName)
+                SwiftUILogDetailView(commits: $commits, rendition: $rendition, updatesCounter: $updatesCounter)
+                    .navigationTitle(branchName)
+                    .onAppear {
+                        do {
+                            commits = try dataModel.log(branch: branchName)
+                        } catch let error {
+                            print("ERROR: \(error)")
+                        }
+                    }
                     .onChange(of: branchName) {
-                        print("branch changed")
+                        do {
+                            commits = try dataModel.log(branch: branchName)
+                        } catch let error {
+                            print("ERROR: \(error)")
+                        }
                     }
             } else {
                 
             }
         })
 
-    }
-    
-    func setDrawingData(commit: Commit) {
-        // grab the blob that was included in the commit
-        // we're assuming there will only be one, this will NOT BE TRUE in the future
-        // once we are committing individual strokes instead of the entire drawing
-        do {
-            let aBlob = try dataModel.showBlobs(commit: commit.sha256DigestValue!)[0]
-            let newDrawing = try PKDrawing(data: aBlob.contents)
-            rendition = newDrawing
-            updatesCounter += 1
-            print("setDrawingData succeeded")
-        } catch let error {
-            print("setDrawingData FAILED to get blobs: \(error)")
-        }
     }
 }
 
