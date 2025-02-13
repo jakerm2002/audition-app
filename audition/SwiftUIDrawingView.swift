@@ -40,7 +40,7 @@ struct SwiftUIDrawingView: View {
                     fromHomeView = false
                     loadInitialDrawing()
                 }
-                print("SwiftUIDrawingView received: \(dataModel.description) with thumbnail \(dataModel.thumbnail?.size.width ?? -1)")
+//                print("SwiftUIDrawingView received: \(dataModel.description) with thumbnail \(dataModel.thumbnail?.size.width ?? -1)")
             }
     }
     
