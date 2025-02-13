@@ -114,6 +114,12 @@ final class DisplayTree<A>: ObservableObject, Identifiable, CustomStringConverti
     
     weak var parent: DisplayTree<A>? = nil
     
+    // TODO: change this to a stronger identifier, perhaps self.commit.sha256DigestValue?
+    // NOTE: DON'T change it to self.commit.sha256DigestValue, as it is a computed property??
+    // That might only be a problem if the computed property changes every time, our hash isn't supposed to change.
+    // Reading: https://developer.apple.com/documentation/swift/identifiable,
+    // ObjectIdentifier "is only guaranteed to remain unique for the lifetime of an object.
+    // If an object has a stronger notion of identity, it may be appropriate to provide a custom implementation."
     var id: ObjectIdentifier {
         ObjectIdentifier(self)
     }
