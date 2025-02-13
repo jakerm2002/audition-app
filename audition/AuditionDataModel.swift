@@ -443,6 +443,11 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         objects[key] = value
     }
     
+    // NOT SAFE: ONLY USE FOR TESTING
+    func unsafeSetBranch(branchName: String, commitHash: String) {
+        branches[branchName] = commitHash
+    }
+    
     // NOT SAFE: LEAVES COMMITS DANGLING, ONLY USE FOR TESTING
     func unsafeDeleteBranch(branchName: String) {
         branches.removeValue(forKey: branchName)

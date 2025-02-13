@@ -442,8 +442,24 @@ func generateSampleDataThreeCommits() -> AuditionDataModel {
     }
 }
 
+func generateSampleDataThreeStaticCommits() -> AuditionDataModel {
+    let c1 = Commit(tree: "", parents: [], message: "", timestamp: .init(timeIntervalSince1970: 0))
+    let c2 = Commit(tree: "", parents: [c1.sha256DigestValue!], message: "", timestamp: .init(timeIntervalSince1970: 1))
+    let c3 = Commit(tree: "", parents: [c1.sha256DigestValue!], message: "", timestamp: .init(timeIntervalSince1970: 2))
+    
+    let a1 = AuditionDataModel()
+    a1.unsafeSetObject(key: c1.sha256DigestValue!, value: c1)
+    a1.unsafeSetObject(key: c2.sha256DigestValue!, value: c2)
+    a1.unsafeSetObject(key: c3.sha256DigestValue!, value: c3)
+    
+    a1.unsafeSetBranch(branchName: "main", commitHash: c2.sha256DigestValue!)
+    a1.unsafeSetBranch(branchName: "branch1", commitHash: c3.sha256DigestValue!)
+    
+    return a1
+}
+
 #Preview {
 //    SwiftUITreeView(model: generateSampleData())
-    var model: AuditionDataModel = generateSampleDataThreeCommits()
+    var model: AuditionDataModel = generateSampleDataThreeStaticCommits()
     SwiftUITreeView(rendition: Binding.constant(PKDrawing()), updatesCounter: Binding.constant(0)).environmentObject(model)
 }
