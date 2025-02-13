@@ -64,6 +64,7 @@ struct Node<A: CustomStringConvertible>: View {
                         Circle()
                             .stroke(Color.primary, lineWidth: 2)
                     }
+                Text(x.commit.sha256DigestValue!.prefix(7))
             } else {
                 Circle()
                     .fill(Color(uiColor: .systemBackground))
@@ -76,7 +77,6 @@ struct Node<A: CustomStringConvertible>: View {
                 print("laying out initial tree...")
                 self.x.relayout()
             }
-            print("AKSDMNASKNDASJNDASJKNDASKJDNSAKJNDASJKN")
             img = dataModel.getThumbnail(commit: x.commit)
         }
     }
@@ -251,6 +251,7 @@ struct DrawTree<A, Node>: View where Node: View {
                     })
                     .onTapGesture {
                         do {
+                            print("node tapped: \(tree.commit.sha256DigestValue!)")
                             try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
                             setDrawingData(commit: tree.commit)
                             dismiss()
