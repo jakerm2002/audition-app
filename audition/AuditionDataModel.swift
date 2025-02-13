@@ -330,8 +330,10 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     }
     
     // TODO: Make the AuditionDataModel maintain a thumbnail of itself instead of having other objects potentially call thumbnail redundantly
+    // TODO: The thumbnail will evaluate to nil if in 'detached HEAD' state. Figure out which thumbnail to return if in 'detached HEAD' state.
     var thumbnail: UIImage? {
         print("thumbnail being generated")
+        #warning("The thumbnail will evaluate to nil if in 'detached HEAD' state. Figure out which thumbnail to return if in 'detached HEAD' state.")
         return getThumbnail()
     }
     
