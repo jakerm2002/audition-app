@@ -326,8 +326,6 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
                 } else {
                     blobs = try showBlobs()
                 }
-                // TODO:
-                #warning("Need better handling to determine if blob contents contain JPEG image (or in the future, PKStroke data)")
                 d = try blobs[0].createDrawing()
                 return d.image(from: d.bounds, scale: 3.0)
             } catch let error {

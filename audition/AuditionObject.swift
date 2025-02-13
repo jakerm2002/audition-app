@@ -79,6 +79,8 @@ class Blob: AuditionObjectProtocol {
         return contentTypeIdentifier == (PKAppleDrawingTypeIdentifier as String)
     }
     
+    // TODO: In the future, blobs will primarily contain PKStroke data. We need to make a type identifier for PKStroke data.
+    #warning("In the future, blobs will primarily contain PKStroke data. We need to make a type identifier for PKStroke data.)")
     func createDrawing() throws -> PKDrawing {
         guard isDrawing else {
             throw AuditionError.runtimeError("Cannot create drawing from Blob. Blob contentTypeIdentifier does not indicate that this blob contains a PKDrawing.")
