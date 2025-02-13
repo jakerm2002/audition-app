@@ -54,9 +54,13 @@ struct BranchMarker: View {
                 Capsule()
                     .fill(.blue)
                     .stroke(.blue, lineWidth: 2)
-                    .opacity(0.20)
+                    .opacity(0.15)
             }
             .foregroundStyle(.blue)
+            .background{
+                Capsule()
+                    .fill(.ultraThinMaterial)
+            }
     }
 }
 
@@ -282,15 +286,7 @@ struct DrawTree<A, Node>: View where Node: View {
                         }
                     VStack(spacing: 3.0) {
                         BranchMarker(value: "main")
-                            .background{
-                                Capsule()
-                                    .fill(.ultraThinMaterial)
-                            }
                         BranchMarker(value: "branch1")
-                            .background{
-                                Capsule()
-                                    .fill(.ultraThinMaterial)
-                            }
                     }
                 }
                 .alignmentGuide(.leading, computeValue: { _ in
