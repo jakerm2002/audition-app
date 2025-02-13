@@ -44,6 +44,21 @@ struct CircleStyle: ButtonStyle {
     }
 }
 
+struct BranchMarker: View {
+    var value: String
+    
+    var body: some View {
+        Text("\(value)")
+            .padding(.horizontal, 3.0)
+            .background {
+                Capsule()
+                    .fill(.blue)
+                    .stroke(.blue, lineWidth: 2)
+                    .opacity(0.20)
+            }
+            .foregroundStyle(.blue)
+    }
+}
 
 struct Node<A: CustomStringConvertible>: View {
     @EnvironmentObject var dataModel: AuditionDataModel
@@ -75,7 +90,11 @@ struct Node<A: CustomStringConvertible>: View {
                         Circle()
                             .stroke(Color.primary, lineWidth: 2)
                     }
-                Text(x.commit.sha256DigestValue!.prefix(7))
+//            Text(x.commit.sha256DigestValue!.prefix(7))
+            VStack(spacing: 3.0) {
+                BranchMarker(value: "main")
+                BranchMarker(value: "branch1")
+            }
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {
