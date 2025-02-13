@@ -76,6 +76,7 @@ struct Node<A: CustomStringConvertible>: View {
                 print("laying out initial tree...")
                 self.x.relayout()
             }
+            print("AKSDMNASKNDASJNDASJKNDASKJDNSAKJNDASJKN")
             img = dataModel.getThumbnail(commit: x.commit)
         }
     }
