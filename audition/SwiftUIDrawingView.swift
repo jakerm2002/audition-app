@@ -24,7 +24,7 @@ struct SwiftUIDrawingView: View {
             .id(updatesCounter)
             .toolbar {
                 NavigationLink("Tree") {
-                    SwiftUITreeView(updatesCounter: $updatesCounter).environmentObject(dataModel)
+                    SwiftUITreeView(rendition: $rendition, updatesCounter: $updatesCounter).environmentObject(dataModel)
                 }
                 NavigationLink("Log") {
                     SwiftUILogView(rendition: $rendition, updatesCounter: $updatesCounter).environmentObject(dataModel)

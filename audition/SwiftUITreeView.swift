@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PencilKit
 
 struct Line: Shape {
     var from: CGPoint
@@ -75,7 +76,7 @@ struct Node<A: CustomStringConvertible>: View {
                 print("laying out initial tree...")
                 self.x.relayout()
             }
-            img = dataModel.getThumbnail(commit: x.commit)
+//            img = dataModel.getThumbnail(commit: x.commit)
         }
     }
 }
@@ -204,19 +205,41 @@ extension DisplayTree {
 
 
 struct DrawTree<A, Node>: View where Node: View {
+    @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var tree: DisplayTree<A>
+    
+    @Binding var rendition: PKDrawing
+    @Binding var updatesCounter: Int
+    
+    @Environment(\.dismiss) var dismiss
+    
     var horizontalSpacing: CGFloat = 40
     var verticalSpacing: CGFloat = 40
     let node: (DisplayTree<A>) -> Node
     let nodeSize = CGSize(width: 100, height: 100)
     
-    init(tree: DisplayTree<A>, node: @escaping (DisplayTree<A>) -> Node) {
-        self.tree = tree
-        self.node = node
-    }
+//    init(tree: DisplayTree<A>, node: @escaping (DisplayTree<A>) -> Node) {
+//        self.tree = tree
+//        self.node = node
+//    }
     
     func cgPoint(for point: Point) -> CGPoint {
         CGPoint(x: CGFloat(point.x) * (nodeSize.width + horizontalSpacing), y: CGFloat(point.y) * (nodeSize.height + verticalSpacing))
+    }
+    
+    func setDrawingData(commit: Commit) {
+        // grab the blob that was included in the commit
+        // we're assuming there will only be one, this will NOT BE TRUE in the future
+        // once we are committing individual strokes instead of the entire drawing
+        do {
+            let aBlob = try dataModel.showBlobs(commit: commit.sha256DigestValue!)[0]
+            let newDrawing = try aBlob.createDrawing()
+            rendition = newDrawing
+            updatesCounter += 1
+            print("setDrawingData succeeded")
+        } catch let error {
+            print("setDrawingData FAILED to get blobs: \(error)")
+        }
     }
     
     var body: some View {
@@ -230,6 +253,16 @@ struct DrawTree<A, Node>: View where Node: View {
                     .alignmentGuide(.top, computeValue: { _ in
                         -self.cgPoint(for: tree.point).y
                     })
+                    .onTapGesture {
+                        print("node tapped: \(tree.commit.sha256DigestValue!)")
+                        do {
+                            try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
+                            setDrawingData(commit: tree.commit)
+                            dismiss()
+                        } catch let error {
+                            print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
+                        }
+                    }
             }
         }
         .background(
@@ -253,6 +286,7 @@ struct SwiftUITreeView: View {
     
     @EnvironmentObject var model: AuditionDataModel
     @State var tree: DisplayTree<String>?
+    @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
     
     @Environment(\.dismiss) var dismiss
@@ -260,7 +294,7 @@ struct SwiftUITreeView: View {
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
             if let tree {
-                DrawTree(tree: tree, node: { Node(x: $0) })
+                DrawTree(tree: tree, rendition: $rendition, updatesCounter: $updatesCounter, node: { Node(x: $0) })
                     .animation(.default)
             } else {
                 ContentUnavailableView("No Tree Available", image: "")
@@ -385,5 +419,5 @@ func generateSampleDataThreeCommits() -> AuditionDataModel {
 #Preview {
 //    SwiftUITreeView(model: generateSampleData())
     var model: AuditionDataModel = generateSampleDataThreeCommits()
-    SwiftUITreeView(updatesCounter: Binding.constant(0)).environmentObject(model)
+    SwiftUITreeView(rendition: Binding.constant(PKDrawing()), updatesCounter: Binding.constant(0)).environmentObject(model)
 }
