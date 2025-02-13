@@ -36,6 +36,12 @@ struct AuditionFile {
         self.contentTypeIdentifier = contentTypeIdentifier as String
         self.name = name
     }
+    
+    init(from drawing: PKDrawing, name: String) {
+        self.content = drawing.dataRepresentation()
+        self.contentTypeIdentifier = PKAppleDrawingTypeIdentifier as String
+        self.name = name
+    }
 }
 
 class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable {
@@ -140,7 +146,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     func add(files: [AuditionFile]) throws {
         for file in files {
             // create blob
-            let b = Blob(contents: file.content, contentTypeIdentifier: file.contentTypeIdentifier)
+            let b = Blob(from: file)
             
             // update index
             let h = hash(obj: b, write: true)

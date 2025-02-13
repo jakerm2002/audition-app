@@ -53,7 +53,7 @@ struct SwiftUIDrawingView: View {
     }
     
     func storeDataModel() throws {
-        try dataModel.add(AuditionFile(content: rendition.dataRepresentation(), contentTypeIdentifier: PKAppleDrawingTypeIdentifier, name: "drawing"))
+        try dataModel.add(AuditionFile(from: rendition, name: "drawing"))
         _ = try dataModel.commit(message: "new drawing")
     }
     

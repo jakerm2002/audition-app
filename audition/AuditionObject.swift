@@ -69,6 +69,12 @@ class Blob: AuditionObjectProtocol {
         self.contentTypeIdentifier = contentTypeIdentifier
     }
     
+    init(from file: AuditionFile) {
+        type = AuditionObjectType.blob
+        self.contents = file.content
+        self.contentTypeIdentifier = file.contentTypeIdentifier
+    }
+    
     var isDrawing: Bool {
         return contentTypeIdentifier == (PKAppleDrawingTypeIdentifier as String)
     }
