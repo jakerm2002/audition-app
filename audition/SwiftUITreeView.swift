@@ -90,11 +90,7 @@ struct Node<A: CustomStringConvertible>: View {
                         Circle()
                             .stroke(Color.primary, lineWidth: 2)
                     }
-//            Text(x.commit.sha256DigestValue!.prefix(7))
-            VStack(spacing: 3.0) {
-                BranchMarker(value: "main")
-                BranchMarker(value: "branch1")
-            }
+            Text(x.commit.sha256DigestValue!.prefix(7))
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {
@@ -244,8 +240,8 @@ struct DrawTree<A, Node>: View where Node: View {
     
     @Environment(\.dismiss) var dismiss
     
-    var horizontalSpacing: CGFloat = 40
-    var verticalSpacing: CGFloat = 40
+    var horizontalSpacing: CGFloat = 120
+    var verticalSpacing: CGFloat = 120
     let node: (DisplayTree<A>) -> Node
     let nodeSize = CGSize(width: 100, height: 100)
     
@@ -271,24 +267,30 @@ struct DrawTree<A, Node>: View where Node: View {
     var body: some View {
         return ZStack(alignment: .topLeading) {
             ForEach(tree.allSubtrees) { (tree: DisplayTree<A>) in
-                self.node(tree)
-                    .frame(width: self.nodeSize.width, height: self.nodeSize.height)
-                    .alignmentGuide(.leading, computeValue: { _ in
-                        -self.cgPoint(for: tree.point).x
-                    })
-                    .alignmentGuide(.top, computeValue: { _ in
-                        -self.cgPoint(for: tree.point).y
-                    })
-                    .onTapGesture {
-                        do {
-                            print("node tapped: \(tree.commit.sha256DigestValue!)")
-                            try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
-                            setDrawingData(commit: tree.commit)
-                            dismiss()
-                        } catch let error {
-                            print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
+                VStack {
+                    self.node(tree)
+                        .frame(width: self.nodeSize.width, height: self.nodeSize.height)
+                        .onTapGesture {
+                            do {
+                                print("node tapped: \(tree.commit.sha256DigestValue!)")
+                                try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
+                                setDrawingData(commit: tree.commit)
+                                dismiss()
+                            } catch let error {
+                                print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
+                            }
                         }
+                    VStack(spacing: 3.0) {
+                        BranchMarker(value: "main")
+                        BranchMarker(value: "branch1")
                     }
+                }
+                .alignmentGuide(.leading, computeValue: { _ in
+                    -self.cgPoint(for: tree.point).x
+                })
+                .alignmentGuide(.top, computeValue: { _ in
+                    -self.cgPoint(for: tree.point).y
+                })
             }
         }
         .background(
