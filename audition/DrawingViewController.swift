@@ -47,9 +47,9 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         // we need to find the most recent blob and use the data from it to create a PKDrawing.
         do {
             let mostRecentBlob = try dataModelFromHomeVC?.showBlobs()[0]
-            canvasView.drawing = try PKDrawing(data: mostRecentBlob!.contents)
+            canvasView.drawing = try mostRecentBlob!.createDrawing()
         } catch {
-            print("error: DrawingViewController could not load Blob")
+            print("error: DrawingViewController could not load Blob: \(error)")
         }
         view.addSubview(canvasView)
     }
@@ -97,7 +97,7 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     }
     
     func storeDataModel() throws {
-        try dataModelFromHomeVC?.add(AuditionFile(content: canvasView.drawing.dataRepresentation(), name: "drawing"))
+        try dataModelFromHomeVC?.add(AuditionFile(from: canvasView.drawing, name: "drawing"))
         _ = try dataModelFromHomeVC?.commit(message: "new drawing")
     }
     
@@ -107,15 +107,15 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
             // we're assuming there will only be one, this will NOT BE TRUE in the future
             // once we are committing individual strokes instead of the entire drawing
             let aBlob = try dataModelFromHomeVC?.showBlobs(commit: commit.sha256DigestValue!)[0]
-            let d = try PKDrawing(data: aBlob!.contents)
+            let d = try aBlob!.createDrawing()
             let new = PKCanvasView()
             new.drawing = d
             canvasView.removeFromSuperview()
             canvasView = new
             view.addSubview(canvasView)
             
-        } catch {
-            print("error: DrawingViewController could not load/set drawing data")
+        } catch let error {
+            print("error: DrawingViewController could not load/set drawing data: \(error)")
         }
     }
     
