@@ -7,6 +7,7 @@
 
 import Testing
 import Foundation
+import PencilKit
 
 @testable import audition
 
@@ -1156,5 +1157,135 @@ struct auditionTests {
         #expect(throws: AuditionError.self) {
             try a1.createBranch(branchName: commit2)
         }
+    }
+    
+    @Test func testAuditionFileInit() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let content2 = PKDrawing().dataRepresentation()
+        let filename2 = "testDrawingA"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        let content3 = PKDrawing().dataRepresentation()
+        let filename3 = "testDrawingB"
+        
+        let f3 = AuditionFile(
+            content: content3,
+            contentTypeIdentifier: PKAppleDrawingTypeIdentifier,
+            name: filename3
+        )
+        
+        let drawing4 = PKDrawing()
+        let filename4 = "testDrawingC"
+        
+        let f4 = AuditionFile(
+            from: drawing4,
+            name: filename4
+        )
+        
+        #expect(f1.contentTypeIdentifier == nil)
+        #expect(f2.contentTypeIdentifier == nil)
+        #expect(f3.contentTypeIdentifier == PKAppleDrawingTypeIdentifier as String)
+        #expect(f4.contentTypeIdentifier == PKAppleDrawingTypeIdentifier as String)
+    }
+    
+    @Test func testBlobInit() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let content2 = PKDrawing().dataRepresentation()
+        let filename2 = "testDrawingA"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            contentTypeIdentifier: PKAppleDrawingTypeIdentifier,
+            name: filename2
+        )
+        
+        let b1 = Blob(contents: f1.content, contentTypeIdentifier: f1.contentTypeIdentifier)
+        let b1a = Blob(from: f1)
+        
+        #expect(b1.contentTypeIdentifier == nil)
+        #expect(b1.contents == b1a.contents)
+        #expect(b1.contentTypeIdentifier == b1a.contentTypeIdentifier)
+        
+        let b2 = Blob(contents: f2.content, contentTypeIdentifier: f2.contentTypeIdentifier)
+        let b2a = Blob(from: f2)
+        
+        #expect(b2.contentTypeIdentifier == PKAppleDrawingTypeIdentifier as String)
+        #expect(b2.contents == b2a.contents)
+        #expect(b2.contentTypeIdentifier == b2a.contentTypeIdentifier)
+    }
+    
+    // ensure that Blob.createDrawing() will throw an error when there isn't content in the Blob
+    // that is marked as a PKDrawing with the PKAppleDrawingTypeIdentifier.
+    @Test func testCheckTypeIdentifier() async throws {
+        let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
+        let filename1 = "README.md"
+        
+        let f1 = AuditionFile(
+            content: content1,
+            name: filename1
+        )
+        
+        let content2 = PKDrawing().dataRepresentation()
+        let filename2 = "testDrawingA"
+        
+        let f2 = AuditionFile(
+            content: content2,
+            name: filename2
+        )
+        
+        let content3 = PKDrawing().dataRepresentation()
+        let filename3 = "testDrawingB"
+        
+        let f3 = AuditionFile(
+            content: content3,
+            contentTypeIdentifier: PKAppleDrawingTypeIdentifier,
+            name: filename3
+        )
+        
+        let b1 = Blob(contents: f1.content, contentTypeIdentifier: f1.contentTypeIdentifier)
+        let b2 = Blob(contents: f2.content, contentTypeIdentifier: f2.contentTypeIdentifier)
+        let b3 = Blob(contents: f3.content, contentTypeIdentifier: f3.contentTypeIdentifier)
+        
+        let b4 = Blob(from: f1)
+        let b5 = Blob(from: f2)
+        let b6 = Blob(from: f3)
+        
+        #expect(throws: AuditionError.self) {
+            try b1.createDrawing()
+        }
+        
+        #expect(throws: AuditionError.self) {
+            try b2.createDrawing()
+        }
+        
+        _ = try b3.createDrawing()
+        
+        #expect(throws: AuditionError.self) {
+            try b4.createDrawing()
+        }
+        
+        #expect(throws: AuditionError.self) {
+            try b5.createDrawing()
+        }
+        
+        _ = try b6.createDrawing()
     }
 }

@@ -22,7 +22,26 @@ extension AuditionDataModelDelegate {
 
 struct AuditionFile {
     let content: Data
+    let contentTypeIdentifier: String?
     let name: String
+    
+    init(content: Data, name: String) {
+        self.content = content
+        self.contentTypeIdentifier = nil
+        self.name = name
+    }
+    
+    init(content: Data, contentTypeIdentifier: CFString, name: String) {
+        self.content = content
+        self.contentTypeIdentifier = contentTypeIdentifier as String
+        self.name = name
+    }
+    
+    init(from drawing: PKDrawing, name: String) {
+        self.content = drawing.dataRepresentation()
+        self.contentTypeIdentifier = PKAppleDrawingTypeIdentifier as String
+        self.name = name
+    }
 }
 
 class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable {
@@ -127,7 +146,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     func add(files: [AuditionFile]) throws {
         for file in files {
             // create blob
-            let b = Blob(contents: file.content)
+            let b = Blob(from: file)
             
             // update index
             let h = hash(obj: b, write: true)
@@ -292,14 +311,24 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     // TODO: Make the AuditionDataModel maintain a thumbnail of itself instead of having other objects potentially call thumbnail redundantly
     var thumbnail: UIImage? {
         print("thumbnail being generated")
+        return getThumbnail()
+    }
+    
+    // if no commit passed, get thumbnail from head
+    func getThumbnail(commit: Commit? = nil) -> UIImage? {
         let d: PKDrawing
         
         if currentBranch != nil {
             do {
-                let blobs = try showBlobs()
-                d = try PKDrawing(data: blobs[0].contents)
+                let blobs: [Blob]
+                if let commit {
+                    blobs = try showBlobs(commit: commit.sha256DigestValue!)
+                } else {
+                    blobs = try showBlobs()
+                }
+                d = try blobs[0].createDrawing()
                 return d.image(from: d.bounds, scale: 3.0)
-            } catch {
+            } catch let error {
                 print("error: failed to create thumbnail from AuditionDataModel: \(error)")
                 return nil
             }

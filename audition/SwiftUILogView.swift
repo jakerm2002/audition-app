@@ -26,7 +26,7 @@ struct SwiftUILogDetailView: View {
         // once we are committing individual strokes instead of the entire drawing
         do {
             let aBlob = try dataModel.showBlobs(commit: commit.sha256DigestValue!)[0]
-            let newDrawing = try PKDrawing(data: aBlob.contents)
+            let newDrawing = try aBlob.createDrawing()
             rendition = newDrawing
             updatesCounter += 1
             print("setDrawingData succeeded")
@@ -86,7 +86,7 @@ struct SwiftUILogView: View {
         // once we are committing individual strokes instead of the entire drawing
         do {
             let aBlob = try dataModel.showBlobs(commit: commit.sha256DigestValue!)[0]
-            let newDrawing = try PKDrawing(data: aBlob.contents)
+            let newDrawing = try aBlob.createDrawing()
             rendition = newDrawing
             updatesCounter += 1
             print("setDrawingData succeeded")

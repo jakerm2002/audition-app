@@ -45,20 +45,37 @@ struct CircleStyle: ButtonStyle {
 
 
 struct Node<A: CustomStringConvertible>: View {
+    @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var x: DisplayTree<A>
+    
+    @State var img: UIImage?
     
     var body: some View {
         return ZStack {
-            Circle()
-                .fill(Color(uiColor: .systemBackground))
-                .stroke(Color.primary, lineWidth: 2)
-            Text("\(x.value)").font(.title2)
+            if let img {
+                Image(uiImage: img)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .clipShape(Circle())
+                    .background(in: Circle())
+                    .overlay {
+                        Circle()
+                            .stroke(Color.primary, lineWidth: 2)
+                    }
+            } else {
+                Circle()
+                    .fill(Color(uiColor: .systemBackground))
+                    .stroke(Color.primary, lineWidth: 2)
+                Text(x.commit.sha256DigestValue!.prefix(7))
+            }
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {
                 print("laying out initial tree...")
                 self.x.relayout()
             }
+            img = dataModel.getThumbnail(commit: x.commit)
         }
     }
 }
@@ -227,12 +244,6 @@ struct DrawTree<A, Node>: View where Node: View {
     }
 }
 
-
-func sampleTree() -> DisplayTree<String> {
-    let root = DisplayTree(commit: Commit(tree: "", parents: [], message: "", timestamp: .now), value: "Loading")
-    return root
-}
-
 struct SwiftUITreeView: View {
     var edgeFade = Gradient(stops:
                             [Gradient.Stop(color: Color.clear, location: 0.0),
@@ -241,18 +252,20 @@ struct SwiftUITreeView: View {
                              Gradient.Stop(color: Color.clear, location: 1.0)])
     
     @EnvironmentObject var model: AuditionDataModel
-    @State var tree = sampleTree()
+    @State var tree: DisplayTree<String>?
     @Binding var updatesCounter: Int
     
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
-            HStack {
+            if let tree {
                 DrawTree(tree: tree, node: { Node(x: $0) })
                     .animation(.default)
-                    .onAppear{
-                        tree = model.getRootsAsTrees().first ?? tree
+            } else {
+                ContentUnavailableView("No Tree Available", image: "")
+                    .onAppear {
+                        tree = model.getRootsAsTrees().first
                     }
             }
         }
