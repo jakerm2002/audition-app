@@ -58,7 +58,7 @@ enum AuditionObjectType: String, Equatable, Codable {
     case commit = "commit"
 }
 
-class Blob: AuditionObjectProtocol {
+class Blob: AuditionObjectProtocol, Equatable {
     let type: AuditionObjectType
     let contents: Data
     let contentTypeIdentifier: String?
@@ -86,6 +86,10 @@ class Blob: AuditionObjectProtocol {
             throw AuditionError.runtimeError("Cannot create drawing from Blob. Blob contentTypeIdentifier does not indicate that this blob contains a PKDrawing.")
         }
         return try PKDrawing(data: contents)
+    }
+    
+    static func == (lhs: Blob, rhs: Blob) -> Bool {
+        return lhs.type == rhs.type && lhs.contents == rhs.contents && lhs.contentTypeIdentifier == rhs.contentTypeIdentifier
     }
     
     public var description: String {
@@ -118,7 +122,7 @@ struct TreeEntry: CustomStringConvertible, Plistable, Equatable, Comparable, Cod
     }
 }
 
-class Tree: AuditionObjectProtocol {
+class Tree: AuditionObjectProtocol, Equatable {
     let type: AuditionObjectType
     
     // Tree entries MUST be sorted alphabetically by their name
@@ -127,6 +131,11 @@ class Tree: AuditionObjectProtocol {
     init(entries: [TreeEntry]) {
         type = AuditionObjectType.tree
         self.entries = entries.sorted()
+    }
+    
+    static func == (lhs: Tree, rhs: Tree) -> Bool {
+        // we don't have to sort since the entries are already sorted upon initialization
+        return lhs.type == rhs.type && lhs.entries == rhs.entries
     }
     
     public var description: String {
@@ -138,7 +147,7 @@ class Tree: AuditionObjectProtocol {
     }
 }
 
-class Commit: AuditionObjectProtocol, Hashable, ObservableObject {
+class Commit: AuditionObjectProtocol, Equatable, ObservableObject {
     let type: AuditionObjectType
     let tree: String
     let parents: [String]
@@ -155,14 +164,6 @@ class Commit: AuditionObjectProtocol, Hashable, ObservableObject {
     
     static func == (lhs: Commit, rhs: Commit) -> Bool {
         return lhs.type == rhs.type && lhs.tree == rhs.tree && lhs.parents == rhs.parents && lhs.message == rhs.message && lhs.timestamp == rhs.timestamp
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(type)
-        hasher.combine(tree)
-        hasher.combine(parents)
-        hasher.combine(message)
-        hasher.combine(timestamp)
     }
     
     public var description: String {
