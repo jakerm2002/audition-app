@@ -76,7 +76,7 @@ struct Node<A: CustomStringConvertible>: View {
                 print("laying out initial tree...")
                 self.x.relayout()
             }
-//            img = dataModel.getThumbnail(commit: x.commit)
+            img = dataModel.getThumbnail(commit: x.commit)
         }
     }
 }
@@ -218,11 +218,6 @@ struct DrawTree<A, Node>: View where Node: View {
     let node: (DisplayTree<A>) -> Node
     let nodeSize = CGSize(width: 100, height: 100)
     
-//    init(tree: DisplayTree<A>, node: @escaping (DisplayTree<A>) -> Node) {
-//        self.tree = tree
-//        self.node = node
-//    }
-    
     func cgPoint(for point: Point) -> CGPoint {
         CGPoint(x: CGFloat(point.x) * (nodeSize.width + horizontalSpacing), y: CGFloat(point.y) * (nodeSize.height + verticalSpacing))
     }
@@ -254,7 +249,6 @@ struct DrawTree<A, Node>: View where Node: View {
                         -self.cgPoint(for: tree.point).y
                     })
                     .onTapGesture {
-                        print("node tapped: \(tree.commit.sha256DigestValue!)")
                         do {
                             try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
                             setDrawingData(commit: tree.commit)
