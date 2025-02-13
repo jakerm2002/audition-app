@@ -49,12 +49,23 @@ struct Node<A: CustomStringConvertible>: View {
     @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var x: DisplayTree<A>
     
-    @State var img: UIImage?
+    @State var img: UIImage = UIImage(ciImage: .empty())
     
     var body: some View {
         return ZStack {
-            if let img {
-                Image(uiImage: img)
+            // NOTE: Using conditionals here to display a different
+            // View if the image was nil causes the view to break for some reason.
+            // Symptoms can be seen when tapping the node very fast when the TreeView
+            // is first displayed. DrawTree has an onTapGesture that captures which Node
+            // was pressed. If conditionals are used, DrawTree will sometimes behave
+            // like a DIFFERENT Node was pressed. As of right now, I've only observed
+            // this behavior on the root node of the tree structure.
+            // It could be because of SwiftUI Identity, Lifetime, or Dependencies.
+            // I tried watching "Demystify SwiftUI" from 2021 which covers some things,
+            // but I wasn't able to determine the cause of the issue.
+            // The current fix is to always make an image available so that we don't
+            // need to use a separate view to render something other than an Image.
+            Image(uiImage: img)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -65,19 +76,13 @@ struct Node<A: CustomStringConvertible>: View {
                             .stroke(Color.primary, lineWidth: 2)
                     }
                 Text(x.commit.sha256DigestValue!.prefix(7))
-            } else {
-                Circle()
-                    .fill(Color(uiColor: .systemBackground))
-                    .stroke(Color.primary, lineWidth: 2)
-                Text(x.commit.sha256DigestValue!.prefix(7))
-            }
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {
                 print("laying out initial tree...")
                 self.x.relayout()
             }
-            img = dataModel.getThumbnail(commit: x.commit)
+            img = dataModel.getThumbnail(commit: x.commit) ?? img
         }
     }
 }
