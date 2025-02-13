@@ -282,7 +282,15 @@ struct DrawTree<A, Node>: View where Node: View {
                         }
                     VStack(spacing: 3.0) {
                         BranchMarker(value: "main")
+                            .background{
+                                Capsule()
+                                    .fill(.ultraThinMaterial)
+                            }
                         BranchMarker(value: "branch1")
+                            .background{
+                                Capsule()
+                                    .fill(.ultraThinMaterial)
+                            }
                     }
                 }
                 .alignmentGuide(.leading, computeValue: { _ in
