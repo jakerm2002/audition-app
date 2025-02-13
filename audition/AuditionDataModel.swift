@@ -75,6 +75,25 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         return branches[HEAD] != nil ? HEAD : nil
     }
     
+    // returns the full branch name if HEAD points to a branch.
+    // otherwise, return the first 7 characters of the commit hash.
+    var shortHEAD: String {
+        return headIsDetached ? String(HEAD.prefix(7)) : HEAD
+    }
+    
+    var headIsDetached: Bool {
+        if branches[HEAD] != nil {
+            return false
+        } else if objects[HEAD] is Commit {
+            return true
+        } else {
+            // assuming HEAD points to default branch
+            // but no commits have been made yet.
+            // we will not consider this as 'detached HEAD' state
+            return false
+        }
+    }
+    
     // params:
     //      write (bool): if true, takes the data and writes it to a blob
     // returns: the SHA-1 hash of the data

@@ -30,9 +30,11 @@ struct SwiftUIDrawingView: View {
                     SwiftUILogView(rendition: $rendition, updatesCounter: $updatesCounter).environmentObject(dataModel)
                 }
                 Button("Branch", action: branchButtonPressed)
-                Button("Commit to '\(dataModel.currentBranch ?? dataModel.HEAD)'", action: commitButtonPressed)
+                Button("Commit to '\(dataModel.shortHEAD)'", action: commitButtonPressed)
             }
             .toolbarRole(.editor)
+            .navigationTitle(dataModel.shortHEAD)
+            .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 if fromHomeView {
                     fromHomeView = false

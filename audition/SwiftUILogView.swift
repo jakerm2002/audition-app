@@ -149,7 +149,7 @@ struct SwiftUILogView: View {
             // HEAD points to a commit
             else if dataModel.objects[dataModel.HEAD] is Commit {
                 SwiftUILogDetailView(commits: $commits, rendition: $rendition, updatesCounter: $updatesCounter)
-                    .navigationTitle(String(dataModel.HEAD.prefix(7)))
+                    .navigationTitle(dataModel.shortHEAD)
                     .onAppear { setCommitsFromHEAD() }
             }
             // HEAD points to a branch with no commits (it's probably the default branch, 'main')
