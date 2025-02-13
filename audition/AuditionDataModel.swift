@@ -264,6 +264,8 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         return tree
     }
     
+    // NOTE: HEAD must point to a branch
+    // TODO: This method assumes that HEAD points to a branch and should probably be redone to support 'detached HEAD' state.
     func showBlobs() throws -> [Blob] {
         guard let HEADcommit = branches[HEAD] else {
             throw AuditionError.runtimeError("HEAD does not point to an existing branch")
@@ -328,31 +330,30 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     }
     
     // TODO: Make the AuditionDataModel maintain a thumbnail of itself instead of having other objects potentially call thumbnail redundantly
+    // TODO: The thumbnail will evaluate to nil if in 'detached HEAD' state. Figure out which thumbnail to return if in 'detached HEAD' state.
     var thumbnail: UIImage? {
         print("thumbnail being generated")
+        #warning("The thumbnail will evaluate to nil if in 'detached HEAD' state. Figure out which thumbnail to return if in 'detached HEAD' state.")
         return getThumbnail()
     }
     
-    // if no commit passed, get thumbnail from head
+    // if no commit passed, get thumbnail from HEAD
+    // NOTE: if not passing a commit, HEAD must point to a branch
+    // TODO: This method, given no arguments, assumes that HEAD points to a branch and should probably be redone to support 'detached HEAD' state.
     func getThumbnail(commit: Commit? = nil) -> UIImage? {
         let d: PKDrawing
         
-        if currentBranch != nil {
-            do {
-                let blobs: [Blob]
-                if let commit {
-                    blobs = try showBlobs(commit: commit.sha256DigestValue!)
-                } else {
-                    blobs = try showBlobs()
-                }
-                d = try blobs[0].createDrawing()
-                return d.image(from: d.bounds, scale: 3.0)
-            } catch let error {
-                print("error: failed to create thumbnail from AuditionDataModel: \(error)")
-                return nil
+        do {
+            let blobs: [Blob]
+            if let commit {
+                blobs = try showBlobs(commit: commit.sha256DigestValue!)
+            } else {
+                blobs = try showBlobs()
             }
-            
-        } else {
+            d = try blobs[0].createDrawing()
+            return d.image(from: d.bounds, scale: 3.0)
+        } catch let error {
+            print("error: failed to create thumbnail from AuditionDataModel: \(error)")
             return nil
         }
     }

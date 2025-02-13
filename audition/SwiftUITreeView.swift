@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PencilKit
 
 struct Line: Shape {
     var from: CGPoint
@@ -48,12 +49,23 @@ struct Node<A: CustomStringConvertible>: View {
     @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var x: DisplayTree<A>
     
-    @State var img: UIImage?
+    @State var img: UIImage = UIImage(ciImage: .empty())
     
     var body: some View {
         return ZStack {
-            if let img {
-                Image(uiImage: img)
+            // NOTE: Using conditionals here to display a different
+            // View if the image was nil causes the view to break for some reason.
+            // Symptoms can be seen when tapping the node very fast when the TreeView
+            // is first displayed. DrawTree has an onTapGesture that captures which Node
+            // was pressed. If conditionals are used, DrawTree will sometimes behave
+            // like a DIFFERENT Node was pressed. As of right now, I've only observed
+            // this behavior on the root node of the tree structure.
+            // It could be because of SwiftUI Identity, Lifetime, or Dependencies.
+            // I tried watching "Demystify SwiftUI" from 2021 which covers some things,
+            // but I wasn't able to determine the cause of the issue.
+            // The current fix is to always make an image available so that we don't
+            // need to use a separate view to render something other than an Image.
+            Image(uiImage: img)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -63,19 +75,14 @@ struct Node<A: CustomStringConvertible>: View {
                         Circle()
                             .stroke(Color.primary, lineWidth: 2)
                     }
-            } else {
-                Circle()
-                    .fill(Color(uiColor: .systemBackground))
-                    .stroke(Color.primary, lineWidth: 2)
                 Text(x.commit.sha256DigestValue!.prefix(7))
-            }
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {
                 print("laying out initial tree...")
                 self.x.relayout()
             }
-            img = dataModel.getThumbnail(commit: x.commit)
+            img = dataModel.getThumbnail(commit: x.commit) ?? img
         }
     }
 }
@@ -107,6 +114,12 @@ final class DisplayTree<A>: ObservableObject, Identifiable, CustomStringConverti
     
     weak var parent: DisplayTree<A>? = nil
     
+    // TODO: change this to a stronger identifier, perhaps self.commit.sha256DigestValue?
+    // NOTE: DON'T change it to self.commit.sha256DigestValue, as it is a computed property??
+    // That might only be a problem if the computed property changes every time, our hash isn't supposed to change.
+    // Reading: https://developer.apple.com/documentation/swift/identifiable,
+    // ObjectIdentifier "is only guaranteed to remain unique for the lifetime of an object.
+    // If an object has a stronger notion of identity, it may be appropriate to provide a custom implementation."
     var id: ObjectIdentifier {
         ObjectIdentifier(self)
     }
@@ -204,19 +217,36 @@ extension DisplayTree {
 
 
 struct DrawTree<A, Node>: View where Node: View {
+    @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var tree: DisplayTree<A>
+    
+    @Binding var rendition: PKDrawing
+    @Binding var updatesCounter: Int
+    
+    @Environment(\.dismiss) var dismiss
+    
     var horizontalSpacing: CGFloat = 40
     var verticalSpacing: CGFloat = 40
     let node: (DisplayTree<A>) -> Node
     let nodeSize = CGSize(width: 100, height: 100)
     
-    init(tree: DisplayTree<A>, node: @escaping (DisplayTree<A>) -> Node) {
-        self.tree = tree
-        self.node = node
-    }
-    
     func cgPoint(for point: Point) -> CGPoint {
         CGPoint(x: CGFloat(point.x) * (nodeSize.width + horizontalSpacing), y: CGFloat(point.y) * (nodeSize.height + verticalSpacing))
+    }
+    
+    func setDrawingData(commit: Commit) {
+        // grab the blob that was included in the commit
+        // we're assuming there will only be one, this will NOT BE TRUE in the future
+        // once we are committing individual strokes instead of the entire drawing
+        do {
+            let aBlob = try dataModel.showBlobs(commit: commit.sha256DigestValue!)[0]
+            let newDrawing = try aBlob.createDrawing()
+            rendition = newDrawing
+            updatesCounter += 1
+            print("setDrawingData succeeded")
+        } catch let error {
+            print("setDrawingData FAILED to get blobs: \(error)")
+        }
     }
     
     var body: some View {
@@ -230,6 +260,16 @@ struct DrawTree<A, Node>: View where Node: View {
                     .alignmentGuide(.top, computeValue: { _ in
                         -self.cgPoint(for: tree.point).y
                     })
+                    .onTapGesture {
+                        do {
+                            print("node tapped: \(tree.commit.sha256DigestValue!)")
+                            try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
+                            setDrawingData(commit: tree.commit)
+                            dismiss()
+                        } catch let error {
+                            print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
+                        }
+                    }
             }
         }
         .background(
@@ -253,6 +293,7 @@ struct SwiftUITreeView: View {
     
     @EnvironmentObject var model: AuditionDataModel
     @State var tree: DisplayTree<String>?
+    @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
     
     @Environment(\.dismiss) var dismiss
@@ -260,7 +301,7 @@ struct SwiftUITreeView: View {
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
             if let tree {
-                DrawTree(tree: tree, node: { Node(x: $0) })
+                DrawTree(tree: tree, rendition: $rendition, updatesCounter: $updatesCounter, node: { Node(x: $0) })
                     .animation(.default)
             } else {
                 ContentUnavailableView("No Tree Available", image: "")
@@ -385,5 +426,5 @@ func generateSampleDataThreeCommits() -> AuditionDataModel {
 #Preview {
 //    SwiftUITreeView(model: generateSampleData())
     var model: AuditionDataModel = generateSampleDataThreeCommits()
-    SwiftUITreeView(updatesCounter: Binding.constant(0)).environmentObject(model)
+    SwiftUITreeView(rendition: Binding.constant(PKDrawing()), updatesCounter: Binding.constant(0)).environmentObject(model)
 }
