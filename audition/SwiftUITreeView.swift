@@ -44,23 +44,25 @@ struct CircleStyle: ButtonStyle {
     }
 }
 
-struct BranchMarker: View {
-    var value: String
+struct BranchMarkers: View {
+    var branchNames: [String]
     
     var body: some View {
-        Text("\(value)")
-            .padding(.horizontal, 3.0)
-            .background {
-                Capsule()
-                    .fill(.blue)
-                    .stroke(.blue, lineWidth: 2)
-                    .opacity(0.15)
-            }
-            .foregroundStyle(.blue)
-            .background{
-                Capsule()
-                    .fill(.ultraThinMaterial)
-            }
+        ForEach(branchNames, id: \.self) { value in
+            Text("\(value)")
+                .padding(.horizontal, 3.0)
+                .background {
+                    Capsule()
+                        .fill(.blue)
+                        .stroke(.blue, lineWidth: 2)
+                        .opacity(0.15)
+                }
+                .foregroundStyle(.blue)
+                .background{
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                }
+        }
     }
 }
 
@@ -285,8 +287,7 @@ struct DrawTree<A, Node>: View where Node: View {
                             }
                         }
                     VStack(spacing: 3.0) {
-                        BranchMarker(value: "main")
-                        BranchMarker(value: "branch1")
+                        BranchMarkers(branchNames: ["main", "branch1"])
                     }
                 }
                 .alignmentGuide(.leading, computeValue: { _ in
