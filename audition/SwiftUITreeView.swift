@@ -117,7 +117,7 @@ struct BranchMarkers: View {
             .init(color: .black, location: 0.8),
             .init(color: expanded ? .clear : .black, location: 1)
         ]), startPoint: .top, endPoint: .bottom))
-        .frame(maxHeight: 100)
+        .frame(height: 100)
     }
 }
 
