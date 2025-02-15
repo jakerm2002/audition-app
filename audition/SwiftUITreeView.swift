@@ -93,7 +93,10 @@ struct BranchMarkers: View {
         return expanded ? branchNames : Array(branchNames.prefix(BranchMarkers.MAX_MARKERS_DISPLAYED))
     }
 
-    
+    // TODO: add a mask on the top side that looks aesthetically pleasing
+    // this may require shifting the ScrollView up manually using a GeometryReader
+    // the scrollview may need to overlap with the node,
+    // and then there will need to be top padding added to the VStack
     var body: some View {
         ScrollView() {
             VStack(spacing: 3.0) {
@@ -108,6 +111,11 @@ struct BranchMarkers: View {
         .onTapGesture {
             expanded = !expanded
         }
+        .mask(LinearGradient(gradient: Gradient(stops: [
+            .init(color: .black, location: 0),
+            .init(color: .black, location: 0.8),
+            .init(color: .clear, location: 1)
+        ]), startPoint: .top, endPoint: .bottom))
         .frame(maxHeight: 100)
     }
 }
