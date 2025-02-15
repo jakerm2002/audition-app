@@ -49,7 +49,9 @@ struct BranchMarker: View {
     
     var body: some View {
         Text(value)
-            .padding(.horizontal, 3.0)
+            .lineLimit(1)
+            .truncationMode(.middle)
+            .padding(.horizontal, 4.0)
             .background {
                 Capsule()
                     .fill(.blue)
@@ -61,6 +63,7 @@ struct BranchMarker: View {
                 Capsule()
                     .fill(.ultraThinMaterial)
             }
+            .frame(maxWidth: .infinity)
     }
 }
 
@@ -76,7 +79,7 @@ struct BranchMarkers: View {
     
     // approaches
     // 1. make the array a computed property and display a marker if expanded is false - tried
-    // 2. have the separate arrays displayed in different ForEach
+    // 2. have the separate arrays displayed in different ForEach - not gonna try cause i don't like
     // 3. modify the existing ForEach to take the first three if a boolean is true/false - tried
     
     init(branchNames: [String]) {
@@ -329,7 +332,8 @@ struct DrawTree<A, Node>: View where Node: View {
                                 print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
                             }
                         }
-                    BranchMarkers(branchNames: ["main", "branch1", "branch2", "branch3", "branch4", "branch5"])
+                    BranchMarkers(branchNames: ["main", "branch1", "branch2", "branch3", "branch4", "branch555555555"])
+                        .frame(maxWidth: nodeSize.width)
                 }
                 .alignmentGuide(.leading, computeValue: { _ in
                     -self.cgPoint(for: tree.point).x
