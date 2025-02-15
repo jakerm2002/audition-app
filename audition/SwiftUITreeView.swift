@@ -48,21 +48,32 @@ struct BranchMarkers: View {
     var branchNames: [String]
     
     var body: some View {
-        ForEach(branchNames, id: \.self) { value in
-            Text("\(value)")
-                .padding(.horizontal, 3.0)
-                .background {
-                    Capsule()
-                        .fill(.blue)
-                        .stroke(.blue, lineWidth: 2)
-                        .opacity(0.15)
+        ScrollView() {
+            VStack(spacing: 3.0) {
+                ForEach(branchNames, id: \.self) { value in
+                    Text("\(value)")
+                        .padding(.horizontal, 3.0)
+                        .background {
+                            Capsule()
+                                .fill(.blue)
+                                .stroke(.blue, lineWidth: 2)
+                                .opacity(0.15)
+                        }
+                        .foregroundStyle(.blue)
+                        .background{
+                            Capsule()
+                                .fill(.ultraThinMaterial)
+                        }
                 }
-                .foregroundStyle(.blue)
-                .background{
-                    Capsule()
-                        .fill(.ultraThinMaterial)
-                }
+            }
         }
+        .mask(LinearGradient(gradient: Gradient(stops: [
+//            .init(color: .clear, location: 0),
+            .init(color: .black, location: 0.2),
+            .init(color: .black, location: 0.8),
+            .init(color: .clear, location: 1)
+        ]), startPoint: .top, endPoint: .bottom))
+        .frame(maxHeight: 100)
     }
 }
 
@@ -286,9 +297,7 @@ struct DrawTree<A, Node>: View where Node: View {
                                 print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
                             }
                         }
-                    VStack(spacing: 3.0) {
-                        BranchMarkers(branchNames: ["main", "branch1"])
-                    }
+                    BranchMarkers(branchNames: ["main", "branch1", "branch2", "branch3", "branch4", "branch5"])
                 }
                 .alignmentGuide(.leading, computeValue: { _ in
                     -self.cgPoint(for: tree.point).x
