@@ -98,7 +98,7 @@ struct BranchMarkers: View {
     // the scrollview may need to overlap with the node,
     // and then there will need to be top padding added to the VStack
     var body: some View {
-        ScrollView() {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 3.0) {
                 ForEach(namesToDisplay, id: \.self) { value in
                     BranchMarker(value: value)
@@ -107,6 +107,7 @@ struct BranchMarkers: View {
                     BranchMarker(value: "+\(branchNames.count - namesToDisplay.count)")
                 }
             }
+            .padding(.bottom, expanded ? nil : 0)
         }
         .onTapGesture {
             expanded = !expanded
@@ -114,7 +115,7 @@ struct BranchMarkers: View {
         .mask(LinearGradient(gradient: Gradient(stops: [
             .init(color: .black, location: 0),
             .init(color: .black, location: 0.8),
-            .init(color: .clear, location: 1)
+            .init(color: expanded ? .clear : .black, location: 1)
         ]), startPoint: .top, endPoint: .bottom))
         .frame(maxHeight: 100)
     }
