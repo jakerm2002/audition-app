@@ -44,6 +44,26 @@ struct CircleStyle: ButtonStyle {
     }
 }
 
+struct BranchMarker: View {
+    var value: String
+    
+    var body: some View {
+        Text(value)
+            .padding(.horizontal, 3.0)
+            .background {
+                Capsule()
+                    .fill(.blue)
+                    .stroke(.blue, lineWidth: 2)
+                    .opacity(0.15)
+            }
+            .foregroundStyle(.blue)
+            .background{
+                Capsule()
+                    .fill(.ultraThinMaterial)
+            }
+    }
+}
+
 struct BranchMarkers: View {
     static let MAX_MARKERS_DISPLAYED = 3
     
@@ -55,9 +75,9 @@ struct BranchMarkers: View {
     @State var expanded: Bool = false
     
     // approaches
-    // 1. make the array a computed property
+    // 1. make the array a computed property and display a marker if expanded is false - tried
     // 2. have the separate arrays displayed in different ForEach
-    // 3. modify the existing ForEach to take the first three if a boolean is true/false
+    // 3. modify the existing ForEach to take the first three if a boolean is true/false - tried
     
     init(branchNames: [String]) {
         self.branchNames = branchNames
@@ -67,13 +87,7 @@ struct BranchMarkers: View {
     }
     
     var namesToDisplay: [String] {
-        if expanded {
-            return branchNames
-        } else {
-            let displayed = Array(branchNames.prefix(BranchMarkers.MAX_MARKERS_DISPLAYED))
-            let excess = branchNames.count - BranchMarkers.MAX_MARKERS_DISPLAYED
-            return excess > 0 ? displayed + ["+\(excess)"] : displayed
-        }
+        return expanded ? branchNames : Array(branchNames.prefix(BranchMarkers.MAX_MARKERS_DISPLAYED))
     }
 
     
@@ -81,19 +95,10 @@ struct BranchMarkers: View {
         ScrollView() {
             VStack(spacing: 3.0) {
                 ForEach(namesToDisplay, id: \.self) { value in
-                    Text("\(value)")
-                        .padding(.horizontal, 3.0)
-                        .background {
-                            Capsule()
-                                .fill(.blue)
-                                .stroke(.blue, lineWidth: 2)
-                                .opacity(0.15)
-                        }
-                        .foregroundStyle(.blue)
-                        .background{
-                            Capsule()
-                                .fill(.ultraThinMaterial)
-                        }
+                    BranchMarker(value: value)
+                }
+                if !expanded {
+                    BranchMarker(value: "+\(branchNames.count - namesToDisplay.count)")
                 }
             }
         }
