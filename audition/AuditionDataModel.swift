@@ -370,6 +370,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     }
     
     func getRootsAsTrees() -> [DisplayTree<String>] {
+        var branchesForCommits = getBranchesForCommits()
         print("************* STARTING ALGORITHM ***************")
         var wrappers: [String : DisplayTree<String>] = [:]
         var rootNodes: [DisplayTree<String>] = []
@@ -386,7 +387,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
                         p.addChild(cur)
                     } else {
                         let pCommitObj = objects[pCommit] as! Commit
-                        let p = DisplayTree(commit: pCommitObj, value: String(pCommit.prefix(7)), children: [cur])
+                        let p = DisplayTree(commit: pCommitObj, value: String(pCommit.prefix(7)), children: [cur], branches: branchesForCommits[pCommit])
                         alg(p)
                     }
                 }
@@ -405,7 +406,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         do {
             let sortedBranches: [String] = try getBranchesWithInDegreeZero()
             for commit in sortedBranches {
-                let w = DisplayTree(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [])
+                let w = DisplayTree(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [], branches: branchesForCommits[commit])
                 alg(w)
             }
         } catch let error {

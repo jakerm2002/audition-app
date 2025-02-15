@@ -175,20 +175,23 @@ struct Point: Hashable {
 
 
 final class DisplayTree<A>: ObservableObject, Identifiable, CustomStringConvertible {
-    init(commit: Commit, value: A, point: Point = .zero, children: [DisplayTree<A>]? = nil) {
+    init(commit: Commit, value: A, point: Point = .zero, children: [DisplayTree<A>]? = nil, branches: [String]?) {
         self.commit = commit
         self.value = value
         self.point = point
         self.children = children
+        self.branches = branches ?? []
         children?.forEach {
             $0.parent = self
         }
     }
     
+    // TODO: why are these published? They shouldn't ever change
     @Published var commit: Commit
     @Published var value: A
     @Published var point: Point = .zero
     @Published private(set) var children: [DisplayTree<A>]?
+    let branches: [String]
     
     weak var parent: DisplayTree<A>? = nil
     
@@ -298,8 +301,6 @@ struct DrawTree<A, Node>: View where Node: View {
     @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var tree: DisplayTree<A>
     
-    var branchesForCommits: [String : [String]]
-    
     @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
     
@@ -338,6 +339,7 @@ struct DrawTree<A, Node>: View where Node: View {
                         .onTapGesture {
                             do {
                                 print("node tapped: \(tree.commit.sha256DigestValue!)")
+                                // TODO: checkout the branch if it's pointed to
                                 try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
                                 setDrawingData(commit: tree.commit)
                                 dismiss()
@@ -345,7 +347,7 @@ struct DrawTree<A, Node>: View where Node: View {
                                 print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
                             }
                         }
-                    BranchMarkers(branchNames: branchesForCommits[tree.commit.sha256DigestValue!] ?? [])
+                    BranchMarkers(branchNames: tree.branches)
                         .frame(maxWidth: nodeSize.width)
                 }
                 .alignmentGuide(.leading, computeValue: { _ in
@@ -377,7 +379,6 @@ struct SwiftUITreeView: View {
     
     @EnvironmentObject var model: AuditionDataModel
     @State var tree: DisplayTree<String>?
-    @State var branchesForCommits: [String : [String]]?
     
     @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
@@ -386,14 +387,13 @@ struct SwiftUITreeView: View {
     
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
-            if let tree, let branchesForCommits {
-                DrawTree(tree: tree, branchesForCommits: branchesForCommits, rendition: $rendition, updatesCounter: $updatesCounter, node: { Node(x: $0) })
+            if let tree {
+                DrawTree(tree: tree, rendition: $rendition, updatesCounter: $updatesCounter, node: { Node(x: $0) })
                     .animation(.default)
             } else {
                 ContentUnavailableView("No Tree Available", image: "")
                     .onAppear {
                         tree = model.getRootsAsTrees().first
-                        branchesForCommits = model.getBranchesForCommits()
                     }
             }
         }
@@ -532,5 +532,5 @@ func generateSampleDataThreeStaticCommits() -> AuditionDataModel {
 #Preview {
 //    SwiftUITreeView(model: generateSampleData())
     var model: AuditionDataModel = generateSampleDataThreeStaticCommits()
-    SwiftUITreeView(branchesForCommits: model.getBranchesForCommits(), rendition: Binding.constant(PKDrawing()), updatesCounter: Binding.constant(0)).environmentObject(model)
+    SwiftUITreeView(rendition: Binding.constant(PKDrawing()), updatesCounter: Binding.constant(0)).environmentObject(model)
 }
