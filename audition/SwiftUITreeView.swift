@@ -45,12 +45,14 @@ struct CircleStyle: ButtonStyle {
 }
 
 struct BranchMarkers: View {
-    static let NUM_MARKERS_DISPLAYED = 3
+    static let MAX_MARKERS_DISPLAYED = 3
     
     var branchNames: [String]
     
     @State var firstNames: [String]
     @State var lastNames: [String]
+    
+    @State var expanded: Bool = false
     
     // approaches
     // 1. make the array a computed property
@@ -60,14 +62,25 @@ struct BranchMarkers: View {
     init(branchNames: [String]) {
         self.branchNames = branchNames
         
-        firstNames = Array(branchNames.prefix(BranchMarkers.NUM_MARKERS_DISPLAYED))
-        lastNames = Array(branchNames.dropFirst(BranchMarkers.NUM_MARKERS_DISPLAYED))
+        firstNames = Array(branchNames.prefix(BranchMarkers.MAX_MARKERS_DISPLAYED))
+        lastNames = Array(branchNames.dropFirst(BranchMarkers.MAX_MARKERS_DISPLAYED))
     }
+    
+    var namesToDisplay: [String] {
+        if expanded {
+            return branchNames
+        } else {
+            let displayed = Array(branchNames.prefix(BranchMarkers.MAX_MARKERS_DISPLAYED))
+            let excess = branchNames.count - BranchMarkers.MAX_MARKERS_DISPLAYED
+            return excess > 0 ? displayed + ["+\(excess)"] : displayed
+        }
+    }
+
     
     var body: some View {
         ScrollView() {
             VStack(spacing: 3.0) {
-                ForEach(firstNames, id: \.self) { value in
+                ForEach(namesToDisplay, id: \.self) { value in
                     Text("\(value)")
                         .padding(.horizontal, 3.0)
                         .background {
@@ -84,12 +97,9 @@ struct BranchMarkers: View {
                 }
             }
         }
-//        .mask(LinearGradient(gradient: Gradient(stops: [
-////            .init(color: .clear, location: 0),
-//            .init(color: .black, location: 0.2),
-//            .init(color: .black, location: 0.8),
-//            .init(color: .clear, location: 1)
-//        ]), startPoint: .top, endPoint: .bottom))
+        .onTapGesture {
+            expanded = !expanded
+        }
         .frame(maxHeight: 100)
     }
 }
