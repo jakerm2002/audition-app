@@ -45,12 +45,29 @@ struct CircleStyle: ButtonStyle {
 }
 
 struct BranchMarkers: View {
+    static let NUM_MARKERS_DISPLAYED = 3
+    
     var branchNames: [String]
+    
+    @State var firstNames: [String]
+    @State var lastNames: [String]
+    
+    // approaches
+    // 1. make the array a computed property
+    // 2. have the separate arrays displayed in different ForEach
+    // 3. modify the existing ForEach to take the first three if a boolean is true/false
+    
+    init(branchNames: [String]) {
+        self.branchNames = branchNames
+        
+        firstNames = Array(branchNames.prefix(BranchMarkers.NUM_MARKERS_DISPLAYED))
+        lastNames = Array(branchNames.dropFirst(BranchMarkers.NUM_MARKERS_DISPLAYED))
+    }
     
     var body: some View {
         ScrollView() {
             VStack(spacing: 3.0) {
-                ForEach(branchNames, id: \.self) { value in
+                ForEach(firstNames, id: \.self) { value in
                     Text("\(value)")
                         .padding(.horizontal, 3.0)
                         .background {
@@ -67,12 +84,12 @@ struct BranchMarkers: View {
                 }
             }
         }
-        .mask(LinearGradient(gradient: Gradient(stops: [
-//            .init(color: .clear, location: 0),
-            .init(color: .black, location: 0.2),
-            .init(color: .black, location: 0.8),
-            .init(color: .clear, location: 1)
-        ]), startPoint: .top, endPoint: .bottom))
+//        .mask(LinearGradient(gradient: Gradient(stops: [
+////            .init(color: .clear, location: 0),
+//            .init(color: .black, location: 0.2),
+//            .init(color: .black, location: 0.8),
+//            .init(color: .clear, location: 1)
+//        ]), startPoint: .top, endPoint: .bottom))
         .frame(maxHeight: 100)
     }
 }
