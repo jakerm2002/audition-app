@@ -77,10 +77,9 @@ struct BranchMarkers: View {
     
     @State var expanded: Bool = false
     
-    // approaches
-    // 1. make the array a computed property and display a marker if expanded is false - tried
-    // 2. have the separate arrays displayed in different ForEach - not gonna try cause i don't like
-    // 3. modify the existing ForEach to take the first three if a boolean is true/false - tried
+    // could be shortened to `branchNames.count - BranchMarkers.MAX_MARKERS_DISPLAYED`
+    // to avoid having to count two arrays
+    var expandable: Bool { branchNames.count - namesToDisplay.count > 0 }
     
     init(branchNames: [String]) {
         self.branchNames = branchNames
@@ -103,14 +102,17 @@ struct BranchMarkers: View {
                 ForEach(namesToDisplay, id: \.self) { value in
                     BranchMarker(value: value)
                 }
-                if !expanded {
+                if !expanded && expandable {
+                    // could be shortened to `max(0, branchNames.count - BranchMarkers.MAX_MARKERS_DISPLAYED)`
+                    // to avoid having to count two arrays
                     BranchMarker(value: "+\(branchNames.count - namesToDisplay.count)")
                 }
             }
             .padding(.bottom, expanded ? nil : 0)
-        }
-        .onTapGesture {
-            expanded = !expanded
+            .onTapGesture {
+                expanded = expandable && !expanded
+                print("branch markers tapped!!!!")
+            }
         }
         .mask(LinearGradient(gradient: Gradient(stops: [
             .init(color: .black, location: 0),
@@ -296,6 +298,8 @@ struct DrawTree<A, Node>: View where Node: View {
     @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var tree: DisplayTree<A>
     
+    var branchesForCommits: [String : [String]]
+    
     @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
     
@@ -341,7 +345,7 @@ struct DrawTree<A, Node>: View where Node: View {
                                 print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
                             }
                         }
-                    BranchMarkers(branchNames: ["main", "branch1", "branch2", "branch3", "branch4", "branch555555555"])
+                    BranchMarkers(branchNames: branchesForCommits[tree.commit.sha256DigestValue!] ?? [])
                         .frame(maxWidth: nodeSize.width)
                 }
                 .alignmentGuide(.leading, computeValue: { _ in
@@ -373,6 +377,8 @@ struct SwiftUITreeView: View {
     
     @EnvironmentObject var model: AuditionDataModel
     @State var tree: DisplayTree<String>?
+    @State var branchesForCommits: [String : [String]]?
+    
     @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
     
@@ -380,13 +386,14 @@ struct SwiftUITreeView: View {
     
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
-            if let tree {
-                DrawTree(tree: tree, rendition: $rendition, updatesCounter: $updatesCounter, node: { Node(x: $0) })
+            if let tree, let branchesForCommits {
+                DrawTree(tree: tree, branchesForCommits: branchesForCommits, rendition: $rendition, updatesCounter: $updatesCounter, node: { Node(x: $0) })
                     .animation(.default)
             } else {
                 ContentUnavailableView("No Tree Available", image: "")
                     .onAppear {
                         tree = model.getRootsAsTrees().first
+                        branchesForCommits = model.getBranchesForCommits()
                     }
             }
         }
@@ -515,6 +522,9 @@ func generateSampleDataThreeStaticCommits() -> AuditionDataModel {
     
     a1.unsafeSetBranch(branchName: "main", commitHash: c2.sha256DigestValue!)
     a1.unsafeSetBranch(branchName: "branch1", commitHash: c3.sha256DigestValue!)
+    a1.unsafeSetBranch(branchName: "branch2", commitHash: c3.sha256DigestValue!)
+    a1.unsafeSetBranch(branchName: "branch4", commitHash: c3.sha256DigestValue!)
+    a1.unsafeSetBranch(branchName: "branch5", commitHash: c3.sha256DigestValue!)
     
     return a1
 }
@@ -522,5 +532,5 @@ func generateSampleDataThreeStaticCommits() -> AuditionDataModel {
 #Preview {
 //    SwiftUITreeView(model: generateSampleData())
     var model: AuditionDataModel = generateSampleDataThreeStaticCommits()
-    SwiftUITreeView(rendition: Binding.constant(PKDrawing()), updatesCounter: Binding.constant(0)).environmentObject(model)
+    SwiftUITreeView(branchesForCommits: model.getBranchesForCommits(), rendition: Binding.constant(PKDrawing()), updatesCounter: Binding.constant(0)).environmentObject(model)
 }

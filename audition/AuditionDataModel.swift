@@ -358,6 +358,17 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
     
+    // returns a Dictionary where:
+    // key: a String, representing the commit hash of a commit in the data model.
+    // value: an Array of strings, representing a list of branches that point to the keyed commit
+    func getBranchesForCommits() -> [String : [String]] {
+        var branchesForCommit: [String : [String]] = [:]
+        for (branch, hash) in branches {
+            branchesForCommit[hash, default: []].append(branch)
+        }
+        return branchesForCommit
+    }
+    
     func getRootsAsTrees() -> [DisplayTree<String>] {
         print("************* STARTING ALGORITHM ***************")
         var wrappers: [String : DisplayTree<String>] = [:]
