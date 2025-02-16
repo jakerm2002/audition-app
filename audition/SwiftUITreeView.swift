@@ -430,13 +430,18 @@ struct DrawTree<A, Node>: View where Node: View {
                         .onTapGesture {
                             do {
                                 print("node tapped: \(tree.commit.sha256DigestValue!)")
-                                // TODO: checkout the branch if it's pointed to
+                                // checkout the branch if it's pointed to
                                 // if there are multiple branches, present a sheet to
                                 // choose which branch to check out
-                                selected = tree
-//                                try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
-//                                setDrawingData(commit: tree.commit)
-//                                dismiss()
+                                if (tree.branches.count > 1) {
+                                    selected = tree
+                                } else if let branch = tree.branches.first {
+                                    setDrawingFromBranch(tree: tree, branch: branch)
+                                } else {
+                                    try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
+                                    setDrawingData(commit: tree.commit)
+                                    dismiss()
+                                }
                             } catch let error {
                                 print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
                             }
