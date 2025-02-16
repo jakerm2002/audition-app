@@ -346,10 +346,11 @@ struct BranchDetailView<A>: View {
     @Environment(\.dismiss) private var dismiss
     
     var node: DisplayTree<A>
+    @State var selectedBranch: String?
     
     var body: some View {
         NavigationStack {
-            List(node.branches, id: \.self) { branch in
+            List(node.branches, id: \.self, selection: $selectedBranch) { branch in
                 Text(branch)
             }
             .navigationTitle("Choose branch")
@@ -359,6 +360,12 @@ struct BranchDetailView<A>: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                }
+            }
+            .onChange(of: selectedBranch) { old, new in
+                if let new {
+                    print("branch selected: \(new)")
+                    dismiss()
                 }
             }
         }
@@ -399,6 +406,12 @@ struct DrawTree<A, Node>: View where Node: View {
         } catch let error {
             print("setDrawingData FAILED to get blobs: \(error)")
         }
+    }
+    
+    func setDrawingFromBranch(tree: DisplayTree<A>, branch: String) throws {
+        try dataModel.checkout(branch: branch)
+        setDrawingData(commit: tree.commit)
+        dismiss()
     }
     
     var body: some View {
