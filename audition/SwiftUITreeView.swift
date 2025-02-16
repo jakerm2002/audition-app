@@ -390,6 +390,7 @@ struct DrawTree<A, Node>: View where Node: View {
                                 // checkout the branch if it's pointed to
                                 // if there are multiple branches, present a sheet to
                                 // choose which branch to check out
+                                // TODO: in the future, regarding commits pointed to by branches, consider giving the user the option to long-press these nodes to checkout the COMMIT and bypass checking out any of the branches.
                                 if (tree.branches.count > 1) {
                                     selected = tree
                                 } else if let branch = tree.branches.first {
