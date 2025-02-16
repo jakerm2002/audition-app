@@ -145,13 +145,14 @@ struct Node<A: CustomStringConvertible>: View {
             // need to use a separate view to render something other than an Image.
             Image(uiImage: img)
                     .resizable()
+                    .antialiased(true)
                     .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipShape(Circle())
                     .background(in: Circle())
                     .overlay {
                         Circle()
-                            .stroke(Color.primary, lineWidth: 2)
+                            .stroke(x.isHEAD ? Color.orange : Color.primary, lineWidth: 2)
                     }
             Text(x.commit.sha256DigestValue!.prefix(7))
         }.onAppear{
@@ -175,12 +176,13 @@ struct Point: Hashable {
 
 
 final class DisplayTree<A>: ObservableObject, Identifiable, CustomStringConvertible {
-    init(commit: Commit, value: A, point: Point = .zero, children: [DisplayTree<A>]? = nil, branches: [String]?) {
+    init(commit: Commit, value: A, point: Point = .zero, children: [DisplayTree<A>]? = nil, branches: [String]?, isHEAD: Bool) {
         self.commit = commit
         self.value = value
         self.point = point
         self.children = children
         self.branches = branches ?? []
+        self.isHEAD = isHEAD
         children?.forEach {
             $0.parent = self
         }
@@ -192,6 +194,7 @@ final class DisplayTree<A>: ObservableObject, Identifiable, CustomStringConverti
     @Published var point: Point = .zero
     @Published private(set) var children: [DisplayTree<A>]?
     let branches: [String]
+    @Published var isHEAD: Bool
     
     weak var parent: DisplayTree<A>? = nil
     
@@ -340,6 +343,8 @@ struct DrawTree<A, Node>: View where Node: View {
                             do {
                                 print("node tapped: \(tree.commit.sha256DigestValue!)")
                                 // TODO: checkout the branch if it's pointed to
+                                // if there are multiple branches, present a sheet to
+                                // choose which branch to check out
                                 try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
                                 setDrawingData(commit: tree.commit)
                                 dismiss()

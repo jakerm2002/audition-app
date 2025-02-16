@@ -387,7 +387,8 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
                         p.addChild(cur)
                     } else {
                         let pCommitObj = objects[pCommit] as! Commit
-                        let p = DisplayTree(commit: pCommitObj, value: String(pCommit.prefix(7)), children: [cur], branches: branchesForCommits[pCommit])
+                        let isHEAD = headIsDetached ? pCommit == HEAD : pCommit == branches[HEAD]
+                        let p = DisplayTree(commit: pCommitObj, value: String(pCommit.prefix(7)), children: [cur], branches: branchesForCommits[pCommit], isHEAD: isHEAD)
                         alg(p)
                     }
                 }
@@ -406,7 +407,8 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         do {
             let sortedBranches: [String] = try getBranchesWithInDegreeZero()
             for commit in sortedBranches {
-                let w = DisplayTree(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [], branches: branchesForCommits[commit])
+                let isHEAD = headIsDetached ? commit == HEAD : commit == branches[HEAD]
+                let w = DisplayTree(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [], branches: branchesForCommits[commit], isHEAD: isHEAD)
                 alg(w)
             }
         } catch let error {
