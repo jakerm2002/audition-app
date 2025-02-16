@@ -119,6 +119,7 @@ struct BranchMarkers: View {
             .init(color: .black, location: 0.8),
             .init(color: expanded ? .clear : .black, location: 1)
         ]), startPoint: .top, endPoint: .bottom))
+        // TODO: in the future, make the height adapt to the available vertical space between the nodes, which is defined by DrawTree's verticalSpacing property. If the height cannot fit the maximum number of markers displayed in non-expanded mode, dynamically reduce the number of markers displayed until it fits.
         .frame(height: 100)
     }
 }
