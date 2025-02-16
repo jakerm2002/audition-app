@@ -299,48 +299,6 @@ extension DisplayTree {
     }
 }
 
-struct ChooseBranchView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    @State var title: String = ""
-
-    var body: some View {
-        VStack(spacing: 10) {
-            Text("Choose a branch")
-                .font(.title)
-
-            HStack {
-                Button("Cancel") {
-                    // Cancel saving and dismiss.
-                    dismiss()
-                }
-                Spacer()
-                Button("Confirm") {
-                    // Save the article and dismiss.
-                    dismiss()
-                }
-            }
-        }
-            .padding(20)
-            .frame(width: 300, height: 200)
-    }
-}
-
-
-enum BranchSheet: String, Identifiable, SheetEnum {
-    case chooseBranch
-
-    var id: String { rawValue }
-
-    @ViewBuilder
-    func view(coordinator: SheetCoordinator<BranchSheet>) -> some View {
-        switch self {
-        case .chooseBranch:
-                ChooseBranchView()
-        }
-    }
-}
-
 
 struct BranchDetailView<A>: View {
     @Environment(\.dismiss) private var dismiss
@@ -379,7 +337,6 @@ struct BranchDetailView<A>: View {
 struct DrawTree<A, Node>: View where Node: View {
     @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var tree: DisplayTree<A>
-    @StateObject var sheetCoordinator = SheetCoordinator<BranchSheet>()
     @State private var selected: DisplayTree<A>?
     
     @Binding var rendition: PKDrawing
