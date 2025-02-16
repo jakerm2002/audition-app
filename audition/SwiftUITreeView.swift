@@ -380,6 +380,10 @@ struct DrawTree<A, Node>: View where Node: View {
     
     var body: some View {
         return ZStack(alignment: .topLeading) {
+            // currently, nodes are layered on top of one another
+            // in the order returned from tree.allSubtrees.
+            // this ordering could be reversed if needed by enumerating the results
+            // by index and then setting the .zIndex modifier to -index.
             ForEach(tree.allSubtrees) { (tree: DisplayTree<A>) in
                 VStack {
                     self.node(tree)
