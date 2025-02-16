@@ -336,7 +336,31 @@ enum BranchSheet: String, Identifiable, SheetEnum {
     func view(coordinator: SheetCoordinator<BranchSheet>) -> some View {
         switch self {
         case .chooseBranch:
-            ChooseBranchView()
+                ChooseBranchView()
+        }
+    }
+}
+
+
+struct BranchDetailView<A>: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var node: DisplayTree<A>
+    
+    var body: some View {
+        NavigationStack {
+            List(node.branches, id: \.self) { branch in
+                Text(branch)
+            }
+            .navigationTitle("Choose branch")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }
@@ -346,6 +370,7 @@ struct DrawTree<A, Node>: View where Node: View {
     @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var tree: DisplayTree<A>
     @StateObject var sheetCoordinator = SheetCoordinator<BranchSheet>()
+    @State private var selected: DisplayTree<A>?
     
     @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
@@ -388,7 +413,7 @@ struct DrawTree<A, Node>: View where Node: View {
                                 // TODO: checkout the branch if it's pointed to
                                 // if there are multiple branches, present a sheet to
                                 // choose which branch to check out
-                                sheetCoordinator.presentSheet(.chooseBranch)
+                                selected = tree
 //                                try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
 //                                setDrawingData(commit: tree.commit)
 //                                dismiss()
@@ -396,7 +421,9 @@ struct DrawTree<A, Node>: View where Node: View {
                                 print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
                             }
                         }
-                        .sheetCoordinating(coordinator: sheetCoordinator)
+                        .sheet(item: $selected, content: { node in
+                            BranchDetailView(node: node)
+                        })
                     BranchMarkers(branchNames: tree.branches)
                         .frame(maxWidth: nodeSize.width)
                 }
