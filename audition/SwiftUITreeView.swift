@@ -346,6 +346,8 @@ struct BranchDetailView<A>: View {
     @Environment(\.dismiss) private var dismiss
     
     var node: DisplayTree<A>
+    var setDrawing: (_ tree: DisplayTree<A>, _ branch: String) -> Void
+    
     @State var selectedBranch: String?
     
     var body: some View {
@@ -366,6 +368,7 @@ struct BranchDetailView<A>: View {
                 if let new {
                     print("branch selected: \(new)")
                     dismiss()
+                    setDrawing(node, new)
                 }
             }
         }
@@ -408,10 +411,14 @@ struct DrawTree<A, Node>: View where Node: View {
         }
     }
     
-    func setDrawingFromBranch(tree: DisplayTree<A>, branch: String) throws {
-        try dataModel.checkout(branch: branch)
-        setDrawingData(commit: tree.commit)
-        dismiss()
+    func setDrawingFromBranch(tree: DisplayTree<A>, branch: String) {
+        do {
+            try dataModel.checkout(branch: branch)
+            setDrawingData(commit: tree.commit)
+            dismiss()
+        } catch let error {
+            print("ERROR in SwiftUITreeView: Checking out branch failed: \(error)")
+        }
     }
     
     var body: some View {
@@ -435,7 +442,7 @@ struct DrawTree<A, Node>: View where Node: View {
                             }
                         }
                         .sheet(item: $selected, content: { node in
-                            BranchDetailView(node: node)
+                            BranchDetailView(node: node, setDrawing: setDrawingFromBranch)
                         })
                     BranchMarkers(branchNames: tree.branches)
                         .frame(maxWidth: nodeSize.width)
