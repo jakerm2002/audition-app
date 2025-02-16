@@ -299,10 +299,53 @@ extension DisplayTree {
     }
 }
 
+struct ChooseBranchView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    @State var title: String = ""
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Text("Choose a branch")
+                .font(.title)
+
+            HStack {
+                Button("Cancel") {
+                    // Cancel saving and dismiss.
+                    dismiss()
+                }
+                Spacer()
+                Button("Confirm") {
+                    // Save the article and dismiss.
+                    dismiss()
+                }
+            }
+        }
+            .padding(20)
+            .frame(width: 300, height: 200)
+    }
+}
+
+
+enum BranchSheet: String, Identifiable, SheetEnum {
+    case chooseBranch
+
+    var id: String { rawValue }
+
+    @ViewBuilder
+    func view(coordinator: SheetCoordinator<BranchSheet>) -> some View {
+        switch self {
+        case .chooseBranch:
+            ChooseBranchView()
+        }
+    }
+}
+
 
 struct DrawTree<A, Node>: View where Node: View {
     @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var tree: DisplayTree<A>
+    @StateObject var sheetCoordinator = SheetCoordinator<BranchSheet>()
     
     @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
@@ -345,13 +388,15 @@ struct DrawTree<A, Node>: View where Node: View {
                                 // TODO: checkout the branch if it's pointed to
                                 // if there are multiple branches, present a sheet to
                                 // choose which branch to check out
-                                try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
-                                setDrawingData(commit: tree.commit)
-                                dismiss()
+                                sheetCoordinator.presentSheet(.chooseBranch)
+//                                try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
+//                                setDrawingData(commit: tree.commit)
+//                                dismiss()
                             } catch let error {
                                 print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
                             }
                         }
+                        .sheetCoordinating(coordinator: sheetCoordinator)
                     BranchMarkers(branchNames: tree.branches)
                         .frame(maxWidth: nodeSize.width)
                 }
