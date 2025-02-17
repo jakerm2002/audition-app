@@ -8,7 +8,7 @@
 import SwiftUI
 import PencilKit
 
-struct BranchMarker: View {
+struct BranchIndicator: View {
     var value: String
     
     var body: some View {
@@ -32,7 +32,7 @@ struct BranchMarker: View {
 }
 
 
-struct BranchMarkers: View {
+struct BranchIndicators: View {
     static let MAX_MARKERS_DISPLAYED = 3
     
     var branchNames: [String]
@@ -42,19 +42,19 @@ struct BranchMarkers: View {
     
     @State var expanded: Bool = false
     
-    // could be shortened to `branchNames.count - BranchMarkers.MAX_MARKERS_DISPLAYED`
+    // could be shortened to `branchNames.count - BranchIndicators.MAX_MARKERS_DISPLAYED`
     // to avoid having to count two arrays
     var expandable: Bool { branchNames.count - namesToDisplay.count > 0 }
     
     init(branchNames: [String]) {
         self.branchNames = branchNames
         
-        firstNames = Array(branchNames.prefix(BranchMarkers.MAX_MARKERS_DISPLAYED))
-        lastNames = Array(branchNames.dropFirst(BranchMarkers.MAX_MARKERS_DISPLAYED))
+        firstNames = Array(branchNames.prefix(BranchIndicators.MAX_MARKERS_DISPLAYED))
+        lastNames = Array(branchNames.dropFirst(BranchIndicators.MAX_MARKERS_DISPLAYED))
     }
     
     var namesToDisplay: [String] {
-        return expanded ? branchNames : Array(branchNames.prefix(BranchMarkers.MAX_MARKERS_DISPLAYED))
+        return expanded ? branchNames : Array(branchNames.prefix(BranchIndicators.MAX_MARKERS_DISPLAYED))
     }
 
     // TODO: add a mask on the top side that looks aesthetically pleasing
@@ -65,12 +65,12 @@ struct BranchMarkers: View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 3.0) {
                 ForEach(namesToDisplay, id: \.self) { value in
-                    BranchMarker(value: value)
+                    BranchIndicator(value: value)
                 }
                 if !expanded && expandable {
-                    // could be shortened to `max(0, branchNames.count - BranchMarkers.MAX_MARKERS_DISPLAYED)`
+                    // could be shortened to `max(0, branchNames.count - BranchIndicators.MAX_MARKERS_DISPLAYED)`
                     // to avoid having to count two arrays
-                    BranchMarker(value: "+\(branchNames.count - namesToDisplay.count)")
+                    BranchIndicator(value: "+\(branchNames.count - namesToDisplay.count)")
                 }
             }
             .padding(.bottom, expanded ? nil : 0)
@@ -245,7 +245,7 @@ struct TreeContentView<A, Node>: View where Node: View {
                         .sheet(item: $selected, content: { node in
                             BranchDetailView(node: node, setDrawing: setDrawingFromBranch)
                         })
-                    BranchMarkers(branchNames: tree.branches)
+                    BranchIndicators(branchNames: tree.branches)
                         .frame(maxWidth: nodeSize.width)
                 }
                 .alignmentGuide(.leading, computeValue: { _ in
