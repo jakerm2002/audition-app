@@ -84,7 +84,7 @@ struct BranchMarkers: View {
             .init(color: .black, location: 0.8),
             .init(color: expanded ? .clear : .black, location: 1)
         ]), startPoint: .top, endPoint: .bottom))
-        // TODO: in the future, make the height adapt to the available vertical space between the nodes, which is defined by DrawTree's verticalSpacing property. If the height cannot fit the maximum number of markers displayed in non-expanded mode, dynamically reduce the number of markers displayed until it fits.
+        // TODO: in the future, make the height adapt to the available vertical space between the nodes, which is defined by TreeContentView's verticalSpacing property. If the height cannot fit the maximum number of markers displayed in non-expanded mode, dynamically reduce the number of markers displayed until it fits.
         .frame(height: 100)
     }
 }
@@ -101,8 +101,8 @@ struct Node<A: CustomStringConvertible>: View {
             // NOTE: Using conditionals here to display a different
             // View if the image was nil causes the view to break for some reason.
             // Symptoms can be seen when tapping the node very fast when the TreeView
-            // is first displayed. DrawTree has an onTapGesture that captures which Node
-            // was pressed. If conditionals are used, DrawTree will sometimes behave
+            // is first displayed. TreeContentView has an onTapGesture that captures which Node
+            // was pressed. If conditionals are used, TreeContentView will sometimes behave
             // like a DIFFERENT Node was pressed. As of right now, I've only observed
             // this behavior on the root node of the tree structure.
             // It could be because of SwiftUI Identity, Lifetime, or Dependencies.
@@ -168,7 +168,7 @@ struct BranchDetailView<A>: View {
 }
 
 
-struct DrawTree<A, Node>: View where Node: View {
+struct TreeContentView<A, Node>: View where Node: View {
     @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var tree: NodeData<A>
     @State private var selected: NodeData<A>?
@@ -287,7 +287,7 @@ struct SwiftUITreeView: View {
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
             if let tree {
-                DrawTree(tree: tree, rendition: $rendition, updatesCounter: $updatesCounter, node: { Node(x: $0) })
+                TreeContentView(tree: tree, rendition: $rendition, updatesCounter: $updatesCounter, node: { Node(x: $0) })
                     .animation(.default)
             } else {
                 ContentUnavailableView("No Tree Available", image: "")
