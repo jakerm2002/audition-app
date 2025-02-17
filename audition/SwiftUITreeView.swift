@@ -90,7 +90,7 @@ struct BranchIndicators: View {
 }
 
 
-struct Node<A: CustomStringConvertible>: View {
+struct TreeNodeView<A: CustomStringConvertible>: View {
     @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var x: NodeData<A>
     
@@ -101,9 +101,9 @@ struct Node<A: CustomStringConvertible>: View {
             // NOTE: Using conditionals here to display a different
             // View if the image was nil causes the view to break for some reason.
             // Symptoms can be seen when tapping the node very fast when the TreeView
-            // is first displayed. TreeContentView has an onTapGesture that captures which Node
+            // is first displayed. TreeContentView has an onTapGesture that captures which TreeNodeView
             // was pressed. If conditionals are used, TreeContentView will sometimes behave
-            // like a DIFFERENT Node was pressed. As of right now, I've only observed
+            // like a DIFFERENT TreeNodeView was pressed. As of right now, I've only observed
             // this behavior on the root node of the tree structure.
             // It could be because of SwiftUI Identity, Lifetime, or Dependencies.
             // I tried watching "Demystify SwiftUI" from 2021 which covers some things,
@@ -287,7 +287,7 @@ struct SwiftUITreeView: View {
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
             if let tree {
-                TreeContentView(tree: tree, rendition: $rendition, updatesCounter: $updatesCounter, node: { Node(x: $0) })
+                TreeContentView(tree: tree, rendition: $rendition, updatesCounter: $updatesCounter, node: { TreeNodeView(x: $0) })
                     .animation(.default)
             } else {
                 ContentUnavailableView("No Tree Available", image: "")
