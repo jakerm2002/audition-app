@@ -92,7 +92,7 @@ struct BranchIndicators: View {
 
 struct TreeNodeView<A: CustomStringConvertible>: View {
     @EnvironmentObject var dataModel: AuditionDataModel
-    @ObservedObject var x: NodeData<A>
+    @ObservedObject var x: TreeNodeData<A>
     
     @State var img: UIImage = UIImage(ciImage: .empty())
     
@@ -137,8 +137,8 @@ struct TreeNodeView<A: CustomStringConvertible>: View {
 struct BranchDetailView<A>: View {
     @Environment(\.dismiss) private var dismiss
     
-    var node: NodeData<A>
-    var setDrawing: (_ tree: NodeData<A>, _ branch: String) -> Void
+    var node: TreeNodeData<A>
+    var setDrawing: (_ tree: TreeNodeData<A>, _ branch: String) -> Void
     
     @State var selectedBranch: String?
     
@@ -170,8 +170,8 @@ struct BranchDetailView<A>: View {
 
 struct TreeContentView<A, Node>: View where Node: View {
     @EnvironmentObject var dataModel: AuditionDataModel
-    @ObservedObject var tree: NodeData<A>
-    @State private var selected: NodeData<A>?
+    @ObservedObject var tree: TreeNodeData<A>
+    @State private var selected: TreeNodeData<A>?
     
     @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
@@ -180,7 +180,7 @@ struct TreeContentView<A, Node>: View where Node: View {
     
     var horizontalSpacing: CGFloat = 120
     var verticalSpacing: CGFloat = 120
-    let node: (NodeData<A>) -> Node
+    let node: (TreeNodeData<A>) -> Node
     let nodeSize = CGSize(width: 100, height: 100)
     
     func cgPoint(for point: Point) -> CGPoint {
@@ -202,7 +202,7 @@ struct TreeContentView<A, Node>: View where Node: View {
         }
     }
     
-    func setDrawingFromBranch(tree: NodeData<A>, branch: String) {
+    func setDrawingFromBranch(tree: TreeNodeData<A>, branch: String) {
         do {
             try dataModel.checkout(branch: branch)
             setDrawingData(commit: tree.commit)
@@ -218,7 +218,7 @@ struct TreeContentView<A, Node>: View where Node: View {
             // in the order returned from tree.allSubtrees.
             // this ordering could be reversed if needed by enumerating the results
             // by index and then setting the .zIndex modifier to -index.
-            ForEach(tree.allSubtrees) { (tree: NodeData<A>) in
+            ForEach(tree.allSubtrees) { (tree: TreeNodeData<A>) in
                 VStack {
                     self.node(tree)
                         .frame(width: self.nodeSize.width, height: self.nodeSize.height)
@@ -277,7 +277,7 @@ struct SwiftUITreeView: View {
                              Gradient.Stop(color: Color.clear, location: 1.0)])
     
     @EnvironmentObject var model: AuditionDataModel
-    @State var tree: NodeData<String>?
+    @State var tree: TreeNodeData<String>?
     
     @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int

@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-final class NodeData<A>: ObservableObject, Identifiable, CustomStringConvertible {
-    init(commit: Commit, value: A, point: Point = .zero, children: [NodeData<A>]? = nil, branches: [String]?, isHEAD: Bool) {
+final class TreeNodeData<A>: ObservableObject, Identifiable, CustomStringConvertible {
+    init(commit: Commit, value: A, point: Point = .zero, children: [TreeNodeData<A>]? = nil, branches: [String]?, isHEAD: Bool) {
         self.commit = commit
         self.value = value
         self.point = point
@@ -24,11 +24,11 @@ final class NodeData<A>: ObservableObject, Identifiable, CustomStringConvertible
     @Published var commit: Commit
     @Published var value: A
     @Published var point: Point = .zero
-    @Published private(set) var children: [NodeData<A>]?
+    @Published private(set) var children: [TreeNodeData<A>]?
     let branches: [String]
     @Published var isHEAD: Bool
     
-    weak var parent: NodeData<A>? = nil
+    weak var parent: TreeNodeData<A>? = nil
     
     // TODO: change this to a stronger identifier, perhaps self.commit.sha256DigestValue?
     // NOTE: DON'T change it to self.commit.sha256DigestValue, as it is a computed property??
@@ -41,10 +41,10 @@ final class NodeData<A>: ObservableObject, Identifiable, CustomStringConvertible
     }
     
     var description: String {
-        "NodeData(\(value) \(point) with *\(children?.description ?? "no children")*"
+        "TreeNodeData(\(value) \(point) with *\(children?.description ?? "no children")*"
     }
     
-    func addChild(_ child: NodeData<A>) {
+    func addChild(_ child: TreeNodeData<A>) {
         if children != nil {
             children!.append(child)
         } else {
@@ -64,8 +64,8 @@ final class NodeData<A>: ObservableObject, Identifiable, CustomStringConvertible
 }
 
 
-extension NodeData {
-    func modifyAll(_ transform: (NodeData<A>) -> ()) {
+extension TreeNodeData {
+    func modifyAll(_ transform: (TreeNodeData<A>) -> ()) {
         transform(self)
         if let children {
             for child in children {
@@ -74,8 +74,8 @@ extension NodeData {
         }
     }
     
-    var allSubtrees: [NodeData<A>] {
-        var childrenSubtrees: [NodeData<A>] = []
+    var allSubtrees: [TreeNodeData<A>] {
+        var childrenSubtrees: [TreeNodeData<A>] = []
         if let children {
             for child in children {
                 childrenSubtrees.append(contentsOf: child.allSubtrees)
@@ -84,8 +84,8 @@ extension NodeData {
         return [self] + childrenSubtrees
     }
     
-    var allEdges: [(from: NodeData<A>, to: NodeData<A>)] {
-        var result: [(from: NodeData<A>, to: NodeData<A>)] = []
+    var allEdges: [(from: TreeNodeData<A>, to: TreeNodeData<A>)] {
+        var result: [(from: TreeNodeData<A>, to: TreeNodeData<A>)] = []
         if let children {
             for child in children {
                 result.append((from: self, to: child))
@@ -97,7 +97,7 @@ extension NodeData {
 }
 
 
-extension NodeData {
+extension TreeNodeData {
     func layout() {
         var x: [Int:Int] = [:]
         alt(depth: 0, x: &x)
