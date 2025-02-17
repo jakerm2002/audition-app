@@ -369,13 +369,13 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         return branchesForCommit
     }
     
-    func getRootsAsTrees() -> [DisplayTree<String>] {
+    func getRootsAsTrees() -> [NodeData<String>] {
         var branchesForCommits = getBranchesForCommits()
         print("************* STARTING ALGORITHM ***************")
-        var wrappers: [String : DisplayTree<String>] = [:]
-        var rootNodes: [DisplayTree<String>] = []
+        var wrappers: [String : NodeData<String>] = [:]
+        var rootNodes: [NodeData<String>] = []
         
-        func alg(_ cur: DisplayTree<String>) {
+        func alg(_ cur: NodeData<String>) {
             // mark cur as visited
             wrappers[cur.commit.sha256DigestValue!] = cur
             
@@ -388,7 +388,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
                     } else {
                         let pCommitObj = objects[pCommit] as! Commit
                         let isHEAD = headIsDetached ? pCommit == HEAD : pCommit == branches[HEAD]
-                        let p = DisplayTree(commit: pCommitObj, value: String(pCommit.prefix(7)), children: [cur], branches: branchesForCommits[pCommit], isHEAD: isHEAD)
+                        let p = NodeData(commit: pCommitObj, value: String(pCommit.prefix(7)), children: [cur], branches: branchesForCommits[pCommit], isHEAD: isHEAD)
                         alg(p)
                     }
                 }
@@ -408,7 +408,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
             let sortedBranches: [String] = try getBranchesWithInDegreeZero()
             for commit in sortedBranches {
                 let isHEAD = headIsDetached ? commit == HEAD : commit == branches[HEAD]
-                let w = DisplayTree(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [], branches: branchesForCommits[commit], isHEAD: isHEAD)
+                let w = NodeData(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [], branches: branchesForCommits[commit], isHEAD: isHEAD)
                 alg(w)
             }
         } catch let error {
