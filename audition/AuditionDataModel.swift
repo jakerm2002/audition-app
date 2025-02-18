@@ -45,29 +45,37 @@ struct AuditionFile {
     }
 }
 
+protocol ObjectLookup: AnyObject {
+    var objects: [String: AuditionObjectProtocol] { get }
+}
+
 struct BranchContainer {
     private var branches: OrderedDictionary<String, Branch> = [:]
-    
+    private weak var objectLookup: ObjectLookup?
+
     struct Branch {
         var lastModified: Date
         var commit: String
     }
-    
+
+    init(objectLookup: ObjectLookup) {
+        self.objectLookup = objectLookup
+    }
+
     mutating func create(branchName: String) throws {
         guard branches[branchName] == nil else {
             throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
         }
         
-        // check the data model to ensure that the branch name is not in use by a commit or other object ref
-        guard objects[branchName] == nil else {
+        guard objectLookup?.objects[branchName] == nil else {
             throw AuditionError.runtimeError("A branch cannot be named after an existing object ref")
         }
-        
-        // code to create a branch here
+
+        // code to create a branch
     }
 }
 
-class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable {
+class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable, ObjectLookup {
     @Published private(set) var objects: [String : AuditionObjectProtocol]
     @Published private(set) var index: [TreeEntry]
     
@@ -77,6 +85,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
     @Published private(set) var branches: [String : String]
+    lazy private var branchContainer: BranchContainer = BranchContainer(objectLookup: self)
     
     weak var delegate: AuditionDataModelDelegate?
     
