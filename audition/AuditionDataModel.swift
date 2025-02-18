@@ -57,7 +57,8 @@ struct BranchContainer {
     private var branches: OrderedDictionary<String, Branch> = [:]
     
     // use `unowned`, see: https://stackoverflow.com/questions/24011575/what-is-the-difference-between-a-weak-reference-and-an-unowned-reference
-    private unowned let objectStore: ObjectStore?
+    // WARNING: ensure that this struct is only used INSIDE of an ObjectStore-implementing class
+    private unowned let objectStore: ObjectStore
 
     struct Branch {
         var lastModified: Date
@@ -73,7 +74,7 @@ struct BranchContainer {
             throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
         }
         
-        guard objectStore?.objects[branchName] == nil else {
+        guard objectStore.objects[branchName] == nil else {
             throw AuditionError.runtimeError("A branch cannot be named after an existing object ref")
         }
 
