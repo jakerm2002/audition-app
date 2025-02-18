@@ -71,6 +71,7 @@ struct BranchContainer {
         self.objectStore = objectStore
     }
 
+    // creates a branch from the current HEAD
     mutating func create(branchName: String) throws {
         guard branches[branchName] == nil else {
             throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
@@ -80,10 +81,10 @@ struct BranchContainer {
             throw AuditionError.runtimeError("A branch cannot be named after an existing object ref")
         }
 
-        if let HEADcommit = branches[objectStore.HEAD] {
-            branches[branchName] = HEADcommit
-        } else if let HEADcommit = objectStore.objects[objectStore.HEAD] as? Commit {
-            branches[branchName] = BranchRecord(lastModified: .now, commit: HEADcommit.sha256DigestValue!)
+        if let HEADcommit = branches[objectStore.HEAD]?.commit { // create a new branch and point it to the HEAD commit
+            branches[branchName] = BranchRecord(lastModified: .now, commit: HEADcommit)
+        } else if let HEADcommit = (objectStore.objects[objectStore.HEAD] as? Commit)?.sha256DigestValue! {
+            branches[branchName] = BranchRecord(lastModified: .now, commit: HEADcommit)
         } else {
             // TODO: If a user clicks the Branch button when no commits made yet, automatically make a commit to the current branch, then make a new branch from the current branch
             // do not remove this throw statement, or add any logic here, once that change is implemented
