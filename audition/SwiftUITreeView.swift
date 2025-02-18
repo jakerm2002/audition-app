@@ -148,7 +148,6 @@ struct BranchDetailSheet<A>: View {
                 Text(branch)
             }
             .navigationTitle("Choose branch")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem {
                     Button("Cancel") {
