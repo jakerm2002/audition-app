@@ -72,7 +72,7 @@ struct BranchContainer {
     }
     
     func guardValidBranchName(_ branchName: String) throws {
-        guard branches[branchName] == nil else {
+        guard !self.contains(branchName) else {
             throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
         }
         
@@ -103,22 +103,16 @@ struct BranchContainer {
         branches[branchName] = BranchRecord(lastModified: .now, commit: commit)
     }
     
+    func contains(_ branchName: String) -> Bool {
+        return branches[branchName] != nil
+    }
+    
+    // make sure the dictionary stays in time-chronological order, most recent changes at beginning of order
     private mutating func unsafeSetBranch(branchName: String, commit: String) {
-        branches[branchName] = BranchRecord(lastModified: .now, commit: commit)
-        
-        // the branch has been changed, so we need to change the order of the OrderedDictionary
-        // move the changed branch to the end of the order
-        
-        // if the branch is brand new,
-        //   the branch should be inserted at the end, big O(1)
-        //   or we could insert it at the beginning (better)
-        //   since the branches will be returned in time-chronological order,
-        //   for convienience purposes, any function (specifically getBranchesForCommits())
-        //   that uses the value of branches as an ARRAY
-        //   should receive it in time-chronological order where most recent changes come at the beginning of the array
-        // otherwise
-        //   the branch should be moved to the end of the array (do NOT swap elements, simply remove from its current position, and move it to the end), big O(N)
-        //   only swap if the two elements are right next to each other
+        if self.contains(branchName) {
+            branches.removeValue(forKey: branchName)
+        }
+        branches.updateValue(BranchRecord(lastModified: .now, commit: commit), forKey: branchName, insertingAt: 0)
     }
     
     // modify an ALREADY EXISTING BRANCH
