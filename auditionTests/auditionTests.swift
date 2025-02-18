@@ -1126,6 +1126,42 @@ struct auditionTests {
     // relies on checking branches[HEAD] exists to see if HEAD is a branch,
     // then checking objects[HEAD] is Commit to see if HEAD is a commit,
     // having a branch with a name that is the same as an existing commit's hash may cause unintended behavior
+    
+    // EXAMPLE AAAAAAAAAAAAA
+    // - branch named abcdef
+    // - commit named abcdef
+    //
+    // the first thing that is checked is branches[HEAD]
+    // the next thing that is a cast of objects[HEAD] to Commit
+    //
+    // scenario 1:
+    // HEAD points at commit abcdef
+    // branches[HEAD] returns a non-nil value
+    // code INCORRECTLY assumes that HEAD points to branch abcdef
+    //
+    // scenario 2:
+    // HEAD points at branch abcdef
+    // branches[HEAD] returns a non-nil value
+    // code correctly assumes that HEAD points to branch abcdef
+    
+    
+    // EXAMPLE BBBBBBBBBBBBBBB
+    // - branch named abcdef
+    // - commit named abcdef
+    //
+    // the first thing that is a cast of objects[HEAD] to Commit
+    // the next thing that is checked is branches[HEAD]
+    //
+    // scenario 1:
+    // HEAD points at commit abcdef
+    // object[HEAD] as Commit returns a Commit
+    // code correctly assumes that HEAD points to commit abcdef
+    //
+    // scenario 2:
+    // HEAD points at branch abcdef
+    // object[HEAD] as Commit returns a Commit
+    // code INCORRECTLY assumes that HEAD points to commit abcdef
+    
     @Test func testDisallowCreateBranchNamedAfterExistingObjectHash() async throws {
         let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
         let filename1 = "README.md"

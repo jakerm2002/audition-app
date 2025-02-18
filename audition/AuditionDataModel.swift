@@ -54,24 +54,16 @@ protocol AuditionObjectStoreProvider: AnyObject {
     var HEAD: String { get }
 }
 
-struct BranchContainer {
+struct BranchContainer: Codable {
     // key: branch name
     private(set) var branches: OrderedDictionary<String, BranchRecord> = [:]
-    
-    // use `unowned`, see: https://stackoverflow.com/questions/24011575/what-is-the-difference-between-a-weak-reference-and-an-unowned-reference
-    // WARNING: ensure that this struct is only used INSIDE of an ObjectStore-implementing class
-    private unowned let objectStore: AuditionObjectStoreProvider
 
-    struct BranchRecord {
+    struct BranchRecord: Codable {
         var lastModified: Date
         var commit: String
     }
-
-    init(objectStore: AuditionObjectStoreProvider) {
-        self.objectStore = objectStore
-    }
     
-    func guardValidBranchName(_ branchName: String) throws {
+    func guardValidBranchName(_ branchName: String, objectStore: AuditionObjectStoreProvider) throws {
         guard !self.contains(branchName) else {
             throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
         }
@@ -79,11 +71,20 @@ struct BranchContainer {
         guard objectStore.objects[branchName] == nil else {
             throw AuditionError.runtimeError("A branch cannot be named after an existing object ref")
         }
+        
+        // there is a very VERY slim possibility that even with the above precautions,
+        // the program may have unintended behavior.
+        // for example:
+        //  - a user creates a branch named to a valid SHA-256 hash
+        //  - the user then creates a commit that happens to have the same SHA-256 hash as the branch
+        //  - the HEAD is set to the SHA-256 hash, and the user intends that to point to a COMMIT
+        //  - there is program logic that checks if the HEAD is a branch, and it returns YES and takes action
+        //      even though HEAD is intended to point to a commit, the program is now treating it like a branch
     }
 
     // creates a branch pointing to the commit ultimately pointed to by HEAD
-    mutating func createBranch(branchName: String) throws {
-        try guardValidBranchName(branchName)
+    mutating func createBranch(branchName: String, objectStore: AuditionObjectStoreProvider) throws {
+        try guardValidBranchName(branchName, objectStore: objectStore)
 
         if let HEADcommit = branches[objectStore.HEAD]?.commit { // create a new branch and point it to the HEAD commit
             unsafeSetBranch(branchName: branchName, value: HEADcommit)
@@ -97,8 +98,8 @@ struct BranchContainer {
     }
     
     // creates a branch pointing at the specified commit
-    mutating func createBranch(branchName: String, forCommit commit: String) throws {
-        try guardValidBranchName(branchName)
+    mutating func createBranch(branchName: String, forCommit commit: String, objectStore: AuditionObjectStoreProvider) throws {
+        try guardValidBranchName(branchName, objectStore: objectStore)
         
         branches[branchName] = BranchRecord(lastModified: .now, commit: commit)
     }
@@ -143,12 +144,15 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     @Published private(set) var objects: [String : AuditionObjectProtocol]
     @Published private(set) var index: [TreeEntry]
     
+    // FIXME: potentially make head a struct with two fields
+    // pointsTo: Enum(.commit, .branch)
+    // value: String
     @Published private(set) var HEAD: String {
         didSet {
             delegate?.headDidChange(HEAD)
         }
     }
-    private(set) lazy var branches: BranchContainer = BranchContainer(objectStore: self)
+    private(set) lazy var branches: BranchContainer = BranchContainer()
     
     weak var delegate: AuditionDataModelDelegate?
     
@@ -297,7 +301,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
             throw AuditionError.runtimeError("A branch named '\(branch)' does not exist")
         }
         if newBranch {
-            try branches.createBranch(branchName: branch)
+            try branches.createBranch(branchName: branch, objectStore: self)
         }
         
         HEAD = branch
