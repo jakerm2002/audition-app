@@ -8,46 +8,91 @@
 import SwiftUI
 import PencilKit
 
-struct Line: Shape {
-    var from: CGPoint
-    var to: CGPoint
+struct BranchIndicator: View {
+    var value: String
     
-    var animatableData: AnimatablePair<CGPoint.AnimatableData, CGPoint.AnimatableData> {
-        get { return AnimatablePair(from.animatableData, to.animatableData) }
-        set {
-            from.animatableData = newValue.first
-            to.animatableData = newValue.second
-        }
-    }
-    
-    func path(in rect: CGRect) -> Path {
-        Path { p in
-            p.move(to: from)
-            p.addLine(to: to)
-        }
+    var body: some View {
+        Text(value)
+            .lineLimit(1)
+            .truncationMode(.middle)
+            .padding(.horizontal, 4.0)
+            .background {
+                Capsule()
+                    .fill(.blue)
+                    .stroke(.blue, lineWidth: 2)
+                    .opacity(0.15)
+            }
+            .foregroundStyle(.blue)
+            .background{
+                Capsule()
+                    .fill(.ultraThinMaterial)
+            }
+            .frame(maxWidth: .infinity)
     }
 }
 
 
-struct CircleStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(Font.body)
-            .foregroundStyle(.white)
-            .frame(width: 32, height: 32)
-            .background(
-                Circle()
-                    .fill(Color(uiColor: UIColor.systemBlue))
-                    .overlay(Circle().fill(configuration.isPressed ? Color.white.opacity(0.5) : Color.clear))
-            )
+struct BranchIndicators: View {
+    static let MAX_MARKERS_DISPLAYED = 3
+    
+    var branchNames: [String]
+    
+    @State var firstNames: [String]
+    @State var lastNames: [String]
+    
+    @State var expanded: Bool = false
+    
+    // could be shortened to `branchNames.count - BranchIndicators.MAX_MARKERS_DISPLAYED`
+    // to avoid having to count two arrays
+    var expandable: Bool { branchNames.count - namesToDisplay.count > 0 }
+    
+    init(branchNames: [String]) {
+        self.branchNames = branchNames
         
+        firstNames = Array(branchNames.prefix(BranchIndicators.MAX_MARKERS_DISPLAYED))
+        lastNames = Array(branchNames.dropFirst(BranchIndicators.MAX_MARKERS_DISPLAYED))
+    }
+    
+    var namesToDisplay: [String] {
+        return expanded ? branchNames : Array(branchNames.prefix(BranchIndicators.MAX_MARKERS_DISPLAYED))
+    }
+
+    // TODO: add a mask on the top side that looks aesthetically pleasing
+    // this may require shifting the ScrollView up manually using a GeometryReader
+    // the scrollview may need to overlap with the node,
+    // and then there will need to be top padding added to the VStack
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 3.0) {
+                ForEach(namesToDisplay, id: \.self) { value in
+                    BranchIndicator(value: value)
+                }
+                if !expanded && expandable {
+                    // could be shortened to `max(0, branchNames.count - BranchIndicators.MAX_MARKERS_DISPLAYED)`
+                    // to avoid having to count two arrays
+                    BranchIndicator(value: "+\(branchNames.count - namesToDisplay.count)")
+                }
+            }
+            .padding(.bottom, expanded ? nil : 0)
+            .onTapGesture {
+                expanded = expandable && !expanded
+                print("branch markers tapped!!!!")
+            }
+        }
+        .mask(LinearGradient(gradient: Gradient(stops: [
+            .init(color: .black, location: 0),
+            .init(color: .black, location: 0.8),
+            .init(color: expanded ? .clear : .black, location: 1)
+        ]), startPoint: .top, endPoint: .bottom))
+        // TODO: in the future, make the height adapt to the available vertical space between the nodes, which is defined by TreeContentView's verticalSpacing property. If the height cannot fit the maximum number of markers displayed in non-expanded mode, dynamically reduce the number of markers displayed until it fits.
+        .frame(height: 100)
     }
 }
 
 
-struct Node<A: CustomStringConvertible>: View {
+struct TreeNodeView<A: CustomStringConvertible>: View {
     @EnvironmentObject var dataModel: AuditionDataModel
-    @ObservedObject var x: DisplayTree<A>
+    @ObservedObject var x: TreeNodeData<A>
     
     @State var img: UIImage = UIImage(ciImage: .empty())
     
@@ -56,9 +101,9 @@ struct Node<A: CustomStringConvertible>: View {
             // NOTE: Using conditionals here to display a different
             // View if the image was nil causes the view to break for some reason.
             // Symptoms can be seen when tapping the node very fast when the TreeView
-            // is first displayed. DrawTree has an onTapGesture that captures which Node
-            // was pressed. If conditionals are used, DrawTree will sometimes behave
-            // like a DIFFERENT Node was pressed. As of right now, I've only observed
+            // is first displayed. TreeContentView has an onTapGesture that captures which TreeNodeView
+            // was pressed. If conditionals are used, TreeContentView will sometimes behave
+            // like a DIFFERENT TreeNodeView was pressed. As of right now, I've only observed
             // this behavior on the root node of the tree structure.
             // It could be because of SwiftUI Identity, Lifetime, or Dependencies.
             // I tried watching "Demystify SwiftUI" from 2021 which covers some things,
@@ -67,15 +112,16 @@ struct Node<A: CustomStringConvertible>: View {
             // need to use a separate view to render something other than an Image.
             Image(uiImage: img)
                     .resizable()
+                    .antialiased(true)
                     .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipShape(Circle())
                     .background(in: Circle())
                     .overlay {
                         Circle()
-                            .stroke(Color.primary, lineWidth: 2)
+                            .stroke(x.isHEAD ? Color.orange : Color.primary, lineWidth: 2)
                     }
-                Text(x.commit.sha256DigestValue!.prefix(7))
+            Text(x.commit.sha256DigestValue!.prefix(7))
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {
@@ -88,146 +134,56 @@ struct Node<A: CustomStringConvertible>: View {
 }
 
 
-struct Point: Hashable {
-    var x: Int
-    var y: Int
+struct BranchDetailSheet<A>: View {
+    @Environment(\.dismiss) private var dismiss
     
-    static let zero = Point(x: 0, y: 0)
-}
-
-
-final class DisplayTree<A>: ObservableObject, Identifiable, CustomStringConvertible {
-    init(commit: Commit, value: A, point: Point = .zero, children: [DisplayTree<A>]? = nil) {
-        self.commit = commit
-        self.value = value
-        self.point = point
-        self.children = children
-        children?.forEach {
-            $0.parent = self
+    var node: TreeNodeData<A>
+    var setDrawing: (_ tree: TreeNodeData<A>, _ branch: String) -> Void
+    
+    @State var selectedBranch: String?
+    
+    var body: some View {
+        NavigationStack {
+            List(node.branches, id: \.self, selection: $selectedBranch) { branch in
+                Text(branch)
+            }
+            .navigationTitle("Choose branch")
+            .toolbar {
+                ToolbarItem {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+            .onChange(of: selectedBranch) { old, new in
+                if let new {
+                    print("branch selected: \(new)")
+                    dismiss()
+                    setDrawing(node, new)
+                }
+            }
         }
-    }
-    
-    @Published var commit: Commit
-    @Published var value: A
-    @Published var point: Point = .zero
-    @Published private(set) var children: [DisplayTree<A>]?
-    
-    weak var parent: DisplayTree<A>? = nil
-    
-    // TODO: change this to a stronger identifier, perhaps self.commit.sha256DigestValue?
-    // NOTE: DON'T change it to self.commit.sha256DigestValue, as it is a computed property??
-    // That might only be a problem if the computed property changes every time, our hash isn't supposed to change.
-    // Reading: https://developer.apple.com/documentation/swift/identifiable,
-    // ObjectIdentifier "is only guaranteed to remain unique for the lifetime of an object.
-    // If an object has a stronger notion of identity, it may be appropriate to provide a custom implementation."
-    var id: ObjectIdentifier {
-        ObjectIdentifier(self)
-    }
-    
-    var description: String {
-        "DisplayTree(\(value) \(point) with *\(children?.description ?? "no children")*"
-    }
-    
-    func addChild(_ child: DisplayTree<A>) {
-        if children != nil {
-            children!.append(child)
-        } else {
-            children = [child]
-        }
-        child.parent = self
-        print("setting the parent of node \(child.value) to \(value)")
-    }
-    
-    func relayout() {
-        var root = self
-        while let p = root.parent {
-            root = p
-        }
-        root.layout()
     }
 }
 
 
-extension DisplayTree {
-    func modifyAll(_ transform: (DisplayTree<A>) -> ()) {
-        transform(self)
-        if let children {
-            for child in children {
-                child.modifyAll(transform)
-            }
-        }
-    }
-    
-    var allSubtrees: [DisplayTree<A>] {
-        var childrenSubtrees: [DisplayTree<A>] = []
-        if let children {
-            for child in children {
-                childrenSubtrees.append(contentsOf: child.allSubtrees)
-            }
-        }
-        return [self] + childrenSubtrees
-    }
-    
-    var allEdges: [(from: DisplayTree<A>, to: DisplayTree<A>)] {
-        var result: [(from: DisplayTree<A>, to: DisplayTree<A>)] = []
-        if let children {
-            for child in children {
-                result.append((from: self, to: child))
-                result.append(contentsOf: child.allEdges)
-            }
-        }
-        return result
-    }
-}
-
-
-extension DisplayTree {
-    func layout() {
-        var x: [Int:Int] = [:]
-        alt(depth: 0, x: &x)
-    }
-    
-    func alt(depth: Int, x: inout [Int:Int]) {
-        print("looking at a node at depth \(depth): \(x.sorted(by: <))")
-        var prev: Int
-        if x[depth + 1, default: 0] > x[depth, default: 0] {
-            prev = x[depth + 1]!
-        } else {
-            prev = x[depth, default: 0]
-        }
-        point.x = x[depth, default: 0]
-        point.y = depth
-        if x[depth] != nil {
-            x[depth]! += 1
-        } else {
-            x[depth] = 1
-        }
-        x[depth + 1] = prev
-        if let children {
-            for child in children {
-                child.alt(depth: depth+1, x: &x)
-            }
-        }
-    }
-    
-    func moveRight(_ amount: Int) {
-        modifyAll { $0.point.x += amount }
-    }
-}
-
-
-struct DrawTree<A, Node>: View where Node: View {
+struct TreeContentView<A, NodeView>: View where NodeView: View {
     @EnvironmentObject var dataModel: AuditionDataModel
-    @ObservedObject var tree: DisplayTree<A>
+    @ObservedObject var root: TreeNodeData<A>
+    @State private var selected: TreeNodeData<A>?
     
     @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
     
     @Environment(\.dismiss) var dismiss
     
-    var horizontalSpacing: CGFloat = 40
-    var verticalSpacing: CGFloat = 40
-    let node: (DisplayTree<A>) -> Node
+    var horizontalSpacing: CGFloat = 120
+    var verticalSpacing: CGFloat = 120
+    
+    // FIXME: do we really need this to be a function?
+    // couldn't we just use a TreeNodeView directly
+    let drawNodesUsing: (TreeNodeData<A>) -> NodeView
+    
     let nodeSize = CGSize(width: 100, height: 100)
     
     func cgPoint(for point: Point) -> CGPoint {
@@ -249,32 +205,63 @@ struct DrawTree<A, Node>: View where Node: View {
         }
     }
     
+    func setDrawingFromBranch(tree: TreeNodeData<A>, branch: String) {
+        do {
+            try dataModel.checkout(branch: branch)
+            setDrawingData(commit: tree.commit)
+            dismiss()
+        } catch let error {
+            print("ERROR in SwiftUITreeView: Checking out branch failed: \(error)")
+        }
+    }
+    
     var body: some View {
         return ZStack(alignment: .topLeading) {
-            ForEach(tree.allSubtrees) { (tree: DisplayTree<A>) in
-                self.node(tree)
-                    .frame(width: self.nodeSize.width, height: self.nodeSize.height)
-                    .alignmentGuide(.leading, computeValue: { _ in
-                        -self.cgPoint(for: tree.point).x
-                    })
-                    .alignmentGuide(.top, computeValue: { _ in
-                        -self.cgPoint(for: tree.point).y
-                    })
-                    .onTapGesture {
-                        do {
-                            print("node tapped: \(tree.commit.sha256DigestValue!)")
-                            try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
-                            setDrawingData(commit: tree.commit)
-                            dismiss()
-                        } catch let error {
-                            print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
+            // currently, nodes are layered on top of one another
+            // in the order returned from tree.allSubtrees.
+            // this ordering could be reversed if needed by enumerating the results
+            // by index and then setting the .zIndex modifier to -index.
+            ForEach(root.allSubtrees) { (tree: TreeNodeData<A>) in
+                VStack {
+                    self.drawNodesUsing(tree)
+                        .frame(width: self.nodeSize.width, height: self.nodeSize.height)
+                        .onTapGesture {
+                            do {
+                                print("node tapped: \(tree.commit.sha256DigestValue!)")
+                                // checkout the branch if it's pointed to
+                                // if there are multiple branches, present a sheet to
+                                // choose which branch to check out
+                                // TODO: in the future, regarding commits pointed to by branches, consider giving the user the option to long-press these nodes to checkout the COMMIT and bypass checking out any of the branches.
+                                if (tree.branches.count > 1) {
+                                    selected = tree
+                                } else if let branch = tree.branches.first {
+                                    setDrawingFromBranch(tree: tree, branch: branch)
+                                } else {
+                                    try dataModel.checkout(commit: tree.commit.sha256DigestValue!)
+                                    setDrawingData(commit: tree.commit)
+                                    dismiss()
+                                }
+                            } catch let error {
+                                print("ERROR in SwiftUITreeView: Checking out ref failed: \(error)")
+                            }
                         }
-                    }
+                        .sheet(item: $selected, content: { node in
+                            BranchDetailSheet(node: node, setDrawing: setDrawingFromBranch)
+                        })
+                    BranchIndicators(branchNames: tree.branches)
+                        .frame(maxWidth: nodeSize.width)
+                }
+                .alignmentGuide(.leading, computeValue: { _ in
+                    -self.cgPoint(for: tree.point).x
+                })
+                .alignmentGuide(.top, computeValue: { _ in
+                    -self.cgPoint(for: tree.point).y
+                })
             }
         }
         .background(
             ZStack {
-                ForEach(tree.allEdges, id: \.to.id) { edge in
+                ForEach(root.allEdges, id: \.to.id) { edge in
                     Line(from: self.cgPoint(for: edge.from.point), to: self.cgPoint(for: edge.to.point))
                         .stroke(Color(uiColor: .systemGray3), lineWidth: 2)
                 }
@@ -284,6 +271,7 @@ struct DrawTree<A, Node>: View where Node: View {
     }
 }
 
+
 struct SwiftUITreeView: View {
     var edgeFade = Gradient(stops:
                             [Gradient.Stop(color: Color.clear, location: 0.0),
@@ -292,7 +280,8 @@ struct SwiftUITreeView: View {
                              Gradient.Stop(color: Color.clear, location: 1.0)])
     
     @EnvironmentObject var model: AuditionDataModel
-    @State var tree: DisplayTree<String>?
+    @State var tree: TreeNodeData<String>?
+    
     @Binding var rendition: PKDrawing
     @Binding var updatesCounter: Int
     
@@ -301,7 +290,7 @@ struct SwiftUITreeView: View {
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
             if let tree {
-                DrawTree(tree: tree, rendition: $rendition, updatesCounter: $updatesCounter, node: { Node(x: $0) })
+                TreeContentView(root: tree, rendition: $rendition, updatesCounter: $updatesCounter, drawNodesUsing: { TreeNodeView(x: $0) })
                     .animation(.default)
             } else {
                 ContentUnavailableView("No Tree Available", image: "")
@@ -328,103 +317,8 @@ struct SwiftUITreeView: View {
     }
 }
 
-func generateSampleData() -> AuditionDataModel{
-    do {
-        let content1 = Data(String(stringLiteral: "test one").utf8)
-        let filename1 = "test1.txt"
-        
-        let f1 = AuditionFile(
-            content: content1,
-            name: filename1
-        )
-        
-        let a1 = AuditionDataModel()
-        try a1.add(f1)
-        
-        let commitMessage1 = "initial commit"
-        var commit1: String = try a1.commit(message: commitMessage1)
-        print("commit1 \(commit1)")
-        
-        let content2 = Data(String(stringLiteral: "test two").utf8)
-        let filename2 = "test2.txt"
-        
-        let f2 = AuditionFile(
-            content: content2,
-            name: filename2
-        )
-        
-        try a1.add(f2)
-        
-        let commitMessage2 = "second commit"
-        var commit2: String = try a1.commit(message: commitMessage2)
-        print("commit2 \(commit2)")
-        
-        return a1
-    } catch {
-        print("error: prevew of SwiftUITreeView failed, returning an empty model")
-        return AuditionDataModel()
-    }
-}
-
-func generateSampleDataThreeCommits() -> AuditionDataModel {
-    do {
-        let content1 = Data(String(stringLiteral: "test one").utf8)
-        let filename1 = "test1.txt"
-        let f1 = AuditionFile(
-            content: content1,
-            name: filename1
-        )
-        
-        let content2 = Data(String(stringLiteral: "test two").utf8)
-        let filename2 = "test2.txt"
-        
-        let f2 = AuditionFile(
-            content: content2,
-            name: filename2
-        )
-        
-        let content3 = Data(String(stringLiteral: "test three").utf8)
-        let filename3 = "test3.txt"
-        
-        let f3 = AuditionFile(
-            content: content3,
-            name: filename3
-        )
-        
-        let commitMessage1 = "initial commit"
-        let commitMessage2 = "second commit"
-        let commitMessage3 = "third commit"
-        
-        // CREATE A NEW MODEL
-        let a2 = AuditionDataModel()
-        try a2.add(f1)
-        
-        let commit1 = try a2.commit(message: commitMessage1)
-        print("commit1 \(commit1)")
-        
-        // add a branch from the initial commit
-        try a2.createBranch(branchName: "b1")
-        try a2.createBranch(branchName: "b2")
-        
-        try a2.checkout(branch: "b1")
-        try a2.add(f2)
-        let commit2 = try a2.commit(message: commitMessage2)
-        print("commit2 \(commit2)")
-        
-        try a2.checkout(branch: "b2")
-        try a2.add(f3)
-        var commit3: String = try a2.commit(message: commitMessage3)
-        print("commit3 \(commit3)")
-        
-        return a2
-    } catch {
-        print("error: prevew of SwiftUITreeView failed, returning an empty model")
-        return AuditionDataModel()
-    }
-}
 
 #Preview {
-//    SwiftUITreeView(model: generateSampleData())
-    var model: AuditionDataModel = generateSampleDataThreeCommits()
+    var model: AuditionDataModel = generateSampleDataThreeStaticCommits()
     SwiftUITreeView(rendition: Binding.constant(PKDrawing()), updatesCounter: Binding.constant(0)).environmentObject(model)
 }

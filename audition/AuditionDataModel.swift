@@ -358,12 +358,24 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
     
-    func getRootsAsTrees() -> [DisplayTree<String>] {
+    // returns a Dictionary where:
+    // key: a String, representing the commit hash of a commit in the data model.
+    // value: an Array of strings, representing a list of branches that point to the keyed commit
+    func getBranchesForCommits() -> [String : [String]] {
+        var branchesForCommit: [String : [String]] = [:]
+        for (branch, hash) in branches {
+            branchesForCommit[hash, default: []].append(branch)
+        }
+        return branchesForCommit
+    }
+    
+    func getRootsAsTrees() -> [TreeNodeData<String>] {
+        var branchesForCommits = getBranchesForCommits()
         print("************* STARTING ALGORITHM ***************")
-        var wrappers: [String : DisplayTree<String>] = [:]
-        var rootNodes: [DisplayTree<String>] = []
+        var wrappers: [String : TreeNodeData<String>] = [:]
+        var rootNodes: [TreeNodeData<String>] = []
         
-        func alg(_ cur: DisplayTree<String>) {
+        func alg(_ cur: TreeNodeData<String>) {
             // mark cur as visited
             wrappers[cur.commit.sha256DigestValue!] = cur
             
@@ -375,7 +387,8 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
                         p.addChild(cur)
                     } else {
                         let pCommitObj = objects[pCommit] as! Commit
-                        let p = DisplayTree(commit: pCommitObj, value: String(pCommit.prefix(7)), children: [cur])
+                        let isHEAD = headIsDetached ? pCommit == HEAD : pCommit == branches[HEAD]
+                        let p = TreeNodeData(commit: pCommitObj, value: String(pCommit.prefix(7)), children: [cur], branches: branchesForCommits[pCommit], isHEAD: isHEAD)
                         alg(p)
                     }
                 }
@@ -394,7 +407,8 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         do {
             let sortedBranches: [String] = try getBranchesWithInDegreeZero()
             for commit in sortedBranches {
-                let w = DisplayTree(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [])
+                let isHEAD = headIsDetached ? commit == HEAD : commit == branches[HEAD]
+                let w = TreeNodeData(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [], branches: branchesForCommits[commit], isHEAD: isHEAD)
                 alg(w)
             }
         } catch let error {
@@ -441,6 +455,11 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     // manually set an object in the object store
     func unsafeSetObject(key: String, value: AuditionObjectProtocol) {
         objects[key] = value
+    }
+    
+    // NOT SAFE: ONLY USE FOR TESTING
+    func unsafeSetBranch(branchName: String, commitHash: String) {
+        branches[branchName] = commitHash
     }
     
     // NOT SAFE: LEAVES COMMITS DANGLING, ONLY USE FOR TESTING
