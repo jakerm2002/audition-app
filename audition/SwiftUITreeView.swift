@@ -170,7 +170,7 @@ struct BranchDetailView<A>: View {
 
 struct TreeContentView<A, Node>: View where Node: View {
     @EnvironmentObject var dataModel: AuditionDataModel
-    @ObservedObject var tree: TreeNodeData<A>
+    @ObservedObject var root: TreeNodeData<A>
     @State private var selected: TreeNodeData<A>?
     
     @Binding var rendition: PKDrawing
@@ -218,7 +218,7 @@ struct TreeContentView<A, Node>: View where Node: View {
             // in the order returned from tree.allSubtrees.
             // this ordering could be reversed if needed by enumerating the results
             // by index and then setting the .zIndex modifier to -index.
-            ForEach(tree.allSubtrees) { (tree: TreeNodeData<A>) in
+            ForEach(root.allSubtrees) { (tree: TreeNodeData<A>) in
                 VStack {
                     self.node(tree)
                         .frame(width: self.nodeSize.width, height: self.nodeSize.height)
@@ -258,7 +258,7 @@ struct TreeContentView<A, Node>: View where Node: View {
         }
         .background(
             ZStack {
-                ForEach(tree.allEdges, id: \.to.id) { edge in
+                ForEach(root.allEdges, id: \.to.id) { edge in
                     Line(from: self.cgPoint(for: edge.from.point), to: self.cgPoint(for: edge.to.point))
                         .stroke(Color(uiColor: .systemGray3), lineWidth: 2)
                 }
@@ -287,7 +287,7 @@ struct SwiftUITreeView: View {
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
             if let tree {
-                TreeContentView(tree: tree, rendition: $rendition, updatesCounter: $updatesCounter, node: { TreeNodeView(x: $0) })
+                TreeContentView(root: tree, rendition: $rendition, updatesCounter: $updatesCounter, node: { TreeNodeView(x: $0) })
                     .animation(.default)
             } else {
                 ContentUnavailableView("No Tree Available", image: "")
