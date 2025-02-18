@@ -245,7 +245,7 @@ struct auditionTests {
         #expect(a1.branches["main"] != nil)
         
         // check main branch points to correct commit
-        #expect(a1.branches["main"] == commit)
+        #expect(a1.branches["main"]?.commit == commit)
     }
     
     @Test func addAndReplaceFile() async throws {
@@ -400,7 +400,7 @@ struct auditionTests {
         #expect(a1.branches["main"] != nil)
         
         // check main branch points to correct commit
-        #expect(a1.branches["main"] == commit2)
+        #expect(a1.branches["main"]?.commit == commit2)
     }
     
     @Test func testEncodeAndDecodeAuditionObjectWrapper() async throws {
@@ -491,7 +491,7 @@ struct auditionTests {
         #expect(a1.branches["main"] != nil)
         
         // check main branch points to correct commit
-        #expect(a1.branches["main"] == commit2)
+        #expect(a1.branches["main"]?.commit == commit2)
         
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
@@ -531,7 +531,7 @@ struct auditionTests {
         #expect(a1.branches["main"] != nil)
         
         // check main branch points to correct commit
-        #expect(a1.branches["main"] == commit2)
+        #expect(a1.branches["main"]?.commit == commit2)
     }
     
     @Test func testLog() async throws {
@@ -792,9 +792,9 @@ struct auditionTests {
         let newBranchName = "featureA"
         try a1.createBranch(branchName: newBranchName)
         try #require(a1.branches["main"] != nil)
-        #expect(a1.branches["main"] == commit2)
+        #expect(a1.branches["main"]?.commit == commit2)
         try #require(a1.branches[newBranchName] != nil)
-        #expect(a1.branches[newBranchName] == commit2)
+        #expect(a1.branches[newBranchName]?.commit == commit2)
         #expect(a1.HEAD == "main")
     }
     
@@ -944,7 +944,7 @@ struct auditionTests {
         let b3 = Blob(contents: content3)
         let t3 = Tree(entries: [TreeEntry(type: .blob, hash: b3.sha256DigestValue!, name: filename3), TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2), TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
         
-        #expect(a1.branches["main"] == commit2)
+        #expect(a1.branches["main"]?.commit == commit2)
         #expect(a1.branches[newBranchName] == commit3)
         #expect(a1.HEAD == newBranchName)
     }
@@ -1056,7 +1056,7 @@ struct auditionTests {
         // manually modify the commit to make it have two parents
         let commitObj4 = a2.objects[commit4] as! Commit
         var newParents: [String] = Array(commitObj4.parents)
-        newParents.append(a2.branches["b2"]!)
+        newParents.append(a2.branches["b2"]!.commit)
 //        a2.objects[commit4] = Commit(tree: commitObj4.tree, parents: newParents, message: commitObj4.message, timestamp: commitObj4.timestamp)
         a2.unsafeSetObject(key: commit4, value: Commit(tree: commitObj4.tree, parents: newParents, message: commitObj4.message, timestamp: commitObj4.timestamp))
         
