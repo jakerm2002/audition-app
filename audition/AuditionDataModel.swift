@@ -86,9 +86,9 @@ struct BranchContainer {
         try guardValidBranchName(branchName)
 
         if let HEADcommit = branches[objectStore.HEAD]?.commit { // create a new branch and point it to the HEAD commit
-            unsafeSetBranch(branchName: branchName, commit: HEADcommit)
+            unsafeSetBranch(branchName: branchName, value: HEADcommit)
         } else if let HEADcommit = (objectStore.objects[objectStore.HEAD] as? Commit)?.sha256DigestValue! {
-            unsafeSetBranch(branchName: branchName, commit: HEADcommit)
+            unsafeSetBranch(branchName: branchName, value: HEADcommit)
         } else {
             // TODO: If a user clicks the Branch button when no commits made yet, automatically make a commit to the current branch, then make a new branch from the current branch
             // do not remove this throw statement, or add any logic here, once that change is implemented
@@ -108,11 +108,11 @@ struct BranchContainer {
     }
     
     // make sure the dictionary stays in time-chronological order, most recent changes at beginning of order
-    private mutating func unsafeSetBranch(branchName: String, commit: String) {
+    mutating func unsafeSetBranch(branchName: String, value: String) {
         if self.contains(branchName) {
             branches.removeValue(forKey: branchName)
         }
-        branches.updateValue(BranchRecord(lastModified: .now, commit: commit), forKey: branchName, insertingAt: 0)
+        branches.updateValue(BranchRecord(lastModified: .now, commit: value), forKey: branchName, insertingAt: 0)
     }
     
     // modify an ALREADY EXISTING BRANCH
@@ -120,7 +120,7 @@ struct BranchContainer {
         guard branches[branchName] != nil else {
             throw AuditionError.runtimeError("Cannot modify branch: branch does not exist")
         }
-        unsafeSetBranch(branchName: branchName, commit: commit)
+        unsafeSetBranch(branchName: branchName, value: commit)
     }
     
     // returns commit hash or nil if no branch exists
