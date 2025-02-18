@@ -49,7 +49,7 @@ struct AuditionFile {
 // primarily, this is used for other out-of-scope structs or classes
 // to be able to reference an AuditionDataModel's object store while
 // still remaining somewhat decoupled from the AuditionDataModel itself.
-protocol ObjectStoreProvider: AnyObject {
+protocol AuditionObjectStoreProvider: AnyObject {
     var objects: [String: AuditionObjectProtocol] { get }
     var HEAD: String { get }
 }
@@ -60,14 +60,14 @@ struct BranchContainer {
     
     // use `unowned`, see: https://stackoverflow.com/questions/24011575/what-is-the-difference-between-a-weak-reference-and-an-unowned-reference
     // WARNING: ensure that this struct is only used INSIDE of an ObjectStore-implementing class
-    private unowned let objectStore: ObjectStoreProvider
+    private unowned let objectStore: AuditionObjectStoreProvider
 
     struct BranchRecord {
         var lastModified: Date
         var commit: String
     }
 
-    init(objectStore: ObjectStoreProvider) {
+    init(objectStore: AuditionObjectStoreProvider) {
         self.objectStore = objectStore
     }
     
@@ -135,7 +135,7 @@ struct BranchContainer {
     }
 }
 
-class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable, ObjectStoreProvider {
+class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable, AuditionObjectStoreProvider {
     @Published private(set) var objects: [String : AuditionObjectProtocol]
     @Published private(set) var index: [TreeEntry]
     
