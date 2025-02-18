@@ -70,9 +70,8 @@ struct BranchContainer {
     init(objectStore: ObjectStoreProvider) {
         self.objectStore = objectStore
     }
-
-    // creates a branch from the current HEAD
-    mutating func create(branchName: String) throws {
+    
+    func guardValidBranchName(_ branchName: String) throws {
         guard branches[branchName] == nil else {
             throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
         }
@@ -80,6 +79,11 @@ struct BranchContainer {
         guard objectStore.objects[branchName] == nil else {
             throw AuditionError.runtimeError("A branch cannot be named after an existing object ref")
         }
+    }
+
+    // creates a branch pointing to the commit ultimately pointed to by HEAD
+    mutating func createBranch(branchName: String) throws {
+        try guardValidBranchName(branchName)
 
         if let HEADcommit = branches[objectStore.HEAD]?.commit { // create a new branch and point it to the HEAD commit
             branches[branchName] = BranchRecord(lastModified: .now, commit: HEADcommit)
@@ -91,6 +95,19 @@ struct BranchContainer {
             throw AuditionError.runtimeError("Cannot create new branch: HEAD does not point to an existing branch or commit")
         }
     }
+    
+    // creates a branch pointing at the specified commit
+    mutating func createBranch(branchName: String, forCommit commit: String) throws {
+        try guardValidBranchName(branchName)
+        
+        branches[branchName] = BranchRecord(lastModified: .now, commit: commit)
+    }
+    
+    // subscript method should:
+    // if the branch doesn't exist
+    //  create it
+    // otherwise
+    //  set the new commit of that branch
 }
 
 class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable, ObjectStoreProvider {
