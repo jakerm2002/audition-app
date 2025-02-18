@@ -86,9 +86,9 @@ struct BranchContainer {
         try guardValidBranchName(branchName)
 
         if let HEADcommit = branches[objectStore.HEAD]?.commit { // create a new branch and point it to the HEAD commit
-            branches[branchName] = BranchRecord(lastModified: .now, commit: HEADcommit)
+            unsafeSetBranch(branchName: branchName, commit: HEADcommit)
         } else if let HEADcommit = (objectStore.objects[objectStore.HEAD] as? Commit)?.sha256DigestValue! {
-            branches[branchName] = BranchRecord(lastModified: .now, commit: HEADcommit)
+            unsafeSetBranch(branchName: branchName, commit: HEADcommit)
         } else {
             // TODO: If a user clicks the Branch button when no commits made yet, automatically make a commit to the current branch, then make a new branch from the current branch
             // do not remove this throw statement, or add any logic here, once that change is implemented
@@ -103,11 +103,27 @@ struct BranchContainer {
         branches[branchName] = BranchRecord(lastModified: .now, commit: commit)
     }
     
-    // subscript method should:
-    // if the branch doesn't exist
-    //  create it
-    // otherwise
-    //  set the new commit of that branch
+    private mutating func unsafeSetBranch(branchName: String, commit: String) {
+        branches[branchName] = BranchRecord(lastModified: .now, commit: commit)
+        
+        // the branch has been changed, so we need to change the order of the OrderedDictionary
+        // move the changed branch to the end of the order
+    }
+    
+    // modify an ALREADY EXISTING BRANCH
+    mutating func modifyBranch(branchName: String, newCommit commit: String) throws {
+        guard branches[branchName] != nil else {
+            throw AuditionError.runtimeError("Cannot modify branch: branch does not exist")
+        }
+        unsafeSetBranch(branchName: branchName, commit: commit)
+    }
+    
+    // returns commit hash or nil if no branch exists
+    func get(branchName: String) -> String? {
+        return branches[branchName]?.commit
+    }
+    
+    // subscript implementation should be read-only
 }
 
 class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable, ObjectStoreProvider {
