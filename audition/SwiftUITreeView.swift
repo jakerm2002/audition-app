@@ -168,7 +168,7 @@ struct BranchDetailSheet<A>: View {
 }
 
 
-struct TreeContentView<A, Node>: View where Node: View {
+struct TreeContentView<A, NodeView>: View where NodeView: View {
     @EnvironmentObject var dataModel: AuditionDataModel
     @ObservedObject var root: TreeNodeData<A>
     @State private var selected: TreeNodeData<A>?
@@ -180,7 +180,11 @@ struct TreeContentView<A, Node>: View where Node: View {
     
     var horizontalSpacing: CGFloat = 120
     var verticalSpacing: CGFloat = 120
-    let node: (TreeNodeData<A>) -> Node
+    
+    // FIXME: do we really need this to be a function?
+    // couldn't we just use a TreeNodeView directly
+    let drawNodesUsing: (TreeNodeData<A>) -> NodeView
+    
     let nodeSize = CGSize(width: 100, height: 100)
     
     func cgPoint(for point: Point) -> CGPoint {
@@ -220,7 +224,7 @@ struct TreeContentView<A, Node>: View where Node: View {
             // by index and then setting the .zIndex modifier to -index.
             ForEach(root.allSubtrees) { (tree: TreeNodeData<A>) in
                 VStack {
-                    self.node(tree)
+                    self.drawNodesUsing(tree)
                         .frame(width: self.nodeSize.width, height: self.nodeSize.height)
                         .onTapGesture {
                             do {
@@ -287,7 +291,7 @@ struct SwiftUITreeView: View {
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
             if let tree {
-                TreeContentView(root: tree, rendition: $rendition, updatesCounter: $updatesCounter, node: { TreeNodeView(x: $0) })
+                TreeContentView(root: tree, rendition: $rendition, updatesCounter: $updatesCounter, drawNodesUsing: { TreeNodeView(x: $0) })
                     .animation(.default)
             } else {
                 ContentUnavailableView("No Tree Available", image: "")
