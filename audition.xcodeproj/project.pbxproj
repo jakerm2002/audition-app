@@ -28,6 +28,7 @@
 		66D0113D2D56D50300ED8D23 /* SwiftUITreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D0113C2D56D4FA00ED8D23 /* SwiftUITreeView.swift */; };
 		66FD59512D63D1F00047F9DE /* SwiftUITreeHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66FD59502D63D1EC0047F9DE /* SwiftUITreeHelpers.swift */; };
 		66FD59532D63D2610047F9DE /* SampleDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66FD59522D63D2590047F9DE /* SampleDataModels.swift */; };
+		66FD595A2D6430800047F9DE /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 66FD59592D6430800047F9DE /* OrderedCollections */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -77,6 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66FD595A2D6430800047F9DE /* OrderedCollections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -209,6 +211,9 @@
 				Base,
 			);
 			mainGroup = 668F96892A06302300E6B96F;
+			packageReferences = (
+				66FD59582D6430800047F9DE /* XCRemoteSwiftPackageReference "swift-collections" */,
+			);
 			productRefGroup = 668F96932A06302300E6B96F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -550,6 +555,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		66FD59582D6430800047F9DE /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		66FD59592D6430800047F9DE /* OrderedCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 66FD59582D6430800047F9DE /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = OrderedCollections;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
 		668F969E2A06302300E6B96F /* audition.xcdatamodeld */ = {

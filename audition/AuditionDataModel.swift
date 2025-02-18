@@ -7,6 +7,7 @@
 
 import Foundation
 import PencilKit
+import OrderedCollections
 
 enum AuditionError: Error {
     case runtimeError(String)
@@ -41,6 +42,28 @@ struct AuditionFile {
         self.content = drawing.dataRepresentation()
         self.contentTypeIdentifier = PKAppleDrawingTypeIdentifier as String
         self.name = name
+    }
+}
+
+struct BranchContainer {
+    private var branches: OrderedDictionary<String, Branch> = [:]
+    
+    struct Branch {
+        var lastModified: Date
+        var commit: String
+    }
+    
+    mutating func create(branchName: String) throws {
+        guard branches[branchName] == nil else {
+            throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
+        }
+        
+        // check the data model to ensure that the branch name is not in use by a commit or other object ref
+        guard objects[branchName] == nil else {
+            throw AuditionError.runtimeError("A branch cannot be named after an existing object ref")
+        }
+        
+        // code to create a branch here
     }
 }
 
