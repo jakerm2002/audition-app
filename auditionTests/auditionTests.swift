@@ -170,7 +170,7 @@ struct auditionTests {
     
     @Test func mainBranchNonexistentBeforeCommit() async throws {
         let a1 = AuditionDataModel()
-        #expect(a1.branches == [:])
+        #expect(a1.branches.count == 0)
     }
     
     @Test func addOneFile() async throws {
@@ -888,9 +888,9 @@ struct auditionTests {
         
         try a1.checkout(branch: newBranchName, newBranch: true)
         try #require(a1.branches["main"] != nil)
-        #expect(a1.branches["main"] == commit2)
+        #expect(a1.branches["main"]?.commit == commit2)
         try #require(a1.branches[newBranchName] != nil)
-        #expect(a1.branches[newBranchName] == commit2)
+        #expect(a1.branches[newBranchName]?.commit == commit2)
         #expect(a1.HEAD == newBranchName)
     }
     
@@ -945,7 +945,7 @@ struct auditionTests {
         let t3 = Tree(entries: [TreeEntry(type: .blob, hash: b3.sha256DigestValue!, name: filename3), TreeEntry(type: .blob, hash: b2.sha256DigestValue!, name: filename2), TreeEntry(type: .blob, hash: b1.sha256DigestValue!, name: filename1)])
         
         #expect(a1.branches["main"]?.commit == commit2)
-        #expect(a1.branches[newBranchName] == commit3)
+        #expect(a1.branches[newBranchName]?.commit == commit3)
         #expect(a1.HEAD == newBranchName)
     }
     

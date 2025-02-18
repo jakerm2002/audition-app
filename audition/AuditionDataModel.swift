@@ -139,6 +139,8 @@ struct BranchContainer: Codable, Sequence {
         }
     }
     
+    public var count: Int { branches.count }
+    
     public struct Iterator: IteratorProtocol {
         internal var iter: OrderedDictionary<String, BranchRecord>.Iterator
         
