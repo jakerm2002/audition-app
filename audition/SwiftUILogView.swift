@@ -71,7 +71,7 @@ struct SwiftUILogDetailView: View {
 struct SwiftUILogView: View {
     
     @EnvironmentObject var dataModel: AuditionDataModel
-    @State var branches: [String : String] = [:]
+    @State var branches: BranchContainer = BranchContainer()
     @State var commits: [Commit] = []
     @State private var sidebarSelection: String? = nil
     
@@ -113,14 +113,14 @@ struct SwiftUILogView: View {
     
     var body: some View {
         NavigationSplitView(sidebar: {
-            List (branches.sorted(by: <), id: \.key, selection: $sidebarSelection) { key, value in
+            List (branches.branches.keys, id: \.self, selection: $sidebarSelection) { key in
                 HStack {
                     NavigationLink(key, value: key)
                     Spacer()
                     Button(action: {
                         do {
                             try dataModel.checkout(branch: key)
-                            guard let commit = dataModel.objects[value] as? Commit else {
+                            guard let commit = dataModel.objects[branches[key]!.commit] as? Commit else {
                                 throw AuditionError.runtimeError("Branch ref does not point to a commit.")
                             }
                             setDrawingData(commit: commit)

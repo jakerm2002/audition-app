@@ -181,7 +181,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         self.objects = objects
         self.index = index
         self.HEAD = HEAD
-        // TODO: init for BranchContainer that takes array of branches
+        #warning("TODO: init for BranchContainer that takes array of branches")
     }
     
     var currentBranch: String? {
