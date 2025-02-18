@@ -45,7 +45,11 @@ struct AuditionFile {
     }
 }
 
-protocol ObjectLookup: AnyObject {
+// the conforming classes must implement an object store
+// primarily, this is used for other out-of-scope structs or classes
+// to be able to reference an AuditionDataModel's object store while
+// still remaining somewhat decoupled from the AuditionDataModel itself.
+protocol ObjectStore: AnyObject {
     var objects: [String: AuditionObjectProtocol] { get }
 }
 
@@ -53,15 +57,15 @@ struct BranchContainer {
     private var branches: OrderedDictionary<String, Branch> = [:]
     
     // use `unowned`, see: https://stackoverflow.com/questions/24011575/what-is-the-difference-between-a-weak-reference-and-an-unowned-reference
-    private unowned let objectLookup: ObjectLookup?
+    private unowned let objectStore: ObjectStore?
 
     struct Branch {
         var lastModified: Date
         var commit: String
     }
 
-    init(objectLookup: ObjectLookup) {
-        self.objectLookup = objectLookup
+    init(objectStore: ObjectStore) {
+        self.objectStore = objectStore
     }
 
     mutating func create(branchName: String) throws {
@@ -69,7 +73,7 @@ struct BranchContainer {
             throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
         }
         
-        guard objectLookup?.objects[branchName] == nil else {
+        guard objectStore?.objects[branchName] == nil else {
             throw AuditionError.runtimeError("A branch cannot be named after an existing object ref")
         }
 
@@ -77,7 +81,7 @@ struct BranchContainer {
     }
 }
 
-class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable, ObjectLookup {
+class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable, ObjectStore {
     @Published private(set) var objects: [String : AuditionObjectProtocol]
     @Published private(set) var index: [TreeEntry]
     
@@ -87,7 +91,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
     @Published private(set) var branches: [String : String]
-    private(set) lazy var branchContainer: BranchContainer = BranchContainer(objectLookup: self)
+    private(set) lazy var branchContainer: BranchContainer = BranchContainer(objectStore: self)
     
     weak var delegate: AuditionDataModelDelegate?
     
