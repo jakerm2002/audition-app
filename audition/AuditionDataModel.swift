@@ -128,7 +128,11 @@ struct BranchContainer {
         return branches[branchName]?.commit
     }
     
-    // subscript implementation should be read-only
+    subscript(key: String) -> BranchRecord? {
+        get {
+            return branches[key]
+        }
+    }
 }
 
 class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable, ObjectStoreProvider {
