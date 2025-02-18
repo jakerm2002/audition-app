@@ -142,9 +142,9 @@ struct BranchContainer: Codable, Sequence {
     public struct Iterator: IteratorProtocol {
         internal var iter: OrderedDictionary<String, BranchRecord>.Iterator
         
-        public mutating func next() -> BranchRecord? {
-            guard let (_, value) = iter.next() else { return nil }
-            return value
+        public mutating func next() -> (String, BranchRecord)? {
+            guard let (key, value) = iter.next() else { return nil }
+            return (key, value)
         }
     }
     
@@ -455,8 +455,8 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     // value: an Array of strings, representing a list of branches that point to the keyed commit
     func getBranchesForCommits() -> [String : [String]] {
         var branchesForCommit: [String : [String]] = [:]
-        for (branch, hash) in branches {
-            branchesForCommit[hash, default: []].append(branch)
+        for (branch, branchInfo) in branches {
+            branchesForCommit[branchInfo.commit, default: []].append(branch)
         }
         return branchesForCommit
     }
@@ -536,8 +536,8 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     func computeInDegreeDict() throws -> [String : CommitWalkInfo] {
         var commits: [String : CommitWalkInfo] = [:]
         
-        for (branchName, branchRef) in branches {
-            try countInDegreesFromCommit(id: branchRef, commits: &commits)
+        for (branchName, branchInfo) in branches {
+            try countInDegreesFromCommit(id: branchInfo.commit, commits: &commits)
         }
         
         return commits
