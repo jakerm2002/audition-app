@@ -49,8 +49,9 @@ struct AuditionFile {
 // primarily, this is used for other out-of-scope structs or classes
 // to be able to reference an AuditionDataModel's object store while
 // still remaining somewhat decoupled from the AuditionDataModel itself.
-protocol ObjectStore: AnyObject {
+protocol ObjectStoreProvider: AnyObject {
     var objects: [String: AuditionObjectProtocol] { get }
+    var HEAD: String { get }
 }
 
 struct BranchContainer {
@@ -58,14 +59,14 @@ struct BranchContainer {
     
     // use `unowned`, see: https://stackoverflow.com/questions/24011575/what-is-the-difference-between-a-weak-reference-and-an-unowned-reference
     // WARNING: ensure that this struct is only used INSIDE of an ObjectStore-implementing class
-    private unowned let objectStore: ObjectStore
+    private unowned let objectStore: ObjectStoreProvider
 
     struct Branch {
         var lastModified: Date
         var commit: String
     }
 
-    init(objectStore: ObjectStore) {
+    init(objectStore: ObjectStoreProvider) {
         self.objectStore = objectStore
     }
 
@@ -78,11 +79,17 @@ struct BranchContainer {
             throw AuditionError.runtimeError("A branch cannot be named after an existing object ref")
         }
 
-        // code to create a branch
+        if let HEADcommit = branches[objectStore.HEAD] {
+            branches[branchName] = HEADcommit
+        } else if let HEADcommit = objectStore.objects[objectStore.HEAD] as? Commit {
+            branches[branchName] = HEADcommit.sha256DigestValue!
+        } else {
+            throw AuditionError.runtimeError("Cannot create new branch: HEAD does not point to an existing branch or commit")
+        }
     }
 }
 
-class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable, ObjectStore {
+class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Identifiable, ObjectStoreProvider {
     @Published private(set) var objects: [String : AuditionObjectProtocol]
     @Published private(set) var index: [TreeEntry]
     
