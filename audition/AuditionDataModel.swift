@@ -56,7 +56,7 @@ protocol AuditionObjectStoreProvider: AnyObject {
 
 struct BranchContainer {
     // key: branch name
-    private var branches: OrderedDictionary<String, BranchRecord> = [:]
+    private(set) var branches: OrderedDictionary<String, BranchRecord> = [:]
     
     // use `unowned`, see: https://stackoverflow.com/questions/24011575/what-is-the-difference-between-a-weak-reference-and-an-unowned-reference
     // WARNING: ensure that this struct is only used INSIDE of an ObjectStore-implementing class
@@ -103,6 +103,10 @@ struct BranchContainer {
         branches[branchName] = BranchRecord(lastModified: .now, commit: commit)
     }
     
+    mutating func deleteBranch(branchName: String) -> BranchRecord? {
+        return branches.removeValue(forKey: branchName)
+    }
+    
     func contains(_ branchName: String) -> Bool {
         return branches[branchName] != nil
     }
@@ -144,8 +148,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
             delegate?.headDidChange(HEAD)
         }
     }
-    @Published private(set) var branches: [String : String]
-    private(set) lazy var branchContainer: BranchContainer = BranchContainer(objectStore: self)
+    private(set) lazy var branches: BranchContainer = BranchContainer(objectStore: self)
     
     weak var delegate: AuditionDataModelDelegate?
     
@@ -153,14 +156,13 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         self.objects = [:]
         self.index = []
         self.HEAD = "main"
-        self.branches = [:]
     }
     
     init(objects: [String : AuditionObjectProtocol], index: [TreeEntry], HEAD: String, branches: [String : String]) {
         self.objects = objects
         self.index = index
         self.HEAD = HEAD
-        self.branches = branches
+        // TODO: init for BranchContainer that takes array of branches
     }
     
     var currentBranch: String? {
@@ -271,7 +273,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         
         let commit: String
         
-        if let parent = branches[HEAD] {
+        if let parent = branches[HEAD]?.commit {
             // write the tree from the index
             let h = writeTree()
             // write the commit from the tree
@@ -285,27 +287,8 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         
         // move the branch ref to point to the new commit
         // if head points to non-existent branch, this will 'create' a branch pointing to the commit
-        branches[HEAD] = commit
+        branches.unsafeSetBranch(branchName: HEAD, value: commit)
         return commit
-    }
-    
-    // creates a branch from the current HEAD
-    func createBranch(branchName: String) throws {
-        guard branches[branchName] == nil else {
-            throw AuditionError.runtimeError("A branch named '\(branchName)' already exists")
-        }
-        
-        guard objects[branchName] == nil else {
-            throw AuditionError.runtimeError("A branch cannot be named after an existing object ref")
-        }
-        
-        if let HEADcommit = branches[HEAD] {
-            branches[branchName] = HEADcommit
-        } else if let HEADcommit = objects[HEAD] as? Commit {
-            branches[branchName] = HEADcommit.sha256DigestValue!
-        } else {
-            throw AuditionError.runtimeError("Cannot create new branch: HEAD does not point to an existing branch or commit")
-        }
     }
     
     func checkout(branch: String, newBranch: Bool = false) throws {
@@ -314,7 +297,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
             throw AuditionError.runtimeError("A branch named '\(branch)' does not exist")
         }
         if newBranch {
-            try createBranch(branchName: branch)
+            try branches.createBranch(branchName: branch)
         }
         
         HEAD = branch
@@ -334,7 +317,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     
     // check out the HEAD
     func showTree() throws -> Tree {
-        guard let HEADcommit = branches[HEAD] else {
+        guard let HEADcommit = branches[HEAD]?.commit else {
             throw AuditionError.runtimeError("HEAD does not point to an existing branch")
         }
         do {
@@ -359,7 +342,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     // NOTE: HEAD must point to a branch
     // TODO: This method assumes that HEAD points to a branch and should probably be redone to support 'detached HEAD' state.
     func showBlobs() throws -> [Blob] {
-        guard let HEADcommit = branches[HEAD] else {
+        guard let HEADcommit = branches[HEAD]?.commit else {
             throw AuditionError.runtimeError("HEAD does not point to an existing branch")
         }
         return try showBlobs(commit: HEADcommit)
@@ -393,7 +376,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     
     // returns: the current log of past commits, starting at the most recent commit in `branch`
     func log(branch: String) throws -> [Commit] {
-        guard let commit = branches[branch] else {
+        guard let commit = branches[branch]?.commit else {
             throw AuditionError.runtimeError("Unable to read branch \(branch)")
         }
         return try log(commit: commit)
@@ -479,7 +462,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
                         p.addChild(cur)
                     } else {
                         let pCommitObj = objects[pCommit] as! Commit
-                        let isHEAD = headIsDetached ? pCommit == HEAD : pCommit == branches[HEAD]
+                        let isHEAD = headIsDetached ? pCommit == HEAD : pCommit == branches[HEAD]?.commit
                         let p = TreeNodeData(commit: pCommitObj, value: String(pCommit.prefix(7)), children: [cur], branches: branchesForCommits[pCommit], isHEAD: isHEAD)
                         alg(p)
                     }
@@ -499,7 +482,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         do {
             let sortedBranches: [String] = try getBranchesWithInDegreeZero()
             for commit in sortedBranches {
-                let isHEAD = headIsDetached ? commit == HEAD : commit == branches[HEAD]
+                let isHEAD = headIsDetached ? commit == HEAD : commit == branches[HEAD]?.commit
                 let w = TreeNodeData(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [], branches: branchesForCommits[commit], isHEAD: isHEAD)
                 alg(w)
             }
@@ -551,12 +534,12 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     
     // NOT SAFE: ONLY USE FOR TESTING
     func unsafeSetBranch(branchName: String, commitHash: String) {
-        branches[branchName] = commitHash
+        branches.unsafeSetBranch(branchName: branchName, value: commitHash)
     }
     
     // NOT SAFE: LEAVES COMMITS DANGLING, ONLY USE FOR TESTING
     func unsafeDeleteBranch(branchName: String) {
-        branches.removeValue(forKey: branchName)
+        _ = branches.deleteBranch(branchName: branchName)
     }
 
     // call this function on all branch refs
@@ -628,7 +611,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         self.objects = objects
         self.index = try values.decode([TreeEntry].self, forKey: .index)
         self.HEAD = try values.decode(String.self, forKey: .HEAD)
-        self.branches = try values.decode([String : String].self, forKey: .branches)
+        self.branches = try values.decode(BranchContainer.self, forKey: .branches)
     }
     
     public var description: String {
