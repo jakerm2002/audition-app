@@ -134,7 +134,7 @@ struct TreeNodeView<A: CustomStringConvertible>: View {
 }
 
 
-struct BranchDetailView<A>: View {
+struct BranchDetailSheet<A>: View {
     @Environment(\.dismiss) private var dismiss
     
     var node: TreeNodeData<A>
@@ -243,7 +243,7 @@ struct TreeContentView<A, Node>: View where Node: View {
                             }
                         }
                         .sheet(item: $selected, content: { node in
-                            BranchDetailView(node: node, setDrawing: setDrawingFromBranch)
+                            BranchDetailSheet(node: node, setDrawing: setDrawingFromBranch)
                         })
                     BranchIndicators(branchNames: tree.branches)
                         .frame(maxWidth: nodeSize.width)
