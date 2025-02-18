@@ -55,13 +55,14 @@ protocol ObjectStoreProvider: AnyObject {
 }
 
 struct BranchContainer {
-    private var branches: OrderedDictionary<String, Branch> = [:]
+    // key: branch name
+    private var branches: OrderedDictionary<String, BranchRecord> = [:]
     
     // use `unowned`, see: https://stackoverflow.com/questions/24011575/what-is-the-difference-between-a-weak-reference-and-an-unowned-reference
     // WARNING: ensure that this struct is only used INSIDE of an ObjectStore-implementing class
     private unowned let objectStore: ObjectStoreProvider
 
-    struct Branch {
+    struct BranchRecord {
         var lastModified: Date
         var commit: String
     }
@@ -82,8 +83,10 @@ struct BranchContainer {
         if let HEADcommit = branches[objectStore.HEAD] {
             branches[branchName] = HEADcommit
         } else if let HEADcommit = objectStore.objects[objectStore.HEAD] as? Commit {
-            branches[branchName] = HEADcommit.sha256DigestValue!
+            branches[branchName] = BranchRecord(lastModified: .now, commit: HEADcommit.sha256DigestValue!)
         } else {
+            // TODO: If a user clicks the Branch button when no commits made yet, automatically make a commit to the current branch, then make a new branch from the current branch
+            // do not remove this throw statement, or add any logic here, once that change is implemented
             throw AuditionError.runtimeError("Cannot create new branch: HEAD does not point to an existing branch or commit")
         }
     }

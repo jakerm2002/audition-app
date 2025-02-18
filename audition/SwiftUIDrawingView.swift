@@ -63,6 +63,7 @@ struct SwiftUIDrawingView: View {
         print("branch button pressed")
         let count = dataModel.branches.count
         do {
+            // TODO: If a user clicks the Branch button when no commits made yet, automatically make a commit to the current branch, then make a new branch from the current branch
             let branchName = "branch \(count)"
             try dataModel.checkout(branch: branchName, newBranch: true)
             print("Branch created. You are now on branch '\(branchName)'")
