@@ -51,7 +51,9 @@ protocol ObjectLookup: AnyObject {
 
 struct BranchContainer {
     private var branches: OrderedDictionary<String, Branch> = [:]
-    private weak var objectLookup: ObjectLookup?
+    
+    // use `unowned`, see: https://stackoverflow.com/questions/24011575/what-is-the-difference-between-a-weak-reference-and-an-unowned-reference
+    private unowned let objectLookup: ObjectLookup?
 
     struct Branch {
         var lastModified: Date
@@ -85,7 +87,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
     @Published private(set) var branches: [String : String]
-    lazy private var branchContainer: BranchContainer = BranchContainer(objectLookup: self)
+    private(set) lazy var branchContainer: BranchContainer = BranchContainer(objectLookup: self)
     
     weak var delegate: AuditionDataModelDelegate?
     
