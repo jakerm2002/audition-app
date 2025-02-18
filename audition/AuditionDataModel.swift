@@ -54,7 +54,7 @@ protocol AuditionObjectStoreProvider: AnyObject {
     var HEAD: String { get }
 }
 
-struct BranchContainer: Codable {
+struct BranchContainer: Codable, Sequence {
     // key: branch name
     private(set) var branches: OrderedDictionary<String, BranchRecord> = [:]
 
@@ -137,6 +137,19 @@ struct BranchContainer: Codable {
         get {
             return branches[key]
         }
+    }
+    
+    public struct Iterator: IteratorProtocol {
+        internal var iter: OrderedDictionary<String, BranchRecord>.Iterator
+        
+        public mutating func next() -> BranchRecord? {
+            guard let (_, value) = iter.next() else { return nil }
+            return value
+        }
+    }
+    
+    public func makeIterator() -> Iterator {
+        Iterator(iter: branches.makeIterator())
     }
 }
 
