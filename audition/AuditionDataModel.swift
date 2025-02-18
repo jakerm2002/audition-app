@@ -165,7 +165,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
             delegate?.headDidChange(HEAD)
         }
     }
-    private(set) lazy var branches: BranchContainer = BranchContainer()
+    private(set) var branches: BranchContainer = BranchContainer()
     
     weak var delegate: AuditionDataModelDelegate?
     
@@ -306,6 +306,11 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         // if head points to non-existent branch, this will 'create' a branch pointing to the commit
         branches.unsafeSetBranch(branchName: HEAD, value: commit)
         return commit
+    }
+    
+    // creates a branch from the current HEAD
+    func createBranch(branchName: String) throws {
+        try branches.createBranch(branchName: branchName, objectStore: self)
     }
     
     func checkout(branch: String, newBranch: Bool = false) throws {
