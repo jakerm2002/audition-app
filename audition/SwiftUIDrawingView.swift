@@ -24,13 +24,7 @@ struct SwiftUIDrawingView: View {
         MyCanvas(rendition: $rendition, toolPicker: $toolPicker)
             .id(updatesCounter)
             .toolbar {
-                Toggle("GROUP", isOn: $groupChanges).toggleStyle(RoundedOutlinedToggle()).border(.red)
-                Toggle(isOn: $groupChanges) {
-                    Text("GROUP")
-                        .fontDesign(.monospaced)
-                        .fontWeight(.medium)
-                        .tracking(1)
-                }.border(.red)
+                Toggle("GROUP", isOn: $groupChanges).toggleStyle(RoundedOutlinedToggle())
                 NavigationLink("Tree") {
                     SwiftUITreeView(rendition: $rendition, updatesCounter: $updatesCounter).environmentObject(dataModel)
                 }

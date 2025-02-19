@@ -30,13 +30,13 @@ struct RoundedOutlinedToggle: ToggleStyle {
                 .padding(.vertical, 4)
                 .background {
                     if configuration.isOn{
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        RoundedRectangle(cornerRadius: 10)
                     } else {
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        RoundedRectangle(cornerRadius: 10, style: .circular)
                             .strokeBorder(.primary, lineWidth: 2)
                     }
                 }
-                .border(.red)
+                .animation(.default.speed(2.0))
         }
     }
 }
