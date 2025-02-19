@@ -147,7 +147,7 @@ class Tree: AuditionObjectProtocol, Equatable {
     }
 }
 
-class Commit: AuditionObjectProtocol, Equatable, ObservableObject {
+class Commit: AuditionObjectProtocol, Equatable, ObservableObject, Comparable {
     let type: AuditionObjectType
     let tree: String
     let parents: [String]
@@ -178,6 +178,10 @@ class Commit: AuditionObjectProtocol, Equatable, ObservableObject {
         }()
         
         return "\(treeDescription)\n\(parentsDescription)\n\(timestamp)\n\n\(message)"
+    }
+    
+    static func < (lhs: Commit, rhs: Commit) -> Bool {
+        return lhs.timestamp < rhs.timestamp
     }
 }
 

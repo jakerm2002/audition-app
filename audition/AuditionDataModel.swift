@@ -405,8 +405,21 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         
         // TODO: change sortedBranches to be an array of branches with in-degree of zero
         do {
-            let sortedBranches: [String] = try getBranchesWithInDegreeZero()
-            for commit in sortedBranches {
+            let reachableCommitsWithInDegreeZero: [String] = try getReachableCommitsWithInDegreeZero()
+            var timeSortedCommits: [String] {
+                var arr = [Commit]()
+                for commit in reachableCommitsWithInDegreeZero {
+                    arr.append(objects[commit] as! Commit)
+                }
+                arr.sort(by: >)
+                var res = [String]()
+                for c in arr {
+                    res.append(c.sha256DigestValue!)
+                }
+                return res
+            }
+            
+            for commit in timeSortedCommits {
                 let isHEAD = headIsDetached ? commit == HEAD : commit == branches[HEAD]
                 let w = TreeNodeData(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [], branches: branchesForCommits[commit], isHEAD: isHEAD)
                 alg(w)
@@ -418,6 +431,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         return rootNodes
     }
     
+    // FIXME: This might be better off as a struct, is there a need to hold references to these?
     class CommitWalkInfo: Equatable {
         static func == (lhs: AuditionDataModel.CommitWalkInfo, rhs: AuditionDataModel.CommitWalkInfo) -> Bool {
             return lhs.visited == rhs.visited && lhs.inDegree == rhs.inDegree
@@ -441,6 +455,8 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
 
+    // returns a dictionary of commits that can be reached from one or more branches
+    // the resulting dicionary contains
     func computeInDegreeDict() throws -> [String : CommitWalkInfo] {
         var commits: [String : CommitWalkInfo] = [:]
         
@@ -491,12 +507,12 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
     
-    func getBranchesWithInDegreeZero() throws -> [String] {
-        let branchInfo = try computeInDegreeDict()
+    func getReachableCommitsWithInDegreeZero() throws -> [String] {
+        let commitInfo = try computeInDegreeDict()
         var result: [String] = []
-        for (branch, info) in branchInfo {
+        for (commit, info) in commitInfo {
             if info.inDegree == 0 {
-                result.append(branch)
+                result.append(commit)
             }
         }
         return result
