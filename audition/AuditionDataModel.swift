@@ -517,6 +517,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         return rootNodes
     }
     
+    // FIXME: This might be better off as a struct, is there a need to hold references to these?
     class CommitWalkInfo: Equatable {
         static func == (lhs: AuditionDataModel.CommitWalkInfo, rhs: AuditionDataModel.CommitWalkInfo) -> Bool {
             return lhs.visited == rhs.visited && lhs.inDegree == rhs.inDegree
@@ -540,6 +541,8 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
 
+    // returns a dictionary of all commits that can be reached from a branch
+    // the resulting dicionary contains
     func computeInDegreeDict() throws -> [String : CommitWalkInfo] {
         var commits: [String : CommitWalkInfo] = [:]
         
@@ -590,6 +593,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
     
+    // FIXME: should this be: get 'commits' with in degree zero?
     func getBranchesWithInDegreeZero() throws -> [String] {
         let branchInfo = try computeInDegreeDict()
         var result: [String] = []
