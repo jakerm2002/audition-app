@@ -508,7 +508,8 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         do {
             //
             let reachableCommitsWithInDegreeZero: [String] = try getReachableCommitsWithInDegreeZero()
-            // display the reachable commits in time-chronological order by cross-referencing with the order of branchesForCommits
+            // display the commits for branches with in-degree zero in time-chronological order by cross-referencing with the order of branchesForCommits
+            // loop thru branchesforCommits
             
             // FIXME: OR, could we just reference the timestamp on the node??????
             for commit in reachableCommitsWithInDegreeZero {
