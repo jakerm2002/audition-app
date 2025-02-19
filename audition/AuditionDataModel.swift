@@ -512,7 +512,20 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
             // loop thru branchesforCommits
             
             // FIXME: OR, could we just reference the timestamp on the node??????
-            for commit in reachableCommitsWithInDegreeZero {
+            var timeSortedCommits: [String] {
+                var arr = [Commit]()
+                for commit in reachableCommitsWithInDegreeZero {
+                    arr.append(objects[commit] as! Commit)
+                }
+                arr.sort(by: >)
+                var res = [String]()
+                for c in arr {
+                    res.append(c.sha256DigestValue!)
+                }
+                return res
+            }
+            
+            for commit in timeSortedCommits {
                 let isHEAD = headIsDetached ? commit == HEAD : commit == branches[HEAD]?.commit
                 let w = TreeNodeData(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [], branches: branchesForCommits[commit], isHEAD: isHEAD)
                 alg(w)
