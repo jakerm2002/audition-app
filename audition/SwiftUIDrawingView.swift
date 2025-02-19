@@ -14,6 +14,7 @@ struct SwiftUIDrawingView: View {
     @State private var rendition = PKDrawing()
     
     @State var fromHomeView: Bool
+    @State var groupChanges: Bool = true
     
     // used to force replacement of PKCanvasView (call MyCanvas.makeUIView) when a drawing is changed
     @State private var updatesCounter = 0
