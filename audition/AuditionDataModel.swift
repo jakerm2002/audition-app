@@ -504,8 +504,8 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         
         // TODO: change sortedBranches to be an array of branches with in-degree of zero
         do {
-            let sortedBranches: [String] = try getBranchesWithInDegreeZero()
-            for commit in sortedBranches {
+            let reachableCommitsWithInDegreeZero: [String] = try getReachableCommitsWithInDegreeZero()
+            for commit in reachableCommitsWithInDegreeZero {
                 let isHEAD = headIsDetached ? commit == HEAD : commit == branches[HEAD]?.commit
                 let w = TreeNodeData(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [], branches: branchesForCommits[commit], isHEAD: isHEAD)
                 alg(w)
@@ -541,7 +541,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
 
-    // returns a dictionary of all commits that can be reached from a branch
+    // returns a dictionary of commits that can be reached from one or more branches
     // the resulting dicionary contains
     func computeInDegreeDict() throws -> [String : CommitWalkInfo] {
         var commits: [String : CommitWalkInfo] = [:]
@@ -594,12 +594,12 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     }
     
     // FIXME: should this be: get 'commits' with in degree zero?
-    func getBranchesWithInDegreeZero() throws -> [String] {
-        let branchInfo = try computeInDegreeDict()
+    func getReachableCommitsWithInDegreeZero() throws -> [String] {
+        let commitInfo = try computeInDegreeDict()
         var result: [String] = []
-        for (branch, info) in branchInfo {
+        for (commit, info) in commitInfo {
             if info.inDegree == 0 {
-                result.append(branch)
+                result.append(commit)
             }
         }
         return result
