@@ -460,8 +460,10 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     // returns a Dictionary where:
     // key: a String, representing the commit hash of a commit in the data model.
     // value: an Array of strings, representing a list of branches that point to the keyed commit
-    func getBranchesForCommits() -> [String : [String]] {
-        var branchesForCommit: [String : [String]] = [:]
+    // TODO: get the branches for all commits in SORTED fashion
+    // MEANING: go from beginning to end of the branches, they should already be sorted by timestamp
+    func getBranchesForCommits() -> OrderedDictionary<String, [String]> {
+        var branchesForCommit = OrderedDictionary<String, [String]>()
         for (branch, branchInfo) in branches {
             branchesForCommit[branchInfo.commit, default: []].append(branch)
         }
@@ -504,7 +506,11 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         
         // TODO: change sortedBranches to be an array of branches with in-degree of zero
         do {
+            //
             let reachableCommitsWithInDegreeZero: [String] = try getReachableCommitsWithInDegreeZero()
+            // display the reachable commits in time-chronological order by cross-referencing with the order of branchesForCommits
+            
+            // FIXME: OR, could we just reference the timestamp on the node??????
             for commit in reachableCommitsWithInDegreeZero {
                 let isHEAD = headIsDetached ? commit == HEAD : commit == branches[HEAD]?.commit
                 let w = TreeNodeData(commit: objects[commit] as! Commit, value: String(commit.prefix(7)), children: [], branches: branchesForCommits[commit], isHEAD: isHEAD)
@@ -594,6 +600,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     }
     
     // FIXME: should this be: get 'commits' with in degree zero?
+    // this gets a list of commits with in-degree zero that are POINTED TO BY A BRANCH
     func getReachableCommitsWithInDegreeZero() throws -> [String] {
         let commitInfo = try computeInDegreeDict()
         var result: [String] = []
