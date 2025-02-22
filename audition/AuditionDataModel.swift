@@ -72,7 +72,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     init() {
         self.objects = [:]
         self.index = []
-        self.HEAD = "main"
+        self.HEAD = "path 1"
         self.branches = [:]
     }
     

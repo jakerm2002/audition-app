@@ -70,9 +70,10 @@ struct SwiftUIDrawingView: View {
     
     func branchButtonPressed() {
         print("branch button pressed")
-        let count = dataModel.branches.count
+        // add one due to presence of default branch
+        let count = dataModel.branches.count + 1
         do {
-            let branchName = "branch \(count)"
+            let branchName = "path \(count)"
             try dataModel.checkout(branch: branchName, newBranch: true)
             print("Branch created. You are now on branch '\(branchName)'")
             
