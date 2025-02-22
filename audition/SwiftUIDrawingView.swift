@@ -68,6 +68,12 @@ struct SwiftUIDrawingView: View {
         _ = try dataModel.commit(message: "new drawing")
     }
     
+    func storeDataModelInNewBranch() throws {
+        branchButtonPressed()
+        try dataModel.add(AuditionFile(from: rendition, name: "drawing"))
+        _ = try dataModel.commit(message: "new drawing")
+    }
+    
     func branchButtonPressed() {
         print("branch button pressed")
         // add one due to presence of default branch
@@ -90,11 +96,16 @@ struct SwiftUIDrawingView: View {
         } else {
             // TODO: LOGIC IF WE ARE CHECKING OUT A COMMIT, NOT A BRANCH
             // TODO: CREATE A NEW BRANCH THEN COMMIT
+            // FIXME: USE AN IF STATEMENT HERE
             do {
                 try storeDataModel()
                 print("storeDataModel succeeded")
             } catch let error{
-                print("storeDataModel FAILED: \(error)")
+                do {
+                    try storeDataModelInNewBranch()
+                } catch let error {
+                    print("storeDataModel FAILED: \(error)")
+                }
             }
         }
     }
