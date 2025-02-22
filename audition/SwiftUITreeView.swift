@@ -116,20 +116,27 @@ struct TreeNodeView<A: CustomStringConvertible>: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipShape(Circle())
-                    .background(in: Circle())
+                    .background(
+                        Circle()
+                            .fill(Color(uiColor: .systemBackground))
+                            .shadow(radius:5)
+                    )
+                    .overlay {
+                        Circle()
+                            .stroke(x.isHEAD ? Color.orange : Color.primary, lineWidth: x.isHEAD ? 2 : 0)
+                    }
                     .overlay(
                         Circle()
                             .fill(
-                                RadialGradient(gradient: Gradient(colors: [Color.white.opacity(0.15), Color.clear]), center: .topLeading, startRadius: 10, endRadius: 100)
+                                RadialGradient(gradient: Gradient(colors: [Color.white.opacity(0.11), Color.clear]), center: .topLeading, startRadius: 10, endRadius: 100)
                             ).blendMode(.overlay)
                     )
                     .overlay(
                         Circle()
                             .fill(
-                                RadialGradient(gradient: Gradient(colors: [Color.black.opacity(0.07), Color.clear]), center: .bottomTrailing, startRadius: 10, endRadius: 100)
+                                RadialGradient(gradient: Gradient(colors: [Color.black.opacity(0.05), Color.clear]), center: .bottomTrailing, startRadius: 10, endRadius: 100)
                             ).blendMode(.multiply)
                     )
-                    .shadow(radius: 5)
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {
