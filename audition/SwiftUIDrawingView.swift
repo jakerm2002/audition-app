@@ -23,14 +23,23 @@ struct SwiftUIDrawingView: View {
         MyCanvas(rendition: $rendition, toolPicker: $toolPicker)
             .id(updatesCounter)
             .toolbar {
-                NavigationLink("Tree") {
-                    SwiftUITreeView(rendition: $rendition, updatesCounter: $updatesCounter).environmentObject(dataModel)
+                ToolbarItemGroup {
+                    NavigationLink(destination: {
+                        SwiftUITreeView(rendition: $rendition, updatesCounter: $updatesCounter).environmentObject(dataModel)
+                    }, label: {
+                        Button("View change graph", systemImage: "point.topleft.down.to.point.bottomright.curvepath", action: {})
+                    })
+                    Spacer()
+                    NavigationLink(destination: {
+                        SwiftUILogView(rendition: $rendition, updatesCounter: $updatesCounter).environmentObject(dataModel)
+                    }, label: {
+                        Button("View change log", systemImage: "list.dash.header.rectangle", action: {})
+                    })
+                    Spacer()
+                    //                Button("Branch", action: branchButtonPressed)
+//                    Button("Add", systemImage: "plus.app", action: commitButtonPressed)
+                    Button("Add", systemImage: "square.badge.plus.fill", action: commitButtonPressed)
                 }
-                NavigationLink("Log") {
-                    SwiftUILogView(rendition: $rendition, updatesCounter: $updatesCounter).environmentObject(dataModel)
-                }
-                Button("Branch", action: branchButtonPressed)
-                Button("Commit to '\(dataModel.shortHEAD)'", action: commitButtonPressed)
             }
             .toolbarRole(.editor)
             .navigationTitle(dataModel.shortHEAD)
@@ -78,6 +87,8 @@ struct SwiftUIDrawingView: View {
         if rendition.bounds.isEmpty {
             print("Drawing is empty, skipping commit.")
         } else {
+            // TODO: LOGIC IF WE ARE CHECKING OUT A COMMIT, NOT A BRANCH
+            // TODO: CREATE A NEW BRANCH THEN COMMIT
             do {
                 try storeDataModel()
                 print("storeDataModel succeeded")
@@ -148,5 +159,7 @@ extension Coordinator: PKCanvasViewDelegate {
 
 #Preview {
     let sampleModel = AuditionDataModel()
-    SwiftUIDrawingView(fromHomeView: true).environmentObject(sampleModel)
+    NavigationStack {
+        SwiftUIDrawingView(fromHomeView: true).environmentObject(sampleModel)
+    }
 }
