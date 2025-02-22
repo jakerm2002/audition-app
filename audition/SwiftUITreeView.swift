@@ -117,11 +117,19 @@ struct TreeNodeView<A: CustomStringConvertible>: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipShape(Circle())
                     .background(in: Circle())
-                    .overlay {
+                    .overlay(
                         Circle()
-                            .stroke(x.isHEAD ? Color.orange : Color.primary, lineWidth: 2)
-                    }
-//            Text(x.commit.sha256DigestValue!.prefix(7))
+                            .fill(
+                                RadialGradient(gradient: Gradient(colors: [Color.white.opacity(0.15), Color.clear]), center: .topLeading, startRadius: 10, endRadius: 100)
+                            ).blendMode(.overlay)
+                    )
+                    .overlay(
+                        Circle()
+                            .fill(
+                                RadialGradient(gradient: Gradient(colors: [Color.black.opacity(0.07), Color.clear]), center: .bottomTrailing, startRadius: 10, endRadius: 100)
+                            ).blendMode(.multiply)
+                    )
+                    .shadow(radius: 5)
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {
