@@ -134,7 +134,7 @@ struct SwiftUILogView: View {
                     .buttonStyle(.bordered)
                 }
             }
-            .navigationTitle("Branches")
+            .navigationTitle("Paths")
             .onAppear {
                 branches = dataModel.branches
             }

@@ -121,7 +121,7 @@ struct TreeNodeView<A: CustomStringConvertible>: View {
                         Circle()
                             .stroke(x.isHEAD ? Color.orange : Color.primary, lineWidth: 2)
                     }
-            Text(x.commit.sha256DigestValue!.prefix(7))
+//            Text(x.commit.sha256DigestValue!.prefix(7))
         }.onAppear{
             // if I am the root node
             if self.x.parent == nil {
@@ -293,7 +293,7 @@ struct SwiftUITreeView: View {
                 TreeContentView(root: tree, rendition: $rendition, updatesCounter: $updatesCounter, drawNodesUsing: { TreeNodeView(x: $0) })
                     .animation(.default)
             } else {
-                ContentUnavailableView("No Tree Available", image: "")
+                ContentUnavailableView("No Graph Available", image: "")
                     .onAppear {
                         tree = model.getRootsAsTrees().first
                     }
