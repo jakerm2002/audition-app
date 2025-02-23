@@ -14,7 +14,7 @@ struct SwiftUIDrawingView: View {
     @State private var rendition = PKDrawing()
     
     @State var fromHomeView: Bool
-    @State var groupChanges: Bool = true
+    @State var autoAddChanges: Bool = true
     
     // used to force replacement of PKCanvasView (call MyCanvas.makeUIView) when a drawing is changed
     @State private var updatesCounter = 0
@@ -25,6 +25,7 @@ struct SwiftUIDrawingView: View {
             .id(updatesCounter)
             .toolbar {
                 ToolbarItemGroup {
+                    Toggle("AUTO", isOn: $autoAddChanges).toggleStyle(RoundedOutlinedToggle())
                     NavigationLink(destination: {
                         SwiftUITreeView(rendition: $rendition, updatesCounter: $updatesCounter).environmentObject(dataModel)
                     }, label: {
