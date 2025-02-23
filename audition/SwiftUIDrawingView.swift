@@ -38,8 +38,7 @@ struct SwiftUIDrawingView: View {
                         Button("View change log", systemImage: "list.dash.header.rectangle", action: {})
                     })
                     Spacer()
-//                                    Button("Branch", action: branchButtonPressed)
-//                    Button("Add", systemImage: "plus.app", action: commitButtonPressed)
+                    Button("New Path", systemImage: "arrow.trianglehead.branch", action: branchButtonPressed)
                     Button("Add", systemImage: "square.badge.plus.fill", action: commitButtonPressed)
                 }
             }
