@@ -68,7 +68,7 @@ extension PKStroke: Codable {
     public init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         
-//        let ink = try values.decode(PKInk.self, forKey: .ink)
+        let ink = try values.decode(PKInk.self, forKey: .ink)
 //        let path = try values.decode(PKStrokePath.self, forKey: .path)
         let transform = try values.decode(CGAffineTransform.self, forKey: .transform)
 //        let mask = try values.decode(UIBezierPath.self, forKey: .mask)
@@ -86,13 +86,22 @@ extension PKInk: Codable {
         
         try container.encode(inkType, forKey: .inkType)
         
-        let colorInfo = try NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: false)
-        try container.encode(colorInfo, forKey: .color)
+        // TODO: figure out if we can encode color with a secure coding?
+        let colorData = try NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: false)
+        try container.encode(colorData, forKey: .color)
     }
     
     // TODO
     public init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
         
+        let inkType = try values.decode(PKInk.InkType.self, forKey: .inkType)
+        let colorData = try values.decode(Data.self, forKey: .color)
+        guard let color = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: colorData) else {
+            throw AuditionError.runtimeError("There was an unknown error when decoding PKInk.color")
+        }
+        
+        self.init(inkType, color: color)
     }
 }
 
