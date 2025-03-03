@@ -55,7 +55,10 @@ struct SwiftUIDrawingView: View {
     }
     
     func storeDataModel() throws {
-        try dataModel.add(AuditionFile(from: rendition, name: "drawing"))
+        #warning("Relies on accurate encoding and decoding of PKStroke")
+        for stroke in rendition.strokes {
+            try dataModel.add(AuditionFile(from: stroke, name: "stroke"))
+        }
         _ = try dataModel.commit(message: "new drawing")
     }
     

@@ -37,9 +37,21 @@ struct AuditionFile {
         self.name = name
     }
     
+    init(content: Data, contentTypeIdentifier: String, name: String) {
+        self.content = content
+        self.contentTypeIdentifier = contentTypeIdentifier
+        self.name = name
+    }
+    
     init(from drawing: PKDrawing, name: String) {
         self.content = drawing.dataRepresentation()
         self.contentTypeIdentifier = PKAppleDrawingTypeIdentifier as String
+        self.name = name
+    }
+    
+    init(from stroke: PKStroke, name: String) throws {
+        self.content = try stroke.dataRepresentation()
+        self.contentTypeIdentifier = "PKAppleStrokeTypeIdentifier"
         self.name = name
     }
 }
