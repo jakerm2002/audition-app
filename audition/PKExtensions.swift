@@ -32,11 +32,6 @@ extension PKStroke: Codable {
         case transform
         case mask
     }
-
-    enum PKInkCodingKeys: String, CodingKey {
-        case inkType
-        case color
-    }
     
     enum PKStrokePathCodingKeys: String, CodingKey {
         case controlPoints
@@ -47,11 +42,7 @@ extension PKStroke: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
         // encode ink
-        var inkInfo = container.nestedContainer(keyedBy: PKInkCodingKeys.self, forKey: .ink)
-        try inkInfo.encode(ink.inkType, forKey: .inkType)
-        
-        let colorInfo = try NSKeyedArchiver.archivedData(withRootObject: ink.color, requiringSecureCoding: false)
-        try inkInfo.encode(colorInfo, forKey: .color)
+        try container.encode(ink, forKey: .ink)
         
         // encode path
         var pathInfo = container.nestedContainer(keyedBy: PKStrokePathCodingKeys.self, forKey: .path)
@@ -75,12 +66,38 @@ extension PKStroke: Codable {
     
     // TODO
     public init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        
+//        let ink = try values.decode(PKInk.self, forKey: .ink)
+//        let path = try values.decode(PKStrokePath.self, forKey: .path)
+        let transform = try values.decode(CGAffineTransform.self, forKey: .transform)
+//        let mask = try values.decode(UIBezierPath.self, forKey: .mask)
+    }
+}
 
+extension PKInk: Codable {
+    enum CodingKeys: String, CodingKey {
+        case inkType
+        case color
+    }
+    
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(inkType, forKey: .inkType)
+        
+        let colorInfo = try NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: false)
+        try container.encode(colorInfo, forKey: .color)
+    }
+    
+    // TODO
+    public init(from decoder: any Decoder) throws {
+        
     }
 }
 
 extension PKStrokePoint: Codable {
-    enum CodingKeys: String, CodingKey, CaseIterable {
+    enum CodingKeys: String, CodingKey {
         case location
         case timeOffset
         case altitude
