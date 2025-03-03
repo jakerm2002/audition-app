@@ -21,6 +21,11 @@ enum CodingKeys: String, CodingKey {
     case mask
 }
 
+enum PKInkCodingKeys: String, CodingKey {
+    case inkType
+    case color
+}
+
 extension PKStroke {
     func dataRepresentation() throws -> Data {
         let encoder = PropertyListEncoder()
@@ -30,12 +35,18 @@ extension PKStroke {
     }
 }
 
+extension PKInkingTool.InkType: Codable {}
+
 extension PKStroke: Codable {
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
         // encode ink
+        var inkInfo = container.nestedContainer(keyedBy: PKInkCodingKeys.self, forKey: .ink)
+        try inkInfo.encode(ink.inkType, forKey: .inkType)
         
+        let colorInfo = try NSKeyedArchiver.archivedData(withRootObject: ink.color, requiringSecureCoding: false)
+        try inkInfo.encode(colorInfo, forKey: .color)
         
         // TODO: encode path
         
