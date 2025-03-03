@@ -31,6 +31,7 @@ extension PKStroke: Codable {
         case path
         case transform
         case mask
+        case randomSeed
     }
     
     public func encode(to encoder: any Encoder) throws {
@@ -50,9 +51,10 @@ extension PKStroke: Codable {
             let maskData = try NSKeyedArchiver.archivedData(withRootObject: mask, requiringSecureCoding: false)
             try container.encode(maskData, forKey: .mask)
         }
+        
+        try container.encode(randomSeed, forKey: .randomSeed)
     }
     
-    // TODO
     public init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         
@@ -70,6 +72,10 @@ extension PKStroke: Codable {
         guard let mask = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIBezierPath.self, from: maskData) else {
             throw AuditionError.runtimeError("There was an unknown error when decoding PKStroke.color")
         }
+        
+        let randomSeed = try values.decode(UInt32.self, forKey: .randomSeed)
+        
+        self.init(ink: ink, path: path, transform: transform, mask: mask, randomSeed: randomSeed)
     }
 }
 
