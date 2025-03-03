@@ -14,18 +14,6 @@ extension PKStroke: Identifiable {
 }
 */
 
-enum CodingKeys: String, CodingKey {
-    case ink
-    case path
-    case transform
-    case mask
-}
-
-enum PKInkCodingKeys: String, CodingKey {
-    case inkType
-    case color
-}
-
 extension PKStroke {
     func dataRepresentation() throws -> Data {
         let encoder = PropertyListEncoder()
@@ -38,6 +26,18 @@ extension PKStroke {
 extension PKInkingTool.InkType: Codable {}
 
 extension PKStroke: Codable {
+    enum CodingKeys: String, CodingKey {
+        case ink
+        case path
+        case transform
+        case mask
+    }
+
+    enum PKInkCodingKeys: String, CodingKey {
+        case inkType
+        case color
+    }
+    
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
@@ -60,7 +60,38 @@ extension PKStroke: Codable {
         }
     }
     
+    // TODO
     public init(from decoder: any Decoder) throws {
-        <#code#>
+
+    }
+}
+
+extension PKStrokePoint: Codable {
+    enum CodingKeys: String, CodingKey, CaseIterable {
+        case location
+        case timeOffset
+        case altitude
+        case azimuth
+        case force
+        case size
+        case opacity
+        case secondaryScale
+    }
+    
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(location, forKey: .location)
+        try container.encode(timeOffset, forKey: .timeOffset)
+        try container.encode(altitude, forKey: .altitude)
+        try container.encode(azimuth, forKey: .azimuth)
+        try container.encode(force, forKey: .force)
+        try container.encode(size, forKey: .size)
+        try container.encode(opacity, forKey: .opacity)
+        try container.encode(secondaryScale, forKey: .secondaryScale)
+    }
+    
+    // TODO
+    public init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
     }
 }
