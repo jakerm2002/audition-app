@@ -38,6 +38,11 @@ extension PKStroke: Codable {
         case color
     }
     
+    enum PKStrokePathCodingKeys: String, CodingKey {
+        case controlPoints
+        case creationDate
+    }
+    
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
@@ -49,6 +54,8 @@ extension PKStroke: Codable {
         try inkInfo.encode(colorInfo, forKey: .color)
         
         // TODO: encode path
+        var pathInfo = container.nestedContainer(keyedBy: PKStrokePathCodingKeys.self, forKey: .path)
+        try pathInfo.encode(path.creationDate, forKey: .creationDate)
         
         // encode transform
         try container.encode(transform, forKey: .transform)
