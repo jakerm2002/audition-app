@@ -33,11 +33,6 @@ extension PKStroke: Codable {
         case mask
     }
     
-    enum PKStrokePathCodingKeys: String, CodingKey {
-        case controlPoints
-        case creationDate
-    }
-    
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
@@ -45,14 +40,7 @@ extension PKStroke: Codable {
         try container.encode(ink, forKey: .ink)
         
         // encode path
-        var pathInfo = container.nestedContainer(keyedBy: PKStrokePathCodingKeys.self, forKey: .path)
-        try pathInfo.encode(path.creationDate, forKey: .creationDate)
-        // build an array of control points, then encode it
-        var controlPoints = [PKStrokePoint]()
-        for point in path {
-            controlPoints.append(point)
-        }
-        try pathInfo.encode(controlPoints, forKey: .controlPoints)
+        try container.encode(path, forKey: .path)
         
         // encode transform
         try container.encode(transform, forKey: .transform)
@@ -71,8 +59,8 @@ extension PKStroke: Codable {
         // decode ink
         let ink = try values.decode(PKInk.self, forKey: .ink)
         
-        // TODO: decode path
-        // let path = try values.decode(PKStrokePath.self, forKey: .path)
+        // decode path
+         let path = try values.decode(PKStrokePath.self, forKey: .path)
         
         // decode transform
         let transform = try values.decode(CGAffineTransform.self, forKey: .transform)
@@ -101,7 +89,6 @@ extension PKInk: Codable {
         try container.encode(colorData, forKey: .color)
     }
     
-    // TODO
     public init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         
@@ -112,6 +99,31 @@ extension PKInk: Codable {
         }
         
         self.init(inkType, color: color)
+    }
+}
+
+extension PKStrokePath: Codable {
+    enum CodingKeys: String, CodingKey {
+        case controlPoints
+        case creationDate
+    }
+    
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        // build an array of control points, then encode it
+        var controlPoints = [PKStrokePoint]()
+        for point in self {
+            controlPoints.append(point)
+        }
+    }
+    
+    public init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        
+        let controlPoints = try values.decode([PKStrokePoint].self, forKey: .controlPoints)
+        let creationDate = try values.decode(Date.self, forKey: .creationDate)
+        
+        self.init(controlPoints: controlPoints, creationDate: creationDate)
     }
 }
 
