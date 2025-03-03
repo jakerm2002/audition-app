@@ -53,14 +53,20 @@ extension PKStroke: Codable {
         let colorInfo = try NSKeyedArchiver.archivedData(withRootObject: ink.color, requiringSecureCoding: false)
         try inkInfo.encode(colorInfo, forKey: .color)
         
-        // TODO: encode path
+        // encode path
         var pathInfo = container.nestedContainer(keyedBy: PKStrokePathCodingKeys.self, forKey: .path)
         try pathInfo.encode(path.creationDate, forKey: .creationDate)
+        // build an array of control points, then encode it
+        var controlPoints = [PKStrokePoint]()
+        for point in path {
+            controlPoints.append(point)
+        }
+        try pathInfo.encode(controlPoints, forKey: .controlPoints)
         
         // encode transform
         try container.encode(transform, forKey: .transform)
         
-        // TODO: encode mask
+        // encode mask
         if let mask {
             let maskInfo = try NSKeyedArchiver.archivedData(withRootObject: mask, requiringSecureCoding: false)
             try container.encode(maskInfo, forKey: .mask)
