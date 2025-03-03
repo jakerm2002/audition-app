@@ -59,8 +59,8 @@ extension PKStroke: Codable {
         
         // encode mask
         if let mask {
-            let maskInfo = try NSKeyedArchiver.archivedData(withRootObject: mask, requiringSecureCoding: false)
-            try container.encode(maskInfo, forKey: .mask)
+            let maskData = try NSKeyedArchiver.archivedData(withRootObject: mask, requiringSecureCoding: false)
+            try container.encode(maskData, forKey: .mask)
         }
     }
     
@@ -68,10 +68,20 @@ extension PKStroke: Codable {
     public init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         
+        // decode ink
         let ink = try values.decode(PKInk.self, forKey: .ink)
-//        let path = try values.decode(PKStrokePath.self, forKey: .path)
+        
+        // TODO: decode path
+        // let path = try values.decode(PKStrokePath.self, forKey: .path)
+        
+        // decode transform
         let transform = try values.decode(CGAffineTransform.self, forKey: .transform)
-//        let mask = try values.decode(UIBezierPath.self, forKey: .mask)
+        
+        // decode mask
+        let maskData = try values.decode(Data.self, forKey: .mask)
+        guard let mask = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIBezierPath.self, from: maskData) else {
+            throw AuditionError.runtimeError("There was an unknown error when decoding PKStroke.color")
+        }
     }
 }
 
