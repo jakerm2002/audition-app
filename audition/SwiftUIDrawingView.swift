@@ -57,6 +57,7 @@ struct SwiftUIDrawingView: View {
     func storeDataModel() throws {
         #warning("Relies on accurate encoding and decoding of PKStroke")
         for stroke in rendition.strokes {
+            // TODO: the stroke should be hashed to SHA-256 and named as the hash
             try dataModel.add(AuditionFile(from: stroke, name: "stroke"))
         }
         _ = try dataModel.commit(message: "new drawing")

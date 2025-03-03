@@ -5,6 +5,7 @@
 //  Created by Jake Medina on 2/24/25.
 //
 import PencilKit
+import CryptoKit
 
 /*
 extension PKStroke: Identifiable {
@@ -24,6 +25,32 @@ extension PKStroke {
 }
 
 extension PKInkingTool.InkType: Codable {}
+
+extension PKStroke: Plistable {
+    var plist: Data {
+        get throws {
+            let encoder = PropertyListEncoder()
+            encoder.outputFormat = .binary
+            let plistData = try encoder.encode(self)
+            return plistData
+        }
+    }
+}
+
+extension PKStroke: SHA256Hashable {
+    var sha256DigestObject: SHA256Digest? {
+        do {
+            return SHA256.hash(data: try plist)
+        } catch {
+            print("Unable to serialize \(PKStroke.self) to plist")
+            return nil
+        }
+    }
+    
+    var sha256DigestValue: String? {
+        return sha256DigestObject?.hexString
+    }
+}
 
 extension PKStroke: Codable {
     enum CodingKeys: String, CodingKey {
