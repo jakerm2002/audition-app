@@ -90,8 +90,27 @@ extension PKStrokePoint: Codable {
         try container.encode(secondaryScale, forKey: .secondaryScale)
     }
     
-    // TODO
     public init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
+        
+        let location = try values.decode(CGPoint.self, forKey: .location)
+        let timeOffset = try values.decode(TimeInterval.self, forKey: .timeOffset)
+        let altitude = try values.decode(CGFloat.self, forKey: .altitude)
+        let azimuth = try values.decode(CGFloat.self, forKey: .azimuth)
+        let force = try values.decode(CGFloat.self, forKey: .force)
+        let size = try values.decode(CGSize.self, forKey: .size)
+        let opacity = try values.decode(CGFloat.self, forKey: .opacity)
+        let secondaryScale = try values.decode(CGFloat.self, forKey: .secondaryScale)
+        
+        self.init(
+            location: location,
+            timeOffset: timeOffset,
+            size: size,
+            opacity: opacity,
+            force: force,
+            azimuth: azimuth,
+            altitude: altitude,
+            secondaryScale: secondaryScale
+        )
     }
 }
