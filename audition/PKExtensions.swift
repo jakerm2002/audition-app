@@ -33,6 +33,16 @@ extension PKStroke {
 extension PKStroke: Codable {
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        // encode ink
+        
+        
+        // TODO: encode path
+        
+        // encode transform
+        try container.encode(transform, forKey: .transform)
+        
+        // TODO: encode mask
     }
     
     public init(from decoder: any Decoder) throws {
