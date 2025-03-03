@@ -54,6 +54,10 @@ extension PKStroke: Codable {
         try container.encode(transform, forKey: .transform)
         
         // TODO: encode mask
+        if let mask {
+            let maskInfo = try NSKeyedArchiver.archivedData(withRootObject: mask, requiringSecureCoding: false)
+            try container.encode(maskInfo, forKey: .mask)
+        }
     }
     
     public init(from decoder: any Decoder) throws {
