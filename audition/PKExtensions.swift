@@ -15,12 +15,24 @@ extension PKStroke: Identifiable {
 }
 */
 
+let PKAppleStrokeTypeIdentifier: String = "PKAppleStrokeTypeIdentifier"
+
 extension PKStroke {
     func dataRepresentation() throws -> Data {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
         let plistData = try encoder.encode(self)
         return plistData
+    }
+}
+
+extension PKStroke {
+    public init(from data: Data) throws {
+        do {
+            self = try PropertyListDecoder().decode(PKStroke.self, from: data)
+        } catch {
+            throw AuditionError.runtimeError("error: Failed to decode Data to PKStroke")
+        }
     }
 }
 

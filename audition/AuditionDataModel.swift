@@ -51,7 +51,7 @@ struct AuditionFile {
     
     init(from stroke: PKStroke, name: String) throws {
         self.content = try stroke.dataRepresentation()
-        self.contentTypeIdentifier = "PKAppleStrokeTypeIdentifier"
+        self.contentTypeIdentifier = PKAppleStrokeTypeIdentifier
         self.name = name
     }
 }
