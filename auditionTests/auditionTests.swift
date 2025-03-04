@@ -1234,7 +1234,7 @@ struct auditionTests {
     
     // ensure that Blob.createDrawing() will throw an error when there isn't content in the Blob
     // that is marked as a PKDrawing with the PKAppleDrawingTypeIdentifier.
-    @Test func testCheckTypeIdentifier() async throws {
+    @Test func testBlobCreateDrawingChecksContentTypeIdentifier() async throws {
         let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
         let filename1 = "README.md"
         
@@ -1287,5 +1287,100 @@ struct auditionTests {
         }
         
         _ = try b6.createDrawing()
+    }
+    
+    
+    // tests for encoding and decoding PKStrokes
+    
+    // edge cases: only decode mask if present
+    
+    // test using NSSecureCoding for classes using NSCoding
+    
+    @Test func testAuditionFileInitFromPKStroke() async throws {
+        let f1 = AuditionFile(
+            content: Data(String(stringLiteral: "you're reading me!").utf8),
+            name: "README.md"
+        )
+        
+        let point1 = PKStrokePoint(location: CGPoint(x: 0, y: 0), timeOffset: 0, size: CGSize(width: 10, height: 10), opacity: 1, force: 1, azimuth: 0, altitude: 3.14/2)
+        let point2 = PKStrokePoint(location: CGPoint(x: 1, y: 1), timeOffset: 1, size: CGSize(width: 10, height: 10), opacity: 1, force: 1, azimuth: 0, altitude: 3.14/2)
+        let path1 = PKStrokePath(controlPoints: [point1, point2], creationDate: Date(timeIntervalSince1970: 0))
+        
+        let stroke1 = PKStroke(ink: PKInk(.pen), path: path1)
+        
+        let f2 = AuditionFile(
+            content: try stroke1.dataRepresentation(),
+            name: "strokeA"
+        )
+        
+        let f3 = AuditionFile(
+            content: try stroke1.dataRepresentation(),
+            contentTypeIdentifier: PKAppleStrokeTypeIdentifier,
+            name: "strokeB"
+        )
+        
+        let f4 = try AuditionFile(
+            from: stroke1,
+            name: "strokeC"
+        )
+        
+        #expect(f1.contentTypeIdentifier == nil)
+        #expect(f2.contentTypeIdentifier == nil)
+        #expect(f3.contentTypeIdentifier == PKAppleStrokeTypeIdentifier)
+        #expect(f4.contentTypeIdentifier == PKAppleStrokeTypeIdentifier)
+    }
+    
+    @Test func testBlobInitFromPKStroke() async throws {
+        let f1 = AuditionFile(
+            content: Data(String(stringLiteral: "you're reading me!").utf8),
+            name: "README.md"
+        )
+        
+        let point1 = PKStrokePoint(location: CGPoint(x: 0, y: 0), timeOffset: 0, size: CGSize(width: 10, height: 10), opacity: 1, force: 1, azimuth: 0, altitude: 3.14/2)
+        let point2 = PKStrokePoint(location: CGPoint(x: 1, y: 1), timeOffset: 1, size: CGSize(width: 10, height: 10), opacity: 1, force: 1, azimuth: 0, altitude: 3.14/2)
+        let path1 = PKStrokePath(controlPoints: [point1, point2], creationDate: Date(timeIntervalSince1970: 0))
+        
+        let stroke1 = PKStroke(ink: PKInk(.pen), path: path1)
+        
+        let f2 = AuditionFile(
+            content: try stroke1.dataRepresentation(),
+            contentTypeIdentifier: PKAppleStrokeTypeIdentifier,
+            name: "strokeA"
+        )
+        
+        let b2 = Blob(contents: f2.content, contentTypeIdentifier: f2.contentTypeIdentifier)
+        let b2a = Blob(from: f2)
+        
+        #expect(b2.contentTypeIdentifier == PKAppleStrokeTypeIdentifier)
+        #expect(b2.contents == b2a.contents)
+        #expect(b2.contentTypeIdentifier == b2a.contentTypeIdentifier)
+    }
+    
+    @Test func testCreateDrawingFromBlobsChecksContentTypeIdentifier() async throws {
+        let f1 = AuditionFile(
+            content: Data(String(stringLiteral: "you're reading me!").utf8),
+            name: "README.md"
+        )
+        
+        let point1 = PKStrokePoint(location: CGPoint(x: 0, y: 0), timeOffset: 0, size: CGSize(width: 10, height: 10), opacity: 1, force: 1, azimuth: 0, altitude: 3.14/2)
+        let point2 = PKStrokePoint(location: CGPoint(x: 1, y: 1), timeOffset: 1, size: CGSize(width: 10, height: 10), opacity: 1, force: 1, azimuth: 0, altitude: 3.14/2)
+        let path1 = PKStrokePath(controlPoints: [point1, point2], creationDate: Date(timeIntervalSince1970: 0))
+        
+        let stroke1 = PKStroke(ink: PKInk(.pen), path: path1)
+        
+        let f2 = AuditionFile(
+            content: try stroke1.dataRepresentation(),
+            contentTypeIdentifier: PKAppleStrokeTypeIdentifier,
+            name: "strokeA"
+        )
+        
+        let b1 = Blob(from: f1)
+        let b2 = Blob(from: f2)
+        
+        #expect(throws: AuditionError.self) {
+            try createDrawing(strokes: [b1, b2])
+        }
+        
+        _ = try createDrawing(strokes: [b2])
     }
 }
