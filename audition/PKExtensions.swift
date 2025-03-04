@@ -107,9 +107,12 @@ extension PKStroke: Codable {
         let transform = try values.decode(CGAffineTransform.self, forKey: .transform)
         
         // decode mask
-        let maskData = try values.decode(Data.self, forKey: .mask)
-        guard let mask = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIBezierPath.self, from: maskData) else {
-            throw AuditionError.runtimeError("There was an unknown error when decoding PKStroke.color")
+        var mask: UIBezierPath? = nil
+        if let maskData = try values.decodeIfPresent(Data.self, forKey: .mask) {
+            guard let decodedMask = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIBezierPath.self, from: maskData) else {
+                throw AuditionError.runtimeError("There was an unknown error when decoding PKStroke.mask")
+            }
+            mask = decodedMask
         }
         
         let randomSeed = try values.decode(UInt32.self, forKey: .randomSeed)
@@ -160,6 +163,9 @@ extension PKStrokePath: Codable {
         for point in self {
             controlPoints.append(point)
         }
+        
+        try container.encode(controlPoints, forKey: .controlPoints)
+        try container.encode(creationDate, forKey: .creationDate)
     }
     
     public init(from decoder: any Decoder) throws {
