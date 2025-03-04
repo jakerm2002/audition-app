@@ -195,8 +195,8 @@ struct TreeContentView<A, NodeView>: View where NodeView: View {
         // we're assuming there will only be one, this will NOT BE TRUE in the future
         // once we are committing individual strokes instead of the entire drawing
         do {
-            let aBlob = try dataModel.showBlobs(commit: commit.sha256DigestValue!)[0]
-            let newDrawing = try aBlob.createDrawing()
+            let strokeBlobs = try dataModel.showBlobs(commit: commit.sha256DigestValue!)
+            let newDrawing = try createDrawing(strokes: strokeBlobs)
             rendition = newDrawing
             updatesCounter += 1
             print("setDrawingData succeeded")
