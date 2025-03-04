@@ -362,7 +362,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
             } else {
                 blobs = try showBlobs()
             }
-            d = try blobs[0].createDrawing()
+            d = try createDrawing(strokes: blobs)
             return d.image(from: d.bounds, scale: 3.0)
         } catch let error {
             print("error: failed to create thumbnail from AuditionDataModel: \(error)")
