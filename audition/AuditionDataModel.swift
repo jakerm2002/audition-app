@@ -127,7 +127,7 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
         let obj: AuditionObjectProtocol = objects[sha256DigestValue]!
         
-        // check if the index already contains an entry for this filename
+        // check if the index already contains an entry for this filename. if so, update that entry
         for (idx, item) in index.enumerated() {
             if item.name == name {
                 index[idx].hash = obj.sha256DigestValue!
@@ -136,6 +136,29 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
         
         index.append(TreeEntry(type: obj.type, hash: obj.sha256DigestValue!, name: name))
+    }
+    
+    // reads tree information into the index
+    // if the tree contains N elements, and M elements already exist in the index
+    // the complexity of this method becomes O(N * M) because of the need to check if each TreeEntry already exists in the index
+    // TODO: maybe make index into a different data structure to avoid this complexity?
+    func readTree(_ tree: Tree, clearIndex: Bool) throws {
+        if clearIndex {
+            self.clearIndex()
+            for entry in tree.entries {
+                do {
+                    try updateIndex(sha256DigestValue: entry.hash, name: entry.name)
+                } catch let error {
+                    throw AuditionError.runtimeError("Error: Cannot read tree into index: \(error)")
+                }
+            }
+        } else {
+            throw AuditionError.runtimeError("Error: reading tree into non-empty index is not yet supported")
+        }
+    }
+    
+    func clearIndex() {
+        index = []
     }
     
     // creates a tree object from the state of the index
@@ -231,10 +254,28 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     func checkout(branch: String, newBranch: Bool = false) throws {
         // ensure that there will be a new branch created, or that a branch already exists
         guard newBranch || branches[branch] != nil else {
-            throw AuditionError.runtimeError("A branch named '\(branch)' does not exist")
+            throw AuditionError.runtimeError("Error: Unable to checkout branch: A branch named '\(branch)' does not exist")
         }
         if newBranch {
             try createBranch(branchName: branch)
+        } else {
+            guard let branchCommitString = branches[branch] else {
+                throw AuditionError.runtimeError("Error: Unable to checkout branch: branch does not exist")
+            }
+            
+            guard let branchCommitObj = objects[branchCommitString] as? Commit else {
+                throw AuditionError.runtimeError("Error: Unable to checkout branch: Branch '\(branch)' does not point to a commit")
+            }
+            
+            if let tree = objects[branchCommitObj.tree] as? Tree {
+                do {
+                    try readTree(tree, clearIndex: true)
+                } catch let error {
+                    throw AuditionError.runtimeError("Error: Unable to checkout branch due to error when updating the index: \(error)")
+                }
+            } else {
+                throw AuditionError.runtimeError("Error: Unable to checkout branch: branch does not point to a commit with a valid Tree")
+            }
         }
         
         HEAD = branch
@@ -243,12 +284,23 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     func checkout(commit: String) throws {
         // ensure that there will be a new branch created, or that a branch already exists
         guard objects[commit] != nil else {
-            throw AuditionError.runtimeError("Commit '\(commit)' does not exist")
+            throw AuditionError.runtimeError("Error: Unable to checkout commit: Commit '\(commit)' does not exist")
         }
         
-        guard objects[commit] is Commit else {
-            throw AuditionError.runtimeError("Ref '\(commit)' does not refer to a commit")
+        guard let commitObj = objects[commit] as? Commit else {
+            throw AuditionError.runtimeError("Error: Unable to checkout commit: Ref '\(commit)' does not refer to a commit")
         }
+        
+        if let tree = objects[commitObj.tree] as? Tree {
+            do {
+                try readTree(tree, clearIndex: true)
+            } catch let error {
+                throw AuditionError.runtimeError("Error: Unable to checkout commit due to error when updating the index: \(error)")
+            }
+        } else {
+            throw AuditionError.runtimeError("Error: Unable to checkout commit: branch does not point to a commit with a valid Tree")
+        }
+        
         HEAD = commit
     }
     

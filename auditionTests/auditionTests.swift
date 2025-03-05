@@ -1535,4 +1535,9 @@ struct auditionTests {
 
         #expect(decoded2.mask == nil)
     }
+    
+    // TODO
+    @Test func testReadTree() {
+        
+    }
 }
