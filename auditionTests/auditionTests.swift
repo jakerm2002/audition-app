@@ -1536,5 +1536,3 @@ struct auditionTests {
         #expect(decoded2.mask == nil)
     }
 }
-
-// TODO: test using NSSecureCoding for classes using NSCoding

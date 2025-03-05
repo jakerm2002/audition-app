@@ -87,8 +87,7 @@ extension PKStroke: Codable {
         
         // encode mask
         if let mask {
-            // TODO: encode with a secure coding (make mask's type implement NSSecureCoding)
-            let maskData = try NSKeyedArchiver.archivedData(withRootObject: mask, requiringSecureCoding: false)
+            let maskData = try NSKeyedArchiver.archivedData(withRootObject: mask, requiringSecureCoding: true)
             try container.encode(maskData, forKey: .mask)
         }
         
@@ -133,8 +132,7 @@ extension PKInk: Codable {
         
         try container.encode(inkType, forKey: .inkType)
         
-        // TODO: figure out if we can encode color with a secure coding?
-        let colorData = try NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: false)
+        let colorData = try NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: true)
         try container.encode(colorData, forKey: .color)
     }
     
