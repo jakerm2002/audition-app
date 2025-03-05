@@ -87,6 +87,7 @@ extension PKStroke: Codable {
         
         // encode mask
         if let mask {
+            // TODO: encode with a secure coding (make mask's type implement NSSecureCoding)
             let maskData = try NSKeyedArchiver.archivedData(withRootObject: mask, requiringSecureCoding: false)
             try container.encode(maskData, forKey: .mask)
         }

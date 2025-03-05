@@ -1289,13 +1289,6 @@ struct auditionTests {
         _ = try b6.createDrawing()
     }
     
-    
-    // tests for encoding and decoding PKStrokes
-    
-    // edge cases: only decode mask if present
-    
-    // test using NSSecureCoding for classes using NSCoding
-    
     @Test func testAuditionFileInitFromPKStroke() async throws {
         let f1 = AuditionFile(
             content: Data(String(stringLiteral: "you're reading me!").utf8),
@@ -1472,4 +1465,76 @@ struct auditionTests {
         
         #expect(decoded.creationDate == creationDate)
     }
+    
+    @Test func testEncodeAndDecodePKStroke() async throws {
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        
+        let ink = PKInk(.crayon, color: .purple)
+        
+        let location1 = CGPoint(x: 0, y: 0)
+        let timeOffset1: TimeInterval = 0
+        let size1 = CGSize(width: 10, height: 10)
+        let opacity1: CGFloat = 1
+        let force1: CGFloat = 1
+        let azimuth1: CGFloat = 0
+        let altitude1: CGFloat = 3.14/2
+        let location2 = CGPoint(x: 1, y: 1)
+        let timeOffset2: TimeInterval = 1
+        let size2 = CGSize(width: 10, height: 10)
+        let opacity2: CGFloat = 1
+        let force2: CGFloat = 1
+        let azimuth2: CGFloat = 0
+        let altitude2: CGFloat = 3.14/2
+        let point1 = PKStrokePoint(location: location1, timeOffset: timeOffset1, size: size1, opacity: opacity1, force: force1, azimuth: azimuth1, altitude: altitude1)
+        let point2 = PKStrokePoint(location: location2, timeOffset: timeOffset2, size: size2, opacity: opacity2, force: force2, azimuth: azimuth2, altitude: altitude2)
+        let creationDate = Date(timeIntervalSince1970: 0)
+        let path = PKStrokePath(controlPoints: [point1, point2], creationDate: creationDate)
+        
+        let transform: CGAffineTransform = .identity
+        
+        // doesn't really matter what the mask is, just want to make sure it's encoded/decoded properly
+        let maskPath = CGPath(rect: CGRect(x: 0, y: 0, width: 2, height: 2), transform: nil)
+        let mask = UIBezierPath(cgPath: maskPath)
+        
+        let stroke1 = PKStroke(ink: ink, path: path, transform: transform, mask: mask)
+        
+        let encoded1: Data = try encoder.encode(stroke1)
+        let decoded1: PKStroke = try PropertyListDecoder().decode(PKStroke.self, from: encoded1)
+        
+        #expect(decoded1.ink.color == UIColor.purple)
+        #expect(decoded1.ink.inkType == .crayon)
+        
+        #expect(decoded1.path[0].location == location1)
+        #expect(decoded1.path[0].timeOffset == timeOffset1)
+        #expect(decoded1.path[0].size == size1)
+        #expect(decoded1.path[0].opacity.rounded() == opacity1)
+        #expect(decoded1.path[0].force == force1)
+        #expect(decoded1.path[0].azimuth.rounded() == azimuth1)
+        #expect(decoded1.path[0].altitude.rounded() == 2.0)
+        
+        #expect(decoded1.path[1].location == location2)
+        #expect(decoded1.path[1].timeOffset == timeOffset2)
+        #expect(decoded1.path[1].size == size2)
+        #expect(decoded1.path[1].opacity.rounded() == opacity2)
+        #expect(decoded1.path[1].force == force2)
+        #expect(decoded1.path[1].azimuth.rounded() == azimuth2)
+        #expect(decoded1.path[1].altitude.rounded() == 2.0)
+        
+        #expect(decoded1.path.creationDate == creationDate)
+        
+        #expect(decoded1.transform.isIdentity)
+        
+        #expect(decoded1.mask?.bounds == mask.bounds)
+        
+        let stroke2 = PKStroke(ink: ink, path: path, transform: transform, mask: nil)
+        
+        let encoded2: Data = try encoder.encode(stroke2)
+        // test mask only decoded if present
+        let decoded2: PKStroke = try PropertyListDecoder().decode(PKStroke.self, from: encoded2)
+
+        #expect(decoded2.mask == nil)
+    }
 }
+
+// TODO: test using NSSecureCoding for classes using NSCoding
