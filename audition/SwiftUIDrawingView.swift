@@ -54,8 +54,11 @@ struct SwiftUIDrawingView: View {
         }
     }
     
+    // since this goes off of strokes, the max complexity could be
+    // O(N * M), where N is the number of strokes and M is the number of items in the index
     func storeDataModel() throws {
         #warning("Relies on accurate encoding and decoding of PKStroke")
+        dataModel.clearIndex()
         for stroke in rendition.strokes {
             if let strokeHash = stroke.sha256DigestValue {
                 try dataModel.add(AuditionFile(from: stroke, name: strokeHash))
