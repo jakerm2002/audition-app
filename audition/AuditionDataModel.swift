@@ -209,6 +209,10 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
     }
     
     // clears the current index, adds the strokes passed
+    // used to update the index as efficiently as possible
+    // assumes no duplicate strokes, so that we don't have
+    // to check for existing strokes during each insertion
+    // guaranteed O(N), where N == strokes.count
     func addStrokesToIndex(_ strokes: [PKStroke]) throws {
         clearIndex()
         for stroke in strokes {
