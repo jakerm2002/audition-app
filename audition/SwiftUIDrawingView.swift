@@ -46,8 +46,8 @@ struct SwiftUIDrawingView: View {
     
     func loadInitialDrawing() {
         do {
-            let mostRecentBlob = try dataModel.showBlobs()[0]
-            rendition = try mostRecentBlob.createDrawing()
+            let strokeBlobs = try dataModel.showBlobs()
+            rendition = try createDrawing(strokes: strokeBlobs)
             print("SwiftUIDrawingView found initial drawing to display")
         } catch {
             print("error: failed to load initial drawing from AuditionDataModel")
@@ -55,7 +55,7 @@ struct SwiftUIDrawingView: View {
     }
     
     func storeDataModel() throws {
-        try dataModel.add(AuditionFile(from: rendition, name: "drawing"))
+        try dataModel.addStrokesToIndex(rendition.strokes)
         _ = try dataModel.commit(message: "new drawing")
     }
     

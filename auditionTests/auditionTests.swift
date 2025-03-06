@@ -1234,7 +1234,7 @@ struct auditionTests {
     
     // ensure that Blob.createDrawing() will throw an error when there isn't content in the Blob
     // that is marked as a PKDrawing with the PKAppleDrawingTypeIdentifier.
-    @Test func testCheckTypeIdentifier() async throws {
+    @Test func testBlobCreateDrawingChecksContentTypeIdentifier() async throws {
         let content1 = Data(String(stringLiteral: "you're reading me!").utf8)
         let filename1 = "README.md"
         
@@ -1287,5 +1287,257 @@ struct auditionTests {
         }
         
         _ = try b6.createDrawing()
+    }
+    
+    @Test func testAuditionFileInitFromPKStroke() async throws {
+        let f1 = AuditionFile(
+            content: Data(String(stringLiteral: "you're reading me!").utf8),
+            name: "README.md"
+        )
+        
+        let point1 = PKStrokePoint(location: CGPoint(x: 0, y: 0), timeOffset: 0, size: CGSize(width: 10, height: 10), opacity: 1, force: 1, azimuth: 0, altitude: 3.14/2)
+        let point2 = PKStrokePoint(location: CGPoint(x: 1, y: 1), timeOffset: 1, size: CGSize(width: 10, height: 10), opacity: 1, force: 1, azimuth: 0, altitude: 3.14/2)
+        let path1 = PKStrokePath(controlPoints: [point1, point2], creationDate: Date(timeIntervalSince1970: 0))
+        
+        let stroke1 = PKStroke(ink: PKInk(.pen), path: path1)
+        
+        let f2 = AuditionFile(
+            content: try stroke1.dataRepresentation(),
+            name: "strokeA"
+        )
+        
+        let f3 = AuditionFile(
+            content: try stroke1.dataRepresentation(),
+            contentTypeIdentifier: PKAppleStrokeTypeIdentifier,
+            name: "strokeB"
+        )
+        
+        let f4 = try AuditionFile(
+            from: stroke1,
+            name: "strokeC"
+        )
+        
+        #expect(f1.contentTypeIdentifier == nil)
+        #expect(f2.contentTypeIdentifier == nil)
+        #expect(f3.contentTypeIdentifier == PKAppleStrokeTypeIdentifier)
+        #expect(f4.contentTypeIdentifier == PKAppleStrokeTypeIdentifier)
+    }
+    
+    @Test func testBlobInitFromPKStroke() async throws {
+        let f1 = AuditionFile(
+            content: Data(String(stringLiteral: "you're reading me!").utf8),
+            name: "README.md"
+        )
+        
+        let point1 = PKStrokePoint(location: CGPoint(x: 0, y: 0), timeOffset: 0, size: CGSize(width: 10, height: 10), opacity: 1, force: 1, azimuth: 0, altitude: 3.14/2)
+        let point2 = PKStrokePoint(location: CGPoint(x: 1, y: 1), timeOffset: 1, size: CGSize(width: 10, height: 10), opacity: 1, force: 1, azimuth: 0, altitude: 3.14/2)
+        let path1 = PKStrokePath(controlPoints: [point1, point2], creationDate: Date(timeIntervalSince1970: 0))
+        
+        let stroke1 = PKStroke(ink: PKInk(.pen), path: path1)
+        
+        let f2 = AuditionFile(
+            content: try stroke1.dataRepresentation(),
+            contentTypeIdentifier: PKAppleStrokeTypeIdentifier,
+            name: "strokeA"
+        )
+        
+        let b2 = Blob(contents: f2.content, contentTypeIdentifier: f2.contentTypeIdentifier)
+        let b2a = Blob(from: f2)
+        
+        #expect(b2.contentTypeIdentifier == PKAppleStrokeTypeIdentifier)
+        #expect(b2.contents == b2a.contents)
+        #expect(b2.contentTypeIdentifier == b2a.contentTypeIdentifier)
+    }
+    
+    @Test func testCreateDrawingFromBlobsChecksContentTypeIdentifier() async throws {
+        let f1 = AuditionFile(
+            content: Data(String(stringLiteral: "you're reading me!").utf8),
+            name: "README.md"
+        )
+        
+        let point1 = PKStrokePoint(location: CGPoint(x: 0, y: 0), timeOffset: 0, size: CGSize(width: 10, height: 10), opacity: 1, force: 1, azimuth: 0, altitude: 3.14/2)
+        let point2 = PKStrokePoint(location: CGPoint(x: 1, y: 1), timeOffset: 1, size: CGSize(width: 10, height: 10), opacity: 1, force: 1, azimuth: 0, altitude: 3.14/2)
+        let path1 = PKStrokePath(controlPoints: [point1, point2], creationDate: Date(timeIntervalSince1970: 0))
+        
+        let stroke1 = PKStroke(ink: PKInk(.pen), path: path1)
+        
+        let f2 = AuditionFile(
+            content: try stroke1.dataRepresentation(),
+            contentTypeIdentifier: PKAppleStrokeTypeIdentifier,
+            name: "strokeA"
+        )
+        
+        let b1 = Blob(from: f1)
+        let b2 = Blob(from: f2)
+        
+        #expect(throws: AuditionError.self) {
+            try createDrawing(strokes: [b1, b2])
+        }
+        
+        _ = try createDrawing(strokes: [b2])
+    }
+    
+    @Test func testEncodeAndDecodePKInk() async throws {
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        
+        let encoded: Data = try encoder.encode(PKInk(.crayon, color: .purple))
+        let decoded: PKInk = try PropertyListDecoder().decode(PKInk.self, from: encoded)
+        
+        #expect(decoded.color == UIColor.purple)
+        #expect(decoded.inkType == .crayon)
+    }
+    
+    
+    @Test func testEncodeAndDecodePKStrokePoint() async throws {
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        
+        let location = CGPoint(x: 0, y: 0)
+        let timeOffset: TimeInterval = 0
+        let size = CGSize(width: 10, height: 10)
+        let opacity: CGFloat = 1
+        let force: CGFloat = 1
+        let azimuth: CGFloat = 0
+        let altitude: CGFloat = 3.14/2
+        
+        
+        let point1 = PKStrokePoint(location: location, timeOffset: timeOffset, size: size, opacity: opacity, force: force, azimuth: azimuth, altitude: altitude)
+        
+        let encoded: Data = try encoder.encode(point1)
+        let decoded: PKStrokePoint = try PropertyListDecoder().decode(PKStrokePoint.self, from: encoded)
+        
+        // some floating point result need to be rounded due to floating point inaccuracy
+        #expect(decoded.location == location)
+        #expect(decoded.timeOffset == timeOffset)
+        #expect(decoded.size == size)
+        #expect(decoded.opacity.rounded() == opacity)
+        #expect(decoded.force == force)
+        #expect(decoded.azimuth.rounded() == azimuth)
+        #expect(decoded.altitude.rounded() == 2.0)
+    }
+    
+    @Test func testEncodeAndDecodePKStrokePath() async throws {
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        
+        let location1 = CGPoint(x: 0, y: 0)
+        let timeOffset1: TimeInterval = 0
+        let size1 = CGSize(width: 10, height: 10)
+        let opacity1: CGFloat = 1
+        let force1: CGFloat = 1
+        let azimuth1: CGFloat = 0
+        let altitude1: CGFloat = 3.14/2
+        
+        let location2 = CGPoint(x: 1, y: 1)
+        let timeOffset2: TimeInterval = 1
+        let size2 = CGSize(width: 10, height: 10)
+        let opacity2: CGFloat = 1
+        let force2: CGFloat = 1
+        let azimuth2: CGFloat = 0
+        let altitude2: CGFloat = 3.14/2
+        
+        let point1 = PKStrokePoint(location: location1, timeOffset: timeOffset1, size: size1, opacity: opacity1, force: force1, azimuth: azimuth1, altitude: altitude1)
+        let point2 = PKStrokePoint(location: location2, timeOffset: timeOffset2, size: size2, opacity: opacity2, force: force2, azimuth: azimuth2, altitude: altitude2)
+        
+        let creationDate = Date(timeIntervalSince1970: 0)
+        
+        let path1 = PKStrokePath(controlPoints: [point1, point2], creationDate: creationDate)
+        
+        let encoded: Data = try encoder.encode(path1)
+        let decoded: PKStrokePath = try PropertyListDecoder().decode(PKStrokePath.self, from: encoded)
+        
+        #expect(decoded[0].location == location1)
+        #expect(decoded[0].timeOffset == timeOffset1)
+        #expect(decoded[0].size == size1)
+        #expect(decoded[0].opacity.rounded() == opacity1)
+        #expect(decoded[0].force == force1)
+        #expect(decoded[0].azimuth.rounded() == azimuth1)
+        #expect(decoded[0].altitude.rounded() == 2.0)
+        
+        #expect(decoded[1].location == location2)
+        #expect(decoded[1].timeOffset == timeOffset2)
+        #expect(decoded[1].size == size2)
+        #expect(decoded[1].opacity.rounded() == opacity2)
+        #expect(decoded[1].force == force2)
+        #expect(decoded[1].azimuth.rounded() == azimuth2)
+        #expect(decoded[1].altitude.rounded() == 2.0)
+        
+        #expect(decoded.creationDate == creationDate)
+    }
+    
+    @Test func testEncodeAndDecodePKStroke() async throws {
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        
+        let ink = PKInk(.crayon, color: .purple)
+        
+        let location1 = CGPoint(x: 0, y: 0)
+        let timeOffset1: TimeInterval = 0
+        let size1 = CGSize(width: 10, height: 10)
+        let opacity1: CGFloat = 1
+        let force1: CGFloat = 1
+        let azimuth1: CGFloat = 0
+        let altitude1: CGFloat = 3.14/2
+        let location2 = CGPoint(x: 1, y: 1)
+        let timeOffset2: TimeInterval = 1
+        let size2 = CGSize(width: 10, height: 10)
+        let opacity2: CGFloat = 1
+        let force2: CGFloat = 1
+        let azimuth2: CGFloat = 0
+        let altitude2: CGFloat = 3.14/2
+        let point1 = PKStrokePoint(location: location1, timeOffset: timeOffset1, size: size1, opacity: opacity1, force: force1, azimuth: azimuth1, altitude: altitude1)
+        let point2 = PKStrokePoint(location: location2, timeOffset: timeOffset2, size: size2, opacity: opacity2, force: force2, azimuth: azimuth2, altitude: altitude2)
+        let creationDate = Date(timeIntervalSince1970: 0)
+        let path = PKStrokePath(controlPoints: [point1, point2], creationDate: creationDate)
+        
+        let transform: CGAffineTransform = .identity
+        
+        // doesn't really matter what the mask is, just want to make sure it's encoded/decoded properly
+        let maskPath = CGPath(rect: CGRect(x: 0, y: 0, width: 2, height: 2), transform: nil)
+        let mask = UIBezierPath(cgPath: maskPath)
+        
+        let stroke1 = PKStroke(ink: ink, path: path, transform: transform, mask: mask)
+        
+        let encoded1: Data = try encoder.encode(stroke1)
+        let decoded1: PKStroke = try PropertyListDecoder().decode(PKStroke.self, from: encoded1)
+        
+        #expect(decoded1.ink.color == UIColor.purple)
+        #expect(decoded1.ink.inkType == .crayon)
+        
+        #expect(decoded1.path[0].location == location1)
+        #expect(decoded1.path[0].timeOffset == timeOffset1)
+        #expect(decoded1.path[0].size == size1)
+        #expect(decoded1.path[0].opacity.rounded() == opacity1)
+        #expect(decoded1.path[0].force == force1)
+        #expect(decoded1.path[0].azimuth.rounded() == azimuth1)
+        #expect(decoded1.path[0].altitude.rounded() == 2.0)
+        
+        #expect(decoded1.path[1].location == location2)
+        #expect(decoded1.path[1].timeOffset == timeOffset2)
+        #expect(decoded1.path[1].size == size2)
+        #expect(decoded1.path[1].opacity.rounded() == opacity2)
+        #expect(decoded1.path[1].force == force2)
+        #expect(decoded1.path[1].azimuth.rounded() == azimuth2)
+        #expect(decoded1.path[1].altitude.rounded() == 2.0)
+        
+        #expect(decoded1.path.creationDate == creationDate)
+        
+        #expect(decoded1.transform.isIdentity)
+        
+        #expect(decoded1.mask?.bounds == mask.bounds)
+        
+        let stroke2 = PKStroke(ink: ink, path: path, transform: transform, mask: nil)
+        
+        let encoded2: Data = try encoder.encode(stroke2)
+        // test mask only decoded if present
+        let decoded2: PKStroke = try PropertyListDecoder().decode(PKStroke.self, from: encoded2)
+
+        #expect(decoded2.mask == nil)
+    }
+    
+    // TODO
+    @Test func testReadTree() {
+        
     }
 }
