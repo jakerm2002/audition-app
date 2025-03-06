@@ -54,20 +54,35 @@ struct SwiftUIDrawingView: View {
         }
     }
     
-    // since this goes off of strokes, the max complexity could be
-    // O(N * M), where N is the number of strokes and M is the number of items in the index
+    /*
     func storeDataModel() throws {
         #warning("Relies on accurate encoding and decoding of PKStroke")
         dataModel.clearIndex()
         for stroke in rendition.strokes {
+            // the following code relies on the index being empty
             if let strokeHash = stroke.sha256DigestValue {
-                try dataModel.add(AuditionFile(from: stroke, name: strokeHash))
+                let file = try AuditionFile(from: stroke, name: strokeHash)
+                let b = Blob(from: file)
+                let h = dataModel.hash(obj: b, write: true)
+                guard dataModel.objects[h] != nil else {
+                    throw AuditionError.runtimeError("Hash \(h) does not exist in AuditionDataModel.objects")
+                }
+                let obj: AuditionObjectProtocol = dataModel.objects[h]!
+                
+                dataModel.index.append(TreeEntry(type: obj.type, hash: obj.sha256DigestValue!, name: file.name))
             } else {
                 throw AuditionError.runtimeError("error: Hash value of PKStroke is unavailable")
             }
         }
         _ = try dataModel.commit(message: "new drawing")
     }
+     */
+    
+    func storeDataModel() throws {
+        try dataModel.addStrokesToIndex(rendition.strokes)
+        _ = try dataModel.commit(message: "new drawing")
+    }
+    
     
     func branchButtonPressed() {
         print("branch button pressed")

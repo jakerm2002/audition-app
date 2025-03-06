@@ -208,6 +208,31 @@ class AuditionDataModel: CustomStringConvertible, Codable, ObservableObject, Ide
         }
     }
     
+    // clears the current index, adds the strokes passed
+    func addStrokesToIndex(_ strokes: [PKStroke]) throws {
+        clearIndex()
+        for stroke in strokes {
+            // index must be empty
+            if let strokeHash = stroke.sha256DigestValue {
+                // add the stroke to the object store
+                let file = try AuditionFile(from: stroke, name: strokeHash)
+                let b = Blob(from: file)
+                let h = hash(obj: b, write: true) // will not re-add stroke to object store if it is already present
+
+                // update the index
+                guard objects[h] != nil else {
+                    throw AuditionError.runtimeError("Hash \(h) does not exist in AuditionDataModel.objects")
+                }
+                let obj: AuditionObjectProtocol = objects[h]!
+                
+                // warning: doesn't check for duplicate entries before adding
+                index.append(TreeEntry(type: obj.type, hash: obj.sha256DigestValue!, name: file.name))
+            } else {
+                throw AuditionError.runtimeError("error: Hash value of PKStroke is unavailable")
+            }
+        }
+    }
+    
     // returns: the hash of the created commit
     func commit(message: String) throws -> String {
         // TODO: decide if empty commmits should be allowed
