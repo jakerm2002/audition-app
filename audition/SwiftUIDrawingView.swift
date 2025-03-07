@@ -71,7 +71,7 @@ struct SwiftUIDrawingView: View {
     
     func storeDataModelInNewBranch() throws {
         branchButtonPressed()
-        try dataModel.add(AuditionFile(from: rendition, name: "drawing"))
+        try dataModel.addStrokesToIndex(rendition.strokes)
         _ = try dataModel.commit(message: "new drawing")
     }
     
