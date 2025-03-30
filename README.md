@@ -1,5 +1,3 @@
-# Audition
-
 Audition is bringing the power of version control to whiteboarding. Whether you're sketching diagrams, brainstorming ideas, or learning new concepts, Audition provides an intuitive way to iterate on your drawings while maintaining copies of your work as you go.
 
 ## Features
